@@ -1,0 +1,10 @@
+<aura:component implements="flexipage:availableForAllPageTypes" description="Chatter component to enabled user to post feed against record. This is used on chatter sub tab on modal of pending contract super tab">
+    <aura:attribute name="recordId" type="String" default=""/>
+     <aura:attribute name="url" type="String" default=""/>
+        <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+
+    <div class="slds-show format">
+     <!--<forceChatter:fullFeed subjectId="{!v.recordId}" type="Record"/>-->
+    <iframe src="{!v.url}" style="width:100%; min-height:600px; border:0px;"></iframe>
+    </div>
+</aura:component>

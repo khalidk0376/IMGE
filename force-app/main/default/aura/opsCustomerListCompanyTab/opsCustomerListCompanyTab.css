@@ -1,0 +1,439 @@
+.THIS .title {
+    color: #555;
+    margin-bottom: 6px;
+    font-weight: 700;
+}
+/*.THIS .container {
+    width: auto;
+}
+
+.THIS .review-heading {
+    padding: 10px 0px !important
+}
+
+.THIS .primary-btn {
+    color: white
+}
+
+.THIS .lastrow {
+    border-bottom: 0 !important; 
+    padding: 8px !important;
+}
+
+.THIS .Assign_close {
+    color: #000;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.THIS .search-style-1 {
+    width: 50%;
+    border: 1px solid #ccc;
+    padding: 5px;
+    margin-bottom: 15px;
+    margin-right: 8px;
+    margin-top: 10px;
+}
+
+.THIS .new-comp {
+    width: 100%;
+}
+
+.THIS .newcomtable {
+    margin-bottom: 20px;
+}
+
+.THIS .toggle-showarea {
+    padding: 0px 18px;
+}
+
+.THIS .toggle-showarea p {
+    padding: 5px 0px;
+}
+
+.THIS .toggle-area {
+    cursor: pointer;
+    padding: 8px 0;
+}
+
+.THIS .toggle-area span {
+    color: #015b80;
+}
+
+.THIS .modal-header h2 {
+    font-weight: 700 !important;
+    font-size: 20px !important;
+}
+
+.THIS .toggle-area {
+    color: #5c5c5c;
+}
+
+.THIS .toggle-area span {
+    color: #0078d2;
+    padding-left: 5px;
+}
+
+.THIS .close {
+    line-height: 0;
+}
+
+
+.THIS .mainsection {
+    min-height: 500px;
+}
+
+.THIS ul.breadcrumb {
+    margin: 0;
+}
+
+.THIS .modal-content {
+    max-width: 60%;
+}
+
+.THIS .bodycontact {
+    padding: 7px 0 0 0;
+}
+
+.THIS .scrollarea {
+    overflow-y: scroll;
+    height: 400px;
+    width: 100%;
+}
+
+.THIS .bodycomapny {
+    padding: 7px 0 0 0;
+    color: #555 !important;
+}
+
+.THIS .addnew {
+    font-weight: bold;
+    color: #555 !important;
+}
+
+.THIS .marginleft {
+    margin-left: 8px;
+}
+
+.THIS .title {
+    color: #555;
+    margin-bottom: 6px;
+    font-weight: 700;
+}
+
+.THIS .WordCount {
+    color: #555;
+    margin-top: 20px;
+    text-align: right;
+    display: block;
+    font-weight: 700;
+}
+
+.THIS .btn-default {
+    float: right;
+    margin-top: 211px;
+}
+.THIS .disabled1{
+    color: rgb(84, 84, 84);
+}
+
+.THIS .Assign_close1 {
+    color: #000;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.THIS .form-group-label-1 {
+    padding: 15px 0 0 0 !important;
+    text-align: left;
+}
+
+.THIS .richTextDesc{
+    overflow: hidden;
+}
+
+.THIS .label-text-1 {
+    width: 100%;
+    padding: 4px 6px;
+}
+
+.THIS .label-text-com {
+    width: 90%;
+    float: left;
+    margin-top: 10px !important;
+    padding: 10px 5px 5px !important;
+    color: #666;
+}
+
+.THIS .form-group-label-2 {
+    padding: 15px 0 0 0 !important;
+    float: left;
+    color: #666 !important;
+    width: 23%;
+    text-align: left;
+}
+
+.THIS .label-text-2 {
+    width: 72%;
+    padding: 10px 5px 5px !important;
+    font-size: 13px;
+}
+
+.THIS .form-group-label-3 {
+    padding: 15px 0 0 10px !important;
+    float: left;
+    color: #666 !important;
+    width: 9%;
+    text-align: left;
+}
+
+.THIS .label-text-3 {
+    width: 100%;
+    color: #666;
+}
+
+.THIS .label-text-4 {
+    width: 86%;
+    float: left;
+    margin-left: -8.5% !important;
+    padding: 10px 5px 5px !important;
+}
+
+.THIS .label-text-5 {
+    width: 22.2%;
+    float: left;
+    margin-top: 10px !important;
+    padding: 10px 5px 5px !important;
+    font-size: 12px;
+    color: #666;
+}
+
+.THIS .label-text-6 {
+    width: 63.7%;
+    float: left;
+    margin-top: 10px !important;
+    padding: 10px 5px 5px !important;
+    font-size: 12px;
+    color: #666;
+}
+
+.THIS .label-text-7 {
+    width: 10%;
+    float: left;
+    margin-top: 10px !important;
+    padding: 10px 5px 5px !important;
+    font-size: 12px;
+    color: #666;
+}
+
+.THIS .col-sm-6 {
+    width: 100%;
+}
+
+.THIS .col-sm-7 {
+    width: 50%;
+}
+
+.THIS .height-30 {
+    height: 30px;
+}
+
+.THIS label:hover {
+    margin-top: 0;
+    margin-left: 0;
+}
+
+.THIS .slds-scope {
+    color: #555 !important;
+}
+
+.THIS .procatlabel {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.THIS .inline {
+    display: inline-block;
+    padding: 6px 2px;
+}
+
+.THIS .inline+.inline {
+    margin-left: 10px;
+}
+
+.THIS .radio {
+    position: relative;
+}
+
+.THIS .radio span {
+    position: relative;
+    padding-left: 20px;
+}
+
+.THIS .radio span:after {
+    content: '';
+    width: 15px;
+    height: 15px;
+    border: 1px solid;
+    position: absolute;
+    left: 0;
+    top: 1px;
+    border-radius: 100%;
+    -ms-border-radius: 100%;
+    -moz-border-radius: 100%;
+    -webkit-border-radius: 100%;
+    box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}
+
+.THIS .radio input[type="radio"] {
+    cursor: pointer;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    opacity: 0;
+    filter: alpha(opacity=0);
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)"
+}
+
+.THIS .radio input[type="radio"]:checked+span {
+    color: #555;
+}
+
+.THIS .radio input[type="radio"]:checked+span:before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    position: absolute;
+    background: #555;
+    left: 4px;
+    top: 5px;
+    border-radius: 100%;
+    -ms-border-radius: 100%;
+    -moz-border-radius: 100%;
+    -webkit-border-radius: 100%;
+}
+
+.THIS .srchResult {
+    width: 100%;
+    border: 1px solid #ccc;
+    padding: 5px;
+    margin-top: -16px;
+}
+
+.THIS .alreadyExists {
+    background: #f8f2a0;
+    padding: 10px;
+    margin: 10px 0px;
+}
+
+.THIS .alreadyExists i {
+    font-size: 24px;
+}
+
+.THIS .success {
+    color: #25af25;
+    font-size: 46px;
+    float: left;
+}
+
+.THIS .tooltiptext {
+    font-size: 12px;
+    visibility: hidden;
+    width: 156px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 150%;
+    left: 50%;
+    margin-left: -78px;
+}
+
+.THIS .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+}
+
+.THIS .innerTable tr td ts {
+    border-bottom: 0px solid #ddd;
+}
+
+.THIS .valigntop {
+    vertical-align: top;
+}
+
+.THIS .required-table tr td {
+    font-size: 13px;
+}
+
+.THIS .required-table tr th {
+    padding: 8px 4px;
+}
+
+.THIS .exhibitor {
+    text-decoration: none !important;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.THIS button[disabled] {
+    opacity: 0.5 !important;
+    filter: alpha(opacity=50) !important;
+}
+
+.THIS .slds-button+.slds-button {
+    margin-left: 0.1rem;
+}
+
+.THIS .center {
+    text-align: center
+}
+
+.THIS .slds-table:not(.slds-no-row-hover) tbody tr:hover>td {
+    background-color: transparent;
+}
+
+.THIS .slds-table td {
+    padding: 4px 0px;
+}
+
+.THIS textarea {
+    display: none;
+}
+
+.THIS .error {
+    color: red;
+    display: block;
+    padding-top: 6px;
+    padding-right: 10px;
+}
+.THIS .saveContact {
+    color: green;
+    display: block;
+    padding-top: 6px;
+    padding-right: 10px;
+}
+.THIS .nocontact{
+    color: red;
+}
+.THIS .cke_chrome {
+    float: none !important;
+    width: 100% !important;
+}
+.THIS .slds-rich-text-editor{
+    height : 250px;
+}*/

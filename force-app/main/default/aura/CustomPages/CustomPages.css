@@ -1,0 +1,42 @@
+.THIS p {
+	margin: 10px 0;
+}
+.THIS h2 strong {
+	font-size: 22px;
+}
+.THIS .bold-Heading {
+	font-size: 30px;
+	font-weight: normal;
+	color: #333333;
+}
+.THIS .panelfont
+{
+	font-size: 14px;
+	font-family: Open Sans;
+	color: #555;
+}
+
+.THIS ol{
+	list-style: Decimal;
+	margin-left: var(--lwc-spacingLarge,1.5rem);
+}
+.THIS ol ol{
+	list-style: lower-alpha;
+    margin-bottom: 0;
+}
+.THIS ol ol ol{
+	list-style: lower-alpha;
+    margin-bottom: 0;
+}
+.THIS ul{
+	list-style: disc;
+	margin-left: var(--lwc-spacingLarge,1.5rem);
+}
+.THIS ul ul {
+    list-style: circle;
+	margin-bottom: 0px;
+}
+.THIS ul ul ul{
+    list-style: circle;
+	margin-bottom: 0px;
+}

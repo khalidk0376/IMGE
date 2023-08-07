@@ -1,0 +1,67 @@
+<aura:component implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes" controller="HomeAccountSummeryCtrForOps" access="global">
+	<ltng:require styles="{!$Resource.CustomerCenter_Girikon+'/CustomerCenter_Girikon/css/inline.css'}" />
+
+	<aura:attribute name="accountId" type="String" default=""/>
+	<aura:attribute name="eventId" type="String" default=""/>
+	<aura:attribute name="eventCode" type="String" default=""/>
+
+	<aura:attribute name="oppList" type="List" default=""/>
+	<aura:attribute name="isSpinner" type="Boolean" default="false"/>	
+
+	<aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+
+	<aura:if isTrue="{!v.isSpinner}">
+		<lightning:spinner size="small" variant="brand"/>
+	</aura:if>
+
+	<aura:if isTrue="{!v.oppList.length!=0}">
+		<div class="summaryHeader" style="background-color: #ebebeb; padding-top: 15px; padding-left: 15px; padding-right: 15px;">{!$Label.c.Stand_Summary}</div>
+  		<div style="background-color: #ebebeb; padding-left: 15px; padding-right: 15px;max-height: 300px;overflow: auto;padding-bottom: 10px;">
+  		<br/>
+	  	<aura:iteration items="{!v.oppList}" var="item" >      
+      		<table class="summarytable">
+		        <tbody>
+		            <tr>
+		                <th width="40%" class="textBold">{!item.boothNameTitle!=''?item.boothNameTitle:'Booth Name'} # {!item.boothName}</th>
+		                 <th width="60%">
+		                    <aura:if isTrue="{!item.evnSetting}">
+		                        <a href="{!'https://www.expocad.com/host/fx/informa/'+v.eventCode+'/exfx.html?zoomto='+item.boothName}" target="_blank">{!$Label.c.Map_It}</a>
+		                    </aura:if> 
+		                </th>
+		            </tr>
+		            <tr>
+		               <td >{!item.exhibitingAsTitle!=''?item.exhibitingAsTitle:'Exhibiting As'}:</td>
+		               <td>{!item.exhibitingAs!=''?item.exhibitingAs:item.exhibitingAcc}</td> 
+		            </tr>
+		            <tr>
+		                <td >{!item.boothAreaTitle!=''?item.boothAreaTitle:'Booth Area'}:</td>
+		                <td>{!item.boothArea}</td>
+		            </tr>
+		            <tr>
+		                <td >{!item.boothTypeTitle!=''?item.boothTypeTitle:'Classification'}:</td>
+		                <td>{!item.boothType}</td>
+		            </tr>
+                    <tr>
+		                <td >Recent Opportunity:</td>
+                        <td>
+                            <a href="{!'/'+item.mapOpportunityId}" target="_blank">{!item.mapOpportunity}</a>
+		            	</td>
+                    </tr>
+                    <tr>
+		                <td >Agent Name:</td>
+		                <td>{!item.agentName}</td>
+		            </tr>
+                    <tr>
+                    	<th width="60%"></th>
+                    </tr>
+		            <!--<tr>
+		                <td>{!item.openSidesTitle?item.openSidesTitle:'Open Sides'}:</td>
+		                <td>{!item.openSides}</td>
+		            </tr>-->
+		        </tbody>
+	       </table> 
+	      <!-- End Booth table -->
+	    </aura:iteration> 
+  	</div>
+	</aura:if>
+</aura:component>

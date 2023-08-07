@@ -1,0 +1,4 @@
+<!-- Updating Api Version for ticket no: EMEA-200 -->
+<aura:event type="APPLICATION" description="Event template">
+    <!--validateLookupFieldEvt-->
+</aura:event>

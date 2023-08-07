@@ -1,0 +1,45 @@
+.THIS .title{color:#666}
+.THIS .tabHeader {color: #024886 !important;background-color: #f2f2f2!important;text-transform: uppercase;font-weight: bold !important;}
+.THIS .temp{color:#024886}
+.THIS .slds-table{color: #000000 !important;}
+.THIS .exists{color:#666;}
+.THIS .div-body{	margin:0px auto; background-color:#fff; padding:20px;}
+.THIS .div-body p{ font-size:14px; line-height:18px; color:#666;padding: 10px 0px;}
+.THIS .div-body-head{ border-bottom:3px solid #b7b7b7; font-size:16px; line-height:14px; color:#000; padding-bottom:10px;}
+.THIS .div-left{ float:left; width:35%;}
+.THIS .div-right{ float:left; width:65%;}
+.THIS .clear{ clear:both;}
+.THIS .text-align{ text-align:center;}
+.THIS .color{ color:#666;}
+.THIS .existingColor{ color:#bfbfbf;}
+.THIS .newColor{ color:#000;}
+.THIS .closebtn{float:right;color:black;font-weight:bold;cursor: pointer;}
+.THIS .alreadyExists{background: #f8f2a0;padding: 10px; margin: 10px 0px; }
+.THIS .alreadyExists i {font-size:24px;}
+.THIS .removemrgn{margin-top:-23px;}
+.THIS p {font-size: inherit;}
+.THIS .body{ margin-top:2%;}
+.THIS .main{width: 80%}
+.THIS .slds-table thead th{padding-right: 20px;}
+.THIS th.asc{background-image: url(/projRes/ui-force-components/img/arrowup_0070D2.svg);
+    opacity: 1;position: relative;background-repeat: no-repeat;background-position: right;
+    background-size: 12px;
+}
+.THIS th.desc{background-image: url(/projRes/ui-force-components/img/arrowdown_0070D2.svg);
+    opacity: 1;position: relative;background-repeat: no-repeat;background-position: right;
+    background-size: 12px;
+}
+.THIS th.both{cursor:pointer;background-color:#f9f9f9;background-image: url(/projRes/ui-force-components/img/arrowup_0070D2.svg);
+    position: relative;background-repeat: no-repeat;background-position: right;
+    background-size: 12px;
+}
+.THIS .sticky {
+    position: fixed;
+    top: 0px;
+    width:inherit;
+    z-index: 99;
+}
+.THIS .notelabel{
+    max-width: 40% !important;    
+    padding-top: 5%;
+}

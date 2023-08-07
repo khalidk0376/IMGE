@@ -1,0 +1,90 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId" access="global"  controller="OppActionButtonController">
+	<ltng:require scripts="{!$Resource.LtngUtility}"/>
+	<aura:attribute name="profile" type="String" default=""/>
+	<aura:attribute name="spinner" type="Boolean" access="private"/>
+	<aura:attribute name="isOpenRelationModal" type="Boolean" access="private"/>
+	<aura:attribute name="isOpenNewContactModal" type="Boolean" access="private"/>
+	<aura:attribute name="parentId" type="String" access="private"/>
+	<aura:attribute name="accObj" type="Object" access="public"/>
+	<aura:attribute name="relatedObj" type="Object" access="private"/>
+	<aura:attribute name="contactObj" type="Object" access="private"/>
+	<aura:attribute name="meta" type="Object" access="private"/>
+	<aura:attribute name="activeSections" type="List" default="['A','C']" />
+	<aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+	<aura:handler event="c:refreshUpload" action="{!c.doInit}"/>
+	
+    <lightning:accordion allowMultipleSectionsOpen="true" activeSectionName="{!v.activeSections}">
+        <lightning:accordionSection name="A" label="Contact">
+            <lightning:button onclick="{!c.openNewContactModal}" variant="brand" label="New Contact" iconName="utility:adduser" iconPosition="left" disabled="{!v.accObj.Inactive__c}"/>
+            <aura:if isTrue="{!v.profile!=''}">
+            	<c:LightningDataTable object="contact" fields="FirstName,LastName,Title,Contact_Type__c,Email,Address_Verified__c" whereField="AccountId" whereValue="{!v.recordId}" inlineEditable="false" isEnableEditAction="true" profile="{!v.profile}"/>
+        	</aura:if>
+        </lightning:accordionSection>
+        
+        <lightning:accordionSection name="B" label="Related Contact">        
+            <aura:if isTrue="{!v.accObj.Inactive__c==false}">
+                <lightning:button onclick="{!c.openRelationModal}" variant="brand" label="Add Relationship" iconName="utility:groups" iconPosition="left"/>
+            </aura:if>            
+            <c:LightningDataTable object="AccountContactRelation" fields="Contact.Name,Roles,Contact.Account.Name" whereField="AccountId,IsDirect" whereValue="{!v.recordId+',false'}" inlineEditable="false"/>
+        </lightning:accordionSection>
+    </lightning:accordion>
+	
+    
+    <aura:if isTrue="{!v.isOpenNewContactModal}">
+        <c:NewContactModal contactObj="{!v.contactObj}" isOpenModal="{!v.isOpenNewContactModal}" accountId="{!v.recordId}" isRedirect="false"/>
+    </aura:if>
+	<aura:if isTrue="{!v.isOpenRelationModal}">
+		<section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_medium">
+	    	<aura:if isTrue="{!v.spinner}">
+				<lightning:spinner size="small" variant="brand"/>
+			</aura:if>
+	    	<div class="slds-modal__container">
+		      	<header class="slds-modal__header">
+			        <button onclick="{!c.closeModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+			          	<lightning:icon iconName="utility:close" size="small" variant="bare"/>
+			          	<span class="slds-assistive-text">Close</span>
+			        </button>
+		        	<h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Account: {!v.accObj.Name}</h2>
+		      	</header>
+		      	<div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+		        	<div class="slds-section slds-is-open">
+					  	<h3 class="slds-section__title">
+					    	<button type="button" aria-controls="expando-unique-id" aria-expanded="true" class="slds-button slds-section__title-action">      
+					      		<span class="slds-truncate" title="Additional Information">Account Contact Relationship Information</span>
+					    	</button>
+					  	</h3>
+					  	<div aria-hidden="false" class="slds-section__content" id="expando-unique-id">
+					  		<lightning:layout multipleRows="true">	        		
+		        				<lightning:layoutItem size="6" class="slds-p-around_small">
+									<c:Lookup helpText="" objectLabel="Account" objectName="account" label="Account" nameFieldApi="Name" selectedItemId="{!v.parentId}" isRequired="true" queryFields="" queryFieldValues=""/>
+									
+									<aura:if isTrue="{!empty(v.parentId)}">
+										<c:Lookup helpText="" objectLabel="Contact" objectName="contact" label="Contact" nameFieldApi="Name" selectedItemId="{!v.relatedObj.ContactId}" queryFields="AccountId" queryFieldValues="{!v.parentId}" isRequired="true"/>
+										<aura:set attribute="else">
+											<c:Lookup helpText="" objectLabel="Contact" objectName="contact" label="Contact" nameFieldApi="Name" selectedItemId="{!v.relatedObj.ContactId}" queryFields="AccountId" queryFieldValues="{!v.parentId}" isRequired="true"/>
+										</aura:set>
+									</aura:if>
+
+		        				</lightning:layoutItem>
+		        				<lightning:layoutItem size="6" class="slds-p-around_small">
+		        					<lightning:dualListbox name="languages"  
+			                           label= "Select Roles" 
+			                           sourceLabel="Available" 
+			                           selectedLabel="Selected" 			                           
+			                           value="{!v.relatedObj.Roles}"
+			                           options="{!v.meta.Roles.FieldPicklist}"/>
+		        				</lightning:layoutItem>
+		        			</lightning:layout>
+				  		</div>
+				  	</div>
+		      	</div>
+		      	<footer class="slds-modal__footer">
+			        <lightning:button label="Cancel" onclick="{!c.closeModal}" iconName="utility:close" iconPosition="left" variant="destructive"/>		        
+			        <lightning:button label="Save" type="submit" onclick="{!c.submitForm}" iconName="utility:check" iconPosition="left" variant="brand"/>			    
+		      	</footer>
+	    	</div>
+	  	</section>
+	  	<div class="slds-backdrop slds-backdrop_open"></div>
+  	</aura:if>
+</aura:component>

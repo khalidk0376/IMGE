@@ -1,0 +1,30 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId" controller="ContactDetailsCtrl">
+    <!-- attributes -->
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="data" type="Object"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="PageNumber" type="integer" default="1"/>
+    <aura:attribute name="TotalPages" type="integer" default="0"/>
+    <aura:attribute name="TotalRecords" type="integer" default="0"/>
+    <aura:attribute name="RecordStart" type="integer" default="0"/>
+    <aura:attribute name="RecordEnd" type="integer" default="0"/>
+    <aura:handler name="init" value="{!this}" action="{!c.loadData}" />
+    <aura:attribute name="showSpinner" type="Boolean" default="false" />
+    
+    <aura:if isTrue="{!v.showSpinner}">
+        <lightning:spinner size="small" variant="brand" title="Loading..."/>
+    </aura:if>
+    
+    <!-- the container element determine the height of the datatable -->
+    <div class="slds-box">
+        <lightning:datatable keyField="id" data="{!v.data}" columns="{!v.columns}" hideCheckboxColumn="true"/>
+            <aura:if isTrue="{!v.TotalRecords > 5}">
+              <footer class="slds-card__footer">    
+                Showing {!v.RecordStart}-{!v.RecordEnd} of {!v.TotalRecords}  &nbsp;             
+                <lightning:button variant="brand" iconPosition="left" iconName="utility:chevronleft" onclick="{!c.handlePrev}" label="Previous" disabled="{!v.PageNumber == 1}" />
+                <lightning:button variant="brand" iconPosition="right" iconName="utility:chevronright" onclick="{!c.handleNext}" label="Next" disabled="{!v.PageNumber == v.TotalPages}"/>
+            </footer>
+        </aura:if>
+    </div>
+</aura:component>

@@ -1,0 +1,36 @@
+.THIS {
+}
+.THIS .slds-button_brand .slds-button--brand {
+     padding-left: 0rem; 
+     padding-right: 0rem; 
+     text-align: center; 
+     vertical-align: middle; 
+     border: 0px solid rgb(221, 219, 218);
+    
+     background-color: White;
+     border-color: White; 
+     color: rgb(255, 255, 255); 
+}
+
+.THIS .qa-allow-box {
+    clear: both;
+}
+
+.THIS .qf-weight .slds-form-element__control,
+.THIS .qf-weight .slds-form-element {
+
+    float: left;
+}
+
+.THIS .qf-weight .slds-input {
+
+    margin-top: -6px;
+}
+
+.THIS .qf-weight {
+    padding-bottom: 26px;
+}
+
+.THIS .qf-remove-label label {
+    display: none;
+}

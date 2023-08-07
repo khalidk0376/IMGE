@@ -1,0 +1,71 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId" access="global" >
+    <aura:handler name="init" value="{!this}" action="{!c.loadData}" />
+	<aura:attribute name="isEditForm" type="boolean"/>
+    <aura:attribute name="showSpinner" type="Boolean" default="false" />
+   <aura:if isTrue="{!v.showSpinner}">
+       <lightning:spinner size="small" variant="brand"/>
+    </aura:if>
+    <aura:if isTrue="{!v.isEditForm}">
+          <lightning:recordEditForm  aura:id="editForm" recordId="{!v.recordId}" objectApiName="Contact" onload="{!c.handleLoad}" onsubmit="{!c.handleSubmit}" onsuccess="{!c.handleSuccess}"  onerror="{!c.handleError}">
+                <lightning:layout multipleRows="true">
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                        <lightning:inputField fieldName="ContactLinkedIn__c" />
+                        <lightning:inputField fieldName="Twitter__c" />
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                        <lightning:inputField fieldName="Skype__c" />
+                        <lightning:inputField fieldName="Watsap_Number__c" />
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                        <lightning:inputField fieldName="Facebook__c" />
+                        <lightning:inputField fieldName="Instagram__c" />
+                    </lightning:layoutItem>
+                    </lightning:layout> 
+                      <div class="slds-m-top_medium slds-align_absolute-center sticky " >
+                        <lightning:button variant="neutral" label="Cancel" title="Cancel" type="text" onclick="{!c.handleCancel}"/>
+                        <lightning:button variant="brand" label="Save" title="Submit" type="submit"/>
+                    </div>
+                </lightning:recordEditForm>
+            <aura:set attribute="else">
+           <lightning:recordViewForm aura:id="viewForm" recordId="{!v.recordId}" objectApiName="Contact" >
+            <lightning:layout multipleRows="true">
+                <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                    <lightning:layoutItem class="form-element">
+                        <lightning:outputField ondblclick="{!c.editRecord}"  fieldName="ContactLinkedIn__c" class="slds-m-top_small" />
+                         <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="form-element">
+                        <lightning:outputField ondblclick="{!c.editRecord}"  fieldName="Twitter__c" class="slds-m-top_small" />
+                         <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                    </lightning:layoutItem>
+                </lightning:layoutItem>
+                <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                    <lightning:layoutItem class="form-element">
+                        <lightning:outputField ondblclick="{!c.editRecord}"  fieldName="Skype__c" class="slds-m-top_small" />
+                         <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="form-element">
+                        <lightning:outputField ondblclick="{!c.editRecord}"  fieldName="Watsap_Number__c" class="slds-m-top_small" />
+                         <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                    </lightning:layoutItem>
+                </lightning:layoutItem>
+                 <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                    <lightning:layoutItem class="form-element">
+                        <lightning:outputField ondblclick="{!c.editRecord}"  fieldName="Facebook__c" class="slds-m-top_small" />
+                         <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="form-element">
+                        <lightning:outputField ondblclick="{!c.editRecord}"  fieldName="Instagram__c" class="slds-m-top_small" />
+                         <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                    </lightning:layoutItem>
+                </lightning:layoutItem>
+                <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                    <lightning:inputField fieldName="Facebook__c" />
+                    <lightning:inputField fieldName="Instagram__c" />
+                </lightning:layoutItem>
+            </lightning:layout> 
+    		</lightning:recordViewForm> 
+        </aura:set>
+    </aura:if> 
+</aura:component>

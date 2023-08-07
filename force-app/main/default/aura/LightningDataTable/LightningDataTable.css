@@ -1,0 +1,16 @@
+.THIS .slds-hide{
+    display:none;
+}
+.THIS .slds-card__body{
+    border-top: 1px solid #e1e1e1;
+}
+
+.THIS .pagesize-btn-container{
+    width: 100px;
+    display: inline-block;
+    margin: 0px 10px;
+}
+.THIS .slds-modal:focus {
+    border: 0px !important;
+    outline: 0px !important;
+}

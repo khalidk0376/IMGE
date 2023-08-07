@@ -1,0 +1,21 @@
+<!--
+    ************ Modification Log  ************
+    * Modified by :[Aishwarya BK-14391 10 March 2021]
+-->
+<aura:component implements="forceCommunity:availableForAllPageTypes" access="global" controller="LtngUtilityCtrl">
+    
+    <ltng:require scripts="{!$Resource.LiveAgentExternalContent + '/Liveagent_Content/Liveagent_Content.js'}" afterScriptsLoaded="{!c.scriptsLoaded}" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <!--<aura:attribute name="chatButtonId" type="String" default=""/>
+    <aura:attribute name="deplymntId" type="String" default=""/>
+    <aura:attribute name="deploymentURL1" type="String" default=""/>
+    <aura:attribute name="OrgId" type="String" default=""/>-->
+    <aura:attribute name="liveAgentBooleanVal" type="boolean" default="false"/> 
+    
+  <aura:if isTrue="{!v.liveAgentBooleanVal}">
+    <iframe src="{!'/CustomerCenter/apex/ccLiveChat'}" width="100%" class="maxHeight" frameBorder="0"/> 
+   <!--<img id="liveagent_button_online_5732J000000L3nq" onclick="{!c.handleLiveAgentButtonClick}" style="display:none;" src="{!$Resource.LiveAgentOnline}"/> -->
+ 	 <!--<div id="liveagent_button_offline_5732J000000L3nq" style="display: none;">agent Is offline </div>  --> 
+   <!-- </aura:if> -->
+  </aura:if> 
+</aura:component>

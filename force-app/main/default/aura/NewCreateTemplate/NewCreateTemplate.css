@@ -1,0 +1,221 @@
+.THIS {
+}
+.THIS .ease { transition: width 1s ease; }
+.THIS .linear { transition: width 1s linear; }
+.THIS .ease-in { transition: width 1s ease-in; }
+.THIS .ease-out { transition: width 1s ease-out; }
+.THIS .ease-in-out{ transition: width 1s ease-in-out; }
+.THIS .questionBuilder label{display: none;}
+.THIS .leftbox-width{
+    width:62px;
+}
+.cNewCreateTemplate .inner-questions{
+    margin-left:3%;
+    margin-right: 3%;
+}
+.cNewCreateTemplate .inner-questions:last-child{
+    margin-bottom:3%;
+}
+
+.cNewCreateTemplate .slds-card:first-child {
+    background: rgb(243, 242, 242);
+    box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.1);
+}
+.THIS .margin-top{margin-top:15px;}
+.THIS .sortableArea{min-height: 510px;}
+.THIS .ql-editor p{color:#333;}
+.THIS .dropSection{
+    /*border:1px solid #e1e1e1;*/
+}
+.THIS .widthDiv{
+    position: relative;
+    float: left;
+}
+.THIS .widthDiv90{
+    width: 85%;
+    position: relative;
+    float: left;
+    margin-bottom: 2px;
+    margin-top: -20px;
+}
+.THIS .slds-slider-label__range{
+    display:none;
+}
+.THIS  .slds-slider__value{
+    display:none;
+}
+.THIS .sortableArea{
+    overflow: visible;
+}
+.THIS .dropSectionHighlight{
+    border:1px solid rgb(0, 161, 223);
+    border-style: dashed;
+    box-shadow: 0px 0px 8px rgb(0, 161, 223);
+
+}
+.THIS .ui-state-highlight{
+    border:1px solid rgb(0, 161, 223);
+    border-style: dashed;
+    height:75px;
+   box-shadow: inset 0 0 8px rgb(0, 161, 223);
+}
+.THIS .selecttableField{
+    z-index:99999999;
+    display: block;
+}
+.THIS .hideModalCSS{
+    display: none !important;
+}
+.THIS .showModal{
+    display:block;
+}
+
+.THIS .icn .slds-icon-text-default {
+    fill: rgb(255, 255, 255);
+}
+.THIS .toggle {
+   display: none;
+ }
+.THIS .slds-modal{
+    top:68px;
+}
+.THIS .slds-text-heading_small{
+    font-size: 13px;
+}
+.THIS .qstnBuilderContent 
+{
+    padding:3px !important;
+}
+.THIS #asteric
+{
+    color: red;
+    font-size: 15px;
+    padding-right: 3px;
+}
+.THIS .dropSection{
+    min-height: 510px;
+}
+.THIS .ui-draggable-helper {
+
+}
+.THIS .border0{
+    border:0;
+}
+.THIS .selecttableField .slds-box{
+    padding:0;
+}
+.THIS .marginT5 {
+    margin-top:5px;
+}
+.THIS .dragable-box .slds-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+.THIS .dragable-box .slds-media__figure{
+        margin-right: 0.25rem;
+        min-width: 2rem;
+        fill: rgb(0, 112, 210);
+}
+
+.THIS .paddingR0{
+        padding-right:0;
+}
+.THIS .paddingL0{
+        padding-left:0;
+}
+.THIS .marginB12 .slds-button__icon{
+    margin-bottom: 12px
+} 
+.THIS .slds-card:first-child {
+    background: #f3f2f2;
+    box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.1);
+}
+.THIS .align-self{align-self:auto;}
+.THIS .qf-text-justify p{text-align: justify;}
+.THIS .qf-text h1, .THIS .qf-text h2, .THIS .qf-text h3, .THIS .qf-text h4{float: left !important;} 
+.THIS .qf-box{     white-space: pre-wrap;
+    word-wrap: break-word;}
+.THIS .qf-box{border:1px solid rgb(221, 219, 218);
+    /*-moz-box-shadow:    inset 0 0 5px #ccc;
+   -webkit-box-shadow: inset 0 0 5px #ccc;
+   box-shadow:         inset 0 0 5px #ccc;*/
+}
+.THIS .qf-box:hover{border:1px solid rgb(0, 161, 223);}
+.THIS .qf-edit-delete{visibility: hidden;}
+.THIS .qf-box:hover .qf-edit-delete{visibility: visible;}
+.THIS .qf-button-box{
+        background-color: #727272;
+    color: #fff;
+    z-index:10000;
+}
+.THIS .qf-cursor{cursor: move;}
+.THIS .qf-button-box .slds-icon-text-default{
+
+    fill: rgb(255, 255, 255);
+}
+.THIS #question-builder-panel{ 
+    z-index:100;
+    margin-top: 48px;}
+.THIS .qf-left-panel{z-index:100;}
+.THIS .qf-hide-label .slds-form-element__label{display:none;}
+.THIS .marginB5{margin-bottom: .5rem;}
+.THIS .qf-information-section{/*background: #f1f1f1; border-radius: 5xp;*/}
+.THIS .slds-file-selector__dropzone{padding:0;}
+.THIS .slds-form--inline .slds-form-element__control{display:block;}
+.THIS .slds-form--inline label{display:none;}
+.THIS .marginT5{margin-top:5px;}
+.THIS .slds-file-selector__dropzone {
+    /*padding: .125rem;*/
+    border: 0px dashed rgb(221, 219, 218); 
+    border-radius: .25rem;
+}
+.THIS .slds-medium-show {
+    display: none;
+}
+.THIS .hideHelpIcon{
+    display:none;
+}
+.THIS .qf-section-name .slds-text-heading_small{
+    font-size: 1.3em;
+}
+.THIS .helptextIcon{display: inline-grid; margin-left:5px;margin-top: -2px;}
+.THIS .hidehelptextIcon{display: none;}
+.THIS .score{text-align:center;}
+.THIS .checkbx{display: inline-grid;padding-left: 30px;}
+.THIS .slider-output-value{
+    clear: both;
+    margin-top: 1%;
+    float: left;
+    border: 1px #ccc solid;
+    border-radius: 15px;
+    padding: 5px 15px;
+}
+.THIS .publishCntn{
+    font-size: 15px;
+    font-weight: 700;
+    color: black;
+}
+.THIS .qf-Question-col{
+    max-width: 95%;
+   padding-bottom: 15px;
+}
+.THIS .qf-QuestionBuilder-cursor{
+        cursor: move;
+}
+.THIS .slds-spinner_container
+{
+    right:0;
+    bottom:0;
+    height:5000px!important;
+}
+.THIS .slds-spinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+}
+.THIS .slds-p-bottom_none {
+    /*margin-bottom: 17px;*/
+}
+.THIS .sortableArea {
+    cursor: move;
+}

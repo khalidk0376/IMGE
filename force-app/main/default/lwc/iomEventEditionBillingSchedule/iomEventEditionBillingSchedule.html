@@ -1,0 +1,39 @@
+<template>
+    <lightning-layout>
+        <lightning-layout-item size="6">
+            <div class="slds-m-around_medium">
+                <lightning-input type="Checkbox" checked={customPayment} label="Custom Billing Schedule" disabled></lightning-input>
+            </div>
+        </lightning-layout-item>
+        <lightning-layout-item size="6">
+            <div class="slds-m-around_medium">
+                <lightning-input type="text" value={defaultBilling} label="Default Billing Schedule" disabled></lightning-input>
+            </div>
+            <template if:false={cutoffDate1}>
+                <div class="slds-m-around_medium">
+                    <lightning-input type="text" value="Immediate Payment" label="Event Cutoff Date 1" disabled></lightning-input>
+                </div>
+            </template>
+            <template if:true={cutoffDate1}>
+            <div class="slds-m-around_medium">
+                <lightning-input type="date" value={cutoffDate1} label="Event Cutoff Date 1" disabled></lightning-input>
+            </div>
+        </template>
+            <template if:true={cutoffDate2}>
+            <div class="slds-m-around_medium">
+                <lightning-input type="date" value={cutoffDate2} label="Event Cutoff Date 2" disabled></lightning-input>
+            </div>
+        </template>
+            <template if:true={cutoffDate3}>
+            <div class="slds-m-around_medium">
+                <lightning-input type="date" value={cutoffDate3} label="Event Cutoff Date 3" disabled></lightning-input>
+            </div>
+        </template>
+            <template if:true={cutoffDate4}>
+            <div class="slds-m-around_medium">
+                <lightning-input type="date" value={cutoffDate4} label="Event Cutoff Date 4" disabled></lightning-input>
+            </div>
+        </template>
+        </lightning-layout-item>
+    </lightning-layout>
+</template>

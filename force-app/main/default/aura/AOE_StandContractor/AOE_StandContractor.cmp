@@ -1,0 +1,826 @@
+<!--
+	Created By    :  Girikon(Ashish) [C2E-17]
+    ************ Modification Log  ************
+    Girikon(Ashish)[C2E-106]
+-->
+<aura:component implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes" access="global"
+ controller="AOE_StandContractorCtrl">
+ <ltng:require scripts="{!$Resource.CustomerCenterWS11 +'/CustomerCenterWS11/js/jquery-1.7.1.min.js?v=149'}" afterScriptsLoaded="{!c.scriptsLoaded}" />	
+
+ 	<!--input Parameters -->
+	 <aura:attribute name="eventcode" type="String" default=""/>
+	 <aura:attribute name="AOEAccountID" type="String" default=""/>
+	 <aura:attribute name="Event_Setting" type="Event_Settings__c"/>
+	 <aura:attribute name="isReadOnly" type="Boolean" default="true"/>
+
+	<!--Ui Attributes -->		
+	<aura:attribute name="accs" type="account[]" />
+	<aura:attribute name="srchAcc" type="account" />
+	<aura:attribute name="isAgentOwnExhibitor" type="boolean" default="false" />
+	<aura:attribute name="MobilePhone" type="boolean" default="false" />
+	<aura:attribute name="Phone" type="boolean" default="false" />
+	<aura:attribute name="Email" type="boolean" default="false" />
+	<aura:attribute name="FirstName" type="boolean" default="false" />
+	<aura:attribute name="LastName" type="boolean" default="false" />
+	<aura:attribute name="currentUser" type="object" />
+	<aura:attribute name="modificationDetails" type="object" />
+	<aura:attribute name="existingAcc" type="account" />
+	<aura:attribute name="existingCons" type="contact[]" />
+	<aura:attribute name="removeCon" type="string" />
+	<aura:attribute name="newAccount" type="account" default="{'Name':'','BillingStreet':'','BillingCity':'','BillingCountry':'','BillingState':'','BillingPostalCode':''}" />
+	<aura:attribute name="newContact" type="contact" default="{'FirstName':'','LastName':'','Phone':'','PhoneCountryCode':'','PhoneStateCode':'','Ext':'','AccountName':'','MobilePhone':'','MobilePhoneCountryCode':'','MobilePhoneStateCode':'','Ext':'','Email':'','AccountId':'','TempAccountId':''}" />
+	<aura:attribute name="services" type="ContractorService__c[]" />
+	<aura:attribute name="depnedentFieldMap" type="map" description="map to store dependent values with controlling value" />
+	<aura:attribute name="hasNoState" type="boolean" default="true" />
+	<aura:attribute name="lstbooths" type="List" />	
+	<aura:attribute name="selectedBooth" type="ExpocadBooth__c" default="{'Id':'','Booth_Number__c':''}" />
+	<aura:attribute name="isForAllBooth" type="string" default="No" />
+	<aura:attribute name="message" type="string" />		
+	<aura:attribute name="istrue" type="Boolean" default="true" />
+	<aura:attribute name="searchTearm" type="String" default="" />
+	<aura:handler name="init" value="{!this}" action="{!c.cartOnloadData}" />
+
+
+	<!--<aura:handler event="aura:waiting" action="{!c.showSpinner}"/>
+<aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}"/>-->
+	<aura:attribute name="Spinner" type="boolean" default="false" />
+	<section>
+		<div class="container">
+			<div>
+				<br/>
+				<p>Use the following section to manage the Stand Contractor for this exhibitor Space only stands. To manage the stand contractor for your Pavilion Space exhibitors <span onclick="{!c.showPavillionSpaceHelp}" ><i
+					class="fa fa-question-circle" style="display: contents;"></i></span>&nbsp;, please navigate to the <a href="{!'standcontractors?eventcode='+v.eventcode}" target="_parent">{!$Label.c.Stand_Contractor}</a> page.
+				</p>
+			</div>
+		</div>
+		<div class="clearfix"></div>
+		<div class="container mainsection">
+			<div class="row">
+				<div class="col-sm-12" style="margin-bottom:20px "><br/>
+					<div class="clearfix"></div>
+					<!-- <p class="review-heading">{!$Label.c.Your}&nbsp; -->
+						<!-- <ui:outputDate class="review-heading" format="YYYY" value="{!v.Event_Setting.Event_Edition__r.Start_Date__c}" />&nbsp;{!$Label.c.Contractor}</p> -->
+						<div align="right" style="color:gray;">
+								<aura:if isTrue="{!v.modificationDetails.isactive}">
+										<i>Last updated by {!v.modificationDetails.UpdateName} (<lightning:formattedDateTime value="{!v.modificationDetails.UpdateDate}" year="2-digit" month="2-digit" day="2-digit"/>)</i>
+								</aura:if>							
+						</div>
+					<table class="required-table" cellspacing="0">
+						<thead>
+							<tr>
+								<th style="width:5%"></th>
+								<th style="width:5%">{!$Label.c.Booth}</th>
+								<th>
+									<div class="pull-left">{!$Label.c.Company}</div>
+									<div class="pull-right">
+										<lightning:buttonIcon aura:id="downIconName" iconName="utility:up" variant="bare" alternativeText="Asc"
+										 iconClass="dark" class="slds-button" />
+										<lightning:buttonIcon aura:id="upIconName" iconName="utility:down" variant="bare" alternativeText="Desc"
+										 iconClass="dark" class="slds-button fa-down-position-2" />
+									</div>
+								</th>
+								<th>
+								</th>
+								<th style="width:12%">
+									<div class="pull-left">{!$Label.c.Contact}</div>
+									<div class="pull-right">
+										<lightning:buttonIcon aura:id="downIconName" iconName="utility:up" variant="bare" alternativeText="Asc"
+										 iconClass="dark" class="slds-button" />
+										<lightning:buttonIcon aura:id="upIconName" iconName="utility:down" variant="bare" alternativeText="Desc"
+										 iconClass="dark" class="slds-button fa-down-position-2" />
+									</div>
+								</th>
+								<aura:if isTrue="{!v.Event_Setting.Disable_this_information__c!=true}">
+									<th>
+										<div class="pull-left">{!$Label.c.Services}</div>
+										<div class="pull-right">
+											<lightning:buttonIcon aura:id="downIconName" iconName="utility:up" variant="bare" alternativeText="Asc"
+											 iconClass="dark" class="slds-button" />
+											<lightning:buttonIcon aura:id="upIconName" iconName="utility:down" variant="bare" alternativeText="Desc"
+											 iconClass="dark" class="slds-button fa-down-position-2" />
+										</div>
+									</th>
+								</aura:if>
+								<aura:if isTrue="{!v.Event_Setting.Is_Stand_Detail_Visible__c==true}">
+									<th style="width:14%">
+										<div class="pull-left">{!$Label.c.Stand_Details}</div>
+										<div class="pull-right">
+											<lightning:buttonIcon aura:id="downIconName" iconName="utility:up" variant="bare" alternativeText="Asc"
+											 iconClass="dark" class="slds-button" />
+											<lightning:buttonIcon aura:id="upIconName" iconName="utility:down" variant="bare" alternativeText="Desc"
+											 iconClass="dark" class="slds-button fa-down-position-2" />
+										</div>
+									</th>
+								</aura:if>
+								<aura:if isTrue="{!v.Event_Setting.Is_Stand_Design_Visible__c==true}">
+									<th style="width:14%">
+										<div class="pull-left">{!$Label.c.Stand_Designs}</div>
+										<div class="pull-right">
+											<lightning:buttonIcon aura:id="downIconName" iconName="utility:up" variant="bare" alternativeText="Asc"
+											 iconClass="dark" class="slds-button" />
+											<lightning:buttonIcon aura:id="upIconName" iconName="utility:down" variant="bare" alternativeText="Desc"
+											 iconClass="dark" class="slds-button fa-down-position-2" />
+										</div>
+									</th>
+								</aura:if>
+								<th style="width:10%">
+									<div class="pull-left">{!$Label.c.Status}</div>
+									<div class="pull-right">
+										<lightning:buttonIcon aura:id="downIconName" iconName="utility:up" variant="bare" alternativeText="Asc"
+										 iconClass="dark" class="slds-button" />
+										<lightning:buttonIcon aura:id="upIconName" iconName="utility:down" variant="bare" alternativeText="Desc"
+										 iconClass="dark" class="slds-button fa-down-position-2" />
+									</div>
+								</th>
+								<th style="width:75px">
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							<aura:iteration items="{!v.lstbooths}" var="bth">
+								<aura:if isTrue="{!bth.value.length}">
+									<aura:iteration items="{!bth.value}" var="bthMaps">
+										<tr>
+											<aura:if isTrue="{!bthMaps.tot}">
+												<!-- <td rowspan="{!bthMaps.tot}" class="black-bold valigntop"> -->
+														<td rowspan="{!bthMaps.tot}" class="black-bold">
+													<aura:if isTrue="{!!bthMaps.Is_Self_Managed__c}">
+														<aura:if isTrue="{!bth.boothType=='Pavilion Space'}">
+															<aura:if isTrue="{!v.isReadOnly}">
+																<!-- <aura:if isTrue="{!bth.boothType=='Pavilion Space'}"> -->
+																<button type="button" data-id="{!'A__'+bth.boothId}" value="{!bth.boothId}" name="{!bth.booth}" class="primary-btn tooltip"
+																	disabled="true"  style="{!'margin-right:6px;padding:5px;background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+																		class="fa fa-user-plus"></i>
+																</button>
+																<aura:set attribute="else">
+																	<button disabled="true" type="button" value="{!bth.boothId}" name="{!bth.booth}" class="primary-btn tooltip" style="{!'margin-right:6px;padding:5px;background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+																		class="fa fa-user-plus"></i>
+																		<span class="tooltiptext" id="{!'A__'+bth.boothId}">{!$Label.c.Can_t_Add_contractor_for_Pavilion_Space_booth}</span>
+																	</button>
+																</aura:set>
+															</aura:if>	
+															<aura:set attribute="else">
+																<aura:if isTrue="{!v.isReadOnly}">
+																	<button type="button" data-id="{!'A__'+bth.boothId}" value="{!bth.boothId}" name="{!bth.booth}" class="primary-btn tooltip"
+																		disabled="true"  style="{!'margin-right:6px;padding:5px;background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+																			class="fa fa-user-plus"></i>
+																	</button>
+																	<aura:set attribute="else">
+																			<aura:if isTrue="{!bth.boothType=='Shell Scheme'}">  <!-- Shell Scheme  Filter  [C2E - 106]-->
+																					<button disabled="true" type="button" value="{!bth.boothId}" name="{!bth.booth}" class="primary-btn tooltip" style="{!'margin-right:6px;padding:5px;background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+																						class="fa fa-user-plus"></i>
+																						<span class="tooltiptext" id="{!'A__'+bth.boothId}">{!$Label.c.Can_t_Add_contractor_for_Shell_Scheme_booth}</span>
+																					</button>
+																			
+																					<!-- Shell Scheme  Filter  End -->
+																				<aura:set attribute="else">
+																				<!-- Normal Condition -->
+																						<button type="button" data-id="{!'A__'+bth.boothId}" value="{!bth.boothId}" name="{!bth.booth}" class="primary-btn tooltip"
+																						onclick="{!c.showAddContractor}" style="{!'margin-right:6px;padding:5px;background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+																							class="fa fa-user-plus"></i>
+																						<span class="tooltiptext" id="{!'A__'+bth.boothId}">{!$Label.c.Add_another_contractor_for_this_booth}</span>
+																					</button>
+																				</aura:set>
+																			</aura:if>																		
+																	</aura:set>
+																</aura:if>
+															</aura:set>
+														</aura:if>
+													</aura:if>
+												</td>
+												<!-- <td class="black-bold valigntop" style="line-height: 2.2;" rowspan="{!bthMaps.tot}"> {!bth.booth}</td> -->
+												<td class="black-bold" style="line-height: 2.2;" rowspan="{!bthMaps.tot}"> {!bth.booth}</td>
+											</aura:if>
+											<td class="black-bold">
+												<aura:if isTrue="{!bthMaps.Contact__c}">
+													<aura:if isTrue="{!and(bthMaps.Is_Self_Managed__c,!v.isReadOnly)}">
+														<a href="{!'myexhibitorsboothdetails?eventcode='+v.eventcode+'&amp;mapid='+bthMaps.Id}" class="exhibitor">{!bthMaps.Contact__r.Account.Name}</a>
+														<aura:set attribute="else">
+															{!bthMaps.Contact__r.Account.Name}
+														</aura:set>
+													</aura:if>
+													
+													<aura:set attribute="else">
+														<aura:if isTrue="{!bthMaps.TempContact__r.Account__c}">
+															{!bthMaps.TempContact__r.Account__r.Name}
+															<aura:set attribute="else">
+																{!bthMaps.TempContact__r.TempAccount__r.Name}
+															</aura:set>
+														</aura:if>
+													</aura:set>
+												</aura:if>
+											</td>
+											<td>
+												<aura:if isTrue="{!and(bthMaps.Is_Self_Managed__c,!v.isReadOnly)}">
+													<a href="{!'myexhibitorsboothdetails?eventcode='+v.eventcode+'&amp;mapid='+bthMaps.Id+'&amp;accId='+v.AOEAccountID}">
+														<div>
+															<button type="button" class="primary-btn tooltip" style="{!'margin-right:0px;width:92px;padding-left: 4px;background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+																	class="fa fa-pencil" style="font-size:14px;margin: 3px 0px;"></i>&nbsp;Manage
+															</button>
+														</div>
+													</a>
+												</aura:if>
+											</td>
+											<td>
+												<aura:if isTrue="{!bthMaps.Contact__c}">
+													{!bthMaps.Contact__r.Name}
+													<aura:set attribute="else">
+														{!bthMaps.TempContact__r.Name__c}
+													</aura:set>
+												</aura:if>
+											</td>
+											<aura:if isTrue="{!v.Event_Setting.Disable_this_information__c!=true}">
+												<td>
+													<aura:if isTrue="{!bthMaps.Is_Self_Managed__c}">
+														({!$Label.c.Self_Managed})
+														<aura:set attribute="else">
+															<aura:iteration items="{!bthMaps.CustomerContractorServices__r}" var="ser" indexVar="index">
+																<aura:if isTrue="{!index}">
+																	{!', '+ser.ContractorService__r.Contractor_Service__c}
+																	<aura:set attribute="else">
+																		{!ser.ContractorService__r.Contractor_Service__c}
+																	</aura:set>
+																</aura:if>
+															</aura:iteration>
+														</aura:set>
+													</aura:if>
+												</td>
+											</aura:if>
+											<aura:if isTrue="{!v.Event_Setting.Is_Stand_Detail_Visible__c==true}">
+												<td class="black-bold">{!bthMaps.Booth_Detail_Status1__c}</td>
+											</aura:if>
+											<aura:if isTrue="{!v.Event_Setting.Is_Stand_Design_Visible__c==true}">
+												<td class="black-bold">{!bthMaps.Booth_Design_Status1__c}</td>
+											</aura:if>											
+											<td class="black-bold">
+												<aura:if isTrue="{!!bthMaps.Is_Self_Managed__c}">
+													{!bthMaps.ContractorRequestStatus__c}
+												</aura:if>
+											</td>
+											<td class="center">
+												<aura:if isTrue="{!and(and(bth.boothType!='Pavilion Space',!v.isReadOnly),(bthMaps.ContractorRequestStatus__c!='Declined'))}">
+												<!-- <aura:if isTrue="{!and((bth.boothType!='Pavilion Space'),(bthMaps.ContractorRequestStatus__c!='Declined'))}"> -->
+													<aura:if isTrue="{!!bthMaps.Is_Self_Managed__c}">
+														<aura:if isTrue="{!v.Event_Setting.Disable_this_information__c!=true}">
+															<button type="button" data-mid="{!bthMaps.Id}" data-id="{!'E__'+bth.boothId}" value="{!bth.value.Contact__c}"
+															 class="primary-btn tooltip" onclick="{!c.showEditServicesModal}" style="{!'margin-right:6px;padding:3px;background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+																 class="fa fa-pencil"></i>
+																<span class="tooltiptext" id="{!'E__'+bth.boothId}">{!$Label.c.Edit_the_services_for_this_contractor}</span>
+															</button>
+														</aura:if>
+														<aura:if isTrue="{!bthMaps.Contact__c}">
+															<aura:if isTrue="{!and(bthMaps.Booth_Detail_Status1__c=='Not Submitted',bthMaps.Booth_Design_Status1__c=='No Design')}">
+																<button type="button" data-id="{!'C__'+bth.boothId}" value="{!bthMaps.Id}" name="{!bthMaps.Contact__r.Name}"
+																 onclick="{!c.changeContact}" class="primary-btn tooltip" style="padding:3px;background:#4e4e4e"><i
+																	 class="fa fa-close"></i>
+																	<span class="tooltiptext" id="{!'C__'+bth.boothId}">{!$Label.c.Cancel_this_Contractor}</span>
+																</button>
+																<aura:set attribute="else">
+																	<button type="button" disabled="disabled" data-id="{!'C__'+bth.boothId}" value="{!bthMaps.Id}" name="{!bthMaps.Contact__r.Name}"
+																	 onclick="{!c.changeContact}" class="primary-btn tooltip" style="padding:3px;background:#4e4e4e"><i
+																		 class="fa fa-close"></i>
+																		<span class="tooltiptext" id="{!'C__'+bth.boothId}">{!$Label.c.Contact_show_management}</span>
+																	</button>
+																</aura:set>
+															</aura:if>
+															<aura:set attribute="else">
+																<button type="button" data-id="{!'C__'+bth.boothId}" value="{!bthMaps.Id}" name="{!bthMaps.TempContact__r.Name__c}"
+																 onclick="{!c.changeContact}" class="primary-btn tooltip" style="padding:3px;background:#4e4e4e"><i
+																	 class="fa fa-close"></i>
+																	<span class="tooltiptext" id="{!'C__'+bth.boothId}">{!$Label.c.Cancel_this_Contractor}</span>
+																</button>
+															</aura:set>
+														</aura:if>
+														<aura:set attribute="else">
+															<button type="button" disabled="{!!and(bthMaps.Booth_Detail_Status1__c=='Not Submitted',bthMaps.Booth_Design_Status1__c=='No Design')}"
+															 data-id="{!'C__'+bth.boothId}" value="{!bthMaps.Id}" name="{!bthMaps.TempContact__r.Name__c}" onclick="{!c.showmodalCancelSelf}"
+															 class="primary-btn tooltip" style="padding:3px;background:#4e4e4e"><i class="fa fa-close"></i>
+																<span class="tooltiptext" id="{!'C__'+bth.boothId}">{!$Label.c.Cancel_Self_Management}</span>
+															</button>
+														</aura:set>
+													</aura:if>
+												</aura:if>
+											</td>
+										</tr>
+									</aura:iteration>
+									<aura:set attribute="else">
+										<!-- <aura:if isTrue="{!(bth.boothType=='Pavilion Space'}"> -->
+										<aura:if isTrue="{!bth.boothType=='Pavilion Space'}">
+											<aura:if isTrue="{!v.isReadOnly}">
+												<tr>
+													<td></td>
+													<td class="black-bold"> {!bth.booth}</td>
+													<td colspan="7">
+														<button type="button" value="{!bth.boothId}" name="{!bth.booth}" class="primary-btn" style="background: gray;color:white" disabled="true" ><i class="fa fa-plus fa-padding"></i>
+															{!$Label.c.Add}&nbsp;{!$Label.c.Contractor}
+														</button>
+													</td>
+												</tr>
+												<aura:set attribute="else">
+													<tr>
+														<td></td>
+														<td class="black-bold"> {!bth.booth}</td>
+														<td colspan="7">
+															<button type="button" value="{!bth.boothId}" name="{!bth.booth}" class="primary-btn" style="background: gray;color:white" disabled="true" ><i class="fa fa-plus fa-padding"></i>
+																{!$Label.c.Add}&nbsp;{!$Label.c.Contractor}
+															</button>
+															&nbsp;		
+															<!-- Pavilion Space   -->
+															{!$Label.c.Can_t_Add_contractor_for_Pavilion_Space_booth}
+															&nbsp;
+														</td>
+													</tr>
+												</aura:set>
+											</aura:if>
+											<aura:set attribute="else">
+												<aura:if isTrue="{!v.isReadOnly}">
+													<aura:if isTrue="{!bth.boothType=='Shell Scheme'}">  
+															<!-- Shell Scheme update  [C2E 17] -->
+															<tr>
+																<td></td>
+																<td class="black-bold"> {!bth.booth}</td>
+																<td colspan="7">
+																	<button type="button" value="{!bth.boothId}" class="primary-btn" style="background: gray;color:white" disabled="true" ><i class="fa fa-plus fa-padding"></i>
+																		{!$Label.c.Add}&nbsp;{!$Label.c.Contractor}
+																	</button>
+																	&nbsp;		
+																	<!-- Pavilion Space   -->
+																	{!$Label.c.Can_t_Add_contractor_for_Shell_Scheme_booth}
+																	&nbsp;
+																</td>
+															</tr>
+															<!-- Shell Scheme update END -->
+															<aura:set attribute="else">	
+																<tr>
+																	<td></td>
+																	<td class="black-bold"> {!bth.booth}</td>
+																	<td colspan="7">
+																		<button type="button" value="{!bth.boothId}" class="primary-btn" style="background: gray;color:white" disabled="true" ><i class="fa fa-plus fa-padding"></i>
+																			{!$Label.c.Add}&nbsp;{!$Label.c.Contractor}
+																		</button>
+																		<aura:if isTrue="{!v.Event_Setting.Is_Build_my_own_stand_Visible__c!=true}">	
+																			&nbsp;{!$Label.c.or}&nbsp;
+																			<b>{!$Label.c.Build_my_own_stand}</b>
+																		</aura:if>
+																	</td>
+																</tr>
+															</aura:set>	
+													</aura:if>			
+													<aura:set attribute="else">
+															<aura:if isTrue="{!bth.boothType=='Shell Scheme'}">  
+																<!-- Shell Scheme update  [C2E 17] -->
+																<tr>
+																	<td></td>
+																	<td class="black-bold"> {!bth.booth}</td>
+																	<td colspan="7">
+																		<button type="button" value="{!bth.boothId}" name="{!bth.booth}" class="primary-btn" style="background: gray;color:white" disabled="true" ><i class="fa fa-plus fa-padding"></i>
+																			{!$Label.c.Add}&nbsp;{!$Label.c.Contractor}
+																		</button>
+																		&nbsp;		
+																		<!-- Pavilion Space   -->
+																		{!$Label.c.Can_t_Add_contractor_for_Shell_Scheme_booth}
+																		&nbsp;
+																	</td>
+																</tr>
+																<!-- Shell Scheme update END -->
+																<aura:set attribute="else">	
+																	<!-- General condion to allow Contractors -->
+																	<tr>
+																		<td></td>
+																		<td class="black-bold"> {!bth.booth}</td>
+																		<td colspan="7">
+																			<button type="button" value="{!bth.boothId}" name="{!bth.booth}" class="primary-btn" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"
+																				onclick="{!c.showAddContractor}"><i class="fa fa-plus fa-padding"></i>
+																				{!$Label.c.Add}&nbsp;{!$Label.c.Contractor}</button>
+																			<aura:if isTrue="{!v.Event_Setting.Is_Build_my_own_stand_Visible__c!=true}">	
+																			&nbsp;{!$Label.c.or}&nbsp;
+																			<a data-bid="{!bth.boothId}" data-bname="{!bth.booth}" onclick="{!c.buildMyStand}"><b>{!$Label.c.Build_my_own_stand}</b></a>
+																			</aura:if>
+																		</td>
+																	</tr>
+																</aura:set>
+															</aura:if>														
+													</aura:set>
+												</aura:if> <!--- read only End -->
+											</aura:set>
+										</aura:if>
+									</aura:set>
+								</aura:if>
+							</aura:iteration>
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			
+		</div>
+		<div class="clearfix"></div>
+	</section>
+	<div id="modalCont" class="modal">
+		<div class="modal-content">
+			<div class="modal-header"> <span onclick="{!c.hideAddContractor}" class="close">&times;</span>
+				<h2>{!$Label.c.Assign_Contractor_to_Booth}&nbsp;{!v.selectedBooth.Booth_Number__c}</h2>
+			</div>
+			<div class="modal-body bodycontact">
+				<p>{!$Label.c.Select_Contact_Title}</p>
+				<div class="col-sm-12">
+					<input type="search" id="srchCompanyContact" class="search-style-1" onkeyup="{!c.srchKeyContact}" placeholder="Keyword search companies" />
+					<span>
+						or <button type="button" onclick="{!c.showRegComModal}" class="primary-btn marginleft" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+							 class="fa fa-check-square-o fa-padding-5"></i>{!$Label.c.Register_a_New_Contractor_Company}</button>
+					</span>
+				</div>
+				<div class="scrollarea">
+					<aura:iteration items="{!v.accs}" var="acc" indexVar="index">
+						<div>
+							<div class="toggle-area" value="{!acc.Id}" data-id="{!acc.Id}" id="{!'acc_'+acc.Id}" onclick="{!c.menu}">
+								<i class="fa fa-plus-square"></i> <span>{!acc.Name}</span>
+							</div>
+							<div class="toggle-showarea" style="display: none;" id="{!acc.Id}">
+								<aura:iteration items="{!acc.Contacts}" var="con">
+									<p data-con="{!con.Id}" onmouseover="{!c.mousehover}" onmouseout="{!c.mouseOut}">{!con.Name}&nbsp;<span id="{!con.Id}"
+										 data-aid="{!acc.Id}" data-name="{!acc.Name}" data-con="{!con.Id}" onclick="{!c.selectContact}" style="display:none;">(<a>{!$Label.c.Select}</a>)</span></p>
+								</aura:iteration>
+								<a class="addnew" data-id="{!acc.Id}" data-name="{!acc.Name}" onclick="{!c.showAddContactModal}"><i class="fa fa-plus"></i>{!$Label.c.Add_new_contact_for_this_company}</a>
+							</div>
+						</div>
+					</aura:iteration>
+				</div>
+			</div>
+			<!--  
+		<div class="modal-footer slds-align_absolute-center">
+			<button class="slds-button">First</button>
+			<button class="slds-button">Previous</button>
+			<button class="slds-button slds-button_neutral"> 1 </button>
+			<button class="slds-button slds-button_neutral"> 2 </button>
+			<button class="slds-button">Next</button>
+			<button class="slds-button">Last</button>
+			<div class="clearfix"></div>
+		</div>
+		-->
+		</div>
+	</div>
+	<div id="modalCompany" class="modal">
+		<div class="modal-content">
+			<div class="modal-header"> <span onclick="{!c.hideRegComModal}" class="close">&times;</span>
+				<h2>{!$Label.c.Register}&nbsp;{!$Label.c.New}&nbsp;{!$Label.c.Company}&nbsp;-&nbsp;{!v.selectedBooth.Booth_Number__c}
+				</h2>
+			</div>
+			<div class="modal-body bodycomapny">
+				<aura:if isTrue="{!v.existingAcc}">
+					<div class="col-sm-12 alreadyExists slds-m-bottom_medium">
+						<i class="fa fa-exclamation-circle fa-padding-5"></i>
+						{!$Label.c.Duplicate_Account_Found}<br></br>
+						<a onclick="{!c.selectExisting}">{!v.existingAcc.Name}</a>
+					</div>
+				</aura:if>
+				<p>{!$Label.c.Register_New_Company_Title}</p>
+				<aura:if isTrue="{!v.message}">
+					<div class="col-sm-12 alreadyExists">
+						<i class="fa fa-exclamation-circle fa-padding-5"></i>{!v.message}
+					</div>
+				</aura:if>
+				<table class="newcomtable">
+					<tr>
+						<td style="width:15%">{!$Label.c.Company_Name}<span class="slds-required">*</span>:</td>
+						<td colspan="7">
+							<input type="search" class="search-style-1 new-comp" id="srchCompany" onkeyup="{!c.srchKeyCompany}" />
+							<aura:if isTrue="{!v.srchAcc}">
+								<div class="srchResult" onclick="{!c.selectAccount}"><span>{!v.srchAcc.Name}</span> <i onclick="{!c.hideResult}"
+									 style="float:right;" class="fa fa-close fa-padding-5"></i> </div>
+							</aura:if>
+						</td>
+					</tr>
+                    <!--- Commmented based on CCEN-731 -->
+					<tr>
+						<td>{!$Label.c.Address}<span class="slds-required"></span>:</td>
+						<td colspan="7">
+							<ui:inputText value="{!v.newAccount.BillingStreet}" class="search-style-1 new-comp" />
+						</td>
+					</tr>
+					<tr>
+						<td>{!$Label.c.Country}<span class="slds-required">*</span>:</td>
+						<td style="width:20%">
+							<ui:inputSelect class="search-style-1 new-comp slds-select" aura:id="billingCountry" change="{!c.onBillingCountryChange}"
+							 value="{!v.newAccount.BillingCountry}" />
+						</td>
+						<td style="padding:10px">{!$Label.c.City}<span class="slds-required">*</span>:</td>
+						<td style="width:20%">
+							<ui:inputText value="{!v.newAccount.BillingCity}" class="search-style-1 new-comp" />
+						</td>
+						<td style="padding:10px">P.O.Box:</td>
+						<td>
+							<ui:inputText class="search-style-1 new-comp" value="{!v.newAccount.BillingPostalCode}" />
+						</td>
+						<td style="padding:10px">{!$Label.c.State}:</td>
+						<td>
+							<ui:inputSelect class="search-style-1 new-comp slds-select" aura:id="billingState" value="{!v.newAccount.BillingState}"
+							 disabled="{!v.hasNoState}" />
+						</td>
+					</tr>
+				</table>
+				<button type="button" id="addCompany" onclick="{!c.addCompany}" class="primary-btn" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+					 class="fa fa-check-square-o fa-padding-5"></i>{!$Label.c.Add_this_company_and_create_new_contact}</button>
+				<button type="button" onclick="{!c.hideRegComModal}" class="primary-btn marginleft" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+					 class="fa fa-close fa-padding-5"></i>{!$Label.c.Cancel}</button>
+			</div>
+		</div>
+	</div>
+
+	<div id="modalAddContact" class="modal">
+		<div class="modal-content">
+			<div class="modal-header"> <span onclick="{!c.hideAddContactModal}" class="close">&times;</span>
+				<h2>
+					<aura:if isTrue="{!v.newContact.Id}">
+						{!$Label.c.Assign_Contact_as_your_Contractor}
+						<aura:set attribute="else">
+							{!$Label.c.Create}&nbsp;{!$Label.c.New}&nbsp;{!$Label.c.Contact}
+						</aura:set>
+					</aura:if>
+					&nbsp;-&nbsp;{!v.selectedBooth.Booth_Number__c}
+				</h2>
+			</div>
+			<div class="modal-body bodycomapny">
+				<aura:if isTrue="{!v.existingCons}">
+					<div class="col-sm-12 alreadyExists slds-m-bottom_medium">
+						<i class="fa fa-exclamation-circle fa-padding-5"></i>
+						{!$Label.c.Duplicate_Contact_Found}<br></br>
+						<ul>
+							<aura:iteration items="{!v.existingCons}" var="con">
+								<li><a data-con="{!con.Id}" data-aid="{!con.Account.Id}" data-name="{!con.Account.Name}" onclick="{!c.selectContact}">{!con.Name}</a></li>
+							</aura:iteration>
+						</ul>
+					</div>
+				</aura:if>
+				<aura:if isTrue="{!v.message}">
+					<div class="col-sm-12 alreadyExists">
+						<i class="fa fa-exclamation-circle fa-padding-5"></i>{!v.message}
+					</div>
+				</aura:if>
+				<aura:if isTrue="{!v.newContact.Id}">
+					<p>{!$Label.c.Edit_Contact_Title} </p>
+					<aura:set attribute="else">
+						<p>{!$Label.c.Create_Contact_Title}</p>
+					</aura:set>
+				</aura:if>
+				<div class="col-sm-6" style="width: 133.5%">
+					<div class="form-group">
+						<label class="form-group-label-1" style="width: 8.6%">{!$Label.c.Company}:</label>
+						<input type="text" class="label-text-6 AccountName" disabled="disabled" value="{!v.newContact.AccountName}" />
+					</div>
+				</div>
+				<div class="clearfix"></div>
+				<div class="col-sm-6">
+					<div class="form-group">
+						<label class="form-group-label-1">{!$Label.c.FirstName}
+							<span class="slds-required">*</span>: 
+						</label>
+						<aura:if isTrue="{!and(v.newContact.FirstName, v.newContact.Id)}">
+							<ui:inputText value="{!v.newContact.FirstName}" class="label-text-1" disabled="{!and(v.newContact.FirstName, v.newContact.Id)}" required="true"/>
+						<aura:set attribute="else">
+								<ui:inputText value="{!v.newContact.FirstName}" class="label-text-1" required="true"/>
+						</aura:set>
+						</aura:if>
+						
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="form-group">
+						<label class="form-group-label-1">{!$Label.c.LastName}
+							<span class="slds-required">*</span>: 
+						</label>
+						<aura:if isTrue="{!and(v.newContact.LastName, v.newContact.Id)}">
+							<ui:inputText value="{!v.newContact.LastName}" class="label-text-1" disabled="{!and(v.newContact.LastName, v.newContact.Id)}" required="true"/>
+						<aura:set attribute="else">
+								<ui:inputText value="{!v.newContact.LastName}" class="label-text-1" required="true"/>
+						</aura:set>
+						</aura:if>
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="form-group">
+						<label class="form-group-label-1">Mobile
+							<span class="slds-required">*</span>: 
+                        </label>
+                        <aura:if isTrue="{!!and(v.newContact.MobilePhone ,v.MobilePhone)}">
+								<ui:inputSelect class="label-text-3" aura:id="InputMobileIsd" value="{!v.newContact.MobilePhoneCountryCode}"/>
+								<ui:inputText value="{!v.newContact.MobilePhoneStateCode}" class="label-text-4" />
+								<ui:inputText value="{!v.newContact.MobilePhone}"  class="label-text-2" required="true" />
+                        <aura:set attribute="else">
+							<ui:inputText value="{!v.newContact.MobilePhone}"  class="label-text-1" required="true" disabled="{!v.MobilePhone}"/>
+						</aura:set>
+						</aura:if>
+					</div>
+				</div>
+				<div class="col-sm-6">
+						<div class="form-group">
+							<label class="form-group-label-2">{!$Label.c.Phone}:</label>
+							<aura:if isTrue="{!!and(v.Phone,v.newContact.Phone)}">
+								<ui:inputSelect class="label-text-3" aura:id="InputPhoneIsd" value="{!v.newContact.PhoneCountryCode}" />
+								<ui:inputText value="{!v.newContact.PhoneStateCode}"  class="label-text-4" />
+								<ui:inputText value="{!v.newContact.Phone}" class="label-text-5" />
+								<div class="form-group">
+									<label class="form-group-label-3">Ext:</label>
+									<ui:inputText value="{!v.newContact.Ext}" class="label-text-7"/>
+								</div>
+							<aura:set attribute="else">
+								<ui:inputText value="{!v.newContact.Phone}" class="label-text-1" disabled="{!v.Phone}"/>
+							</aura:set>
+							</aura:if>
+						</div>
+					</div>
+				<div class="col-sm-6" style="width: 133.5%">
+					<div class="form-group">
+						<label class="form-group-label-1" style="width: 8.6%" >{!$Label.c.Email}
+							<span class="slds-required">*</span>: 
+						</label>
+						<aura:if isTrue="{!!v.newContact.Email}">
+							<ui:inputText value="{!v.newContact.Email}" class="label-text-6"/>
+						<aura:set attribute="else">
+							<ui:inputText value="{!v.newContact.Email}" disabled="{!v.Email}" class="label-text-6"/>
+						</aura:set>
+						</aura:if>
+					</div>
+				</div>
+				<div class="clearfix"></div>
+				<div class="height-30"></div>
+				<aura:if isTrue="{!!v.Event_Setting.Disable_this_information__c}">
+					<div class="col-sm-7">
+						<span class="text-bold">{!$Label.c.Select_Services_you_d_like_this_contractor_to_perform}</span>
+						<br />
+						<aura:iteration items="{!v.services}" var="ser">
+							<div class="col-sm-6">
+								<div class="procatlabel">
+									<input id="{!ser.Id}" class="chkServicesltng" type="checkbox" />
+									{!ser.Contractor_Service__c}
+								</div>
+							</div>
+						</aura:iteration>
+					</div>
+				</aura:if>
+				<aura:if isTrue="{!v.lstbooths.length>1}">
+					<div class="col-sm-5">
+						<span class="text-bold">{!$Label.c.Assign_this_contact_to_all_booths}</span>
+						<p><i>{!$Label.c.Will_only_assign_this_contact_to_booths_without_a_contractor_assigned}</i></p>
+						<label class="radio inline">
+							<input type="radio" name="assign" id="btnyes" value="Yes" onclick="{!c.handleChange}" />
+							<span>Yes</span>
+						</label>
+						<label class="radio inline">
+							<input type="radio" name="assign" id="btnno" value="No" onclick="{!c.handleChange}" checked="checked" />
+							<span>No</span>
+						</label>
+					</div>
+				</aura:if>
+
+				<div class="clearfix"></div>
+				<br></br>
+				<button type="button" onclick="{!c.inviteContact}" class="primary-btn" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+					 class="fa fa-paper-plane fa-padding-5"></i>{!$Label.c.Invite_this_Contact}</button>
+				<button type="button" onclick="{!c.hideAddContactModal}" class="primary-btn marginleft" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+					 class="fa fa-close fa-padding-5"></i>{!$Label.c.Cancel}</button>
+
+			</div>
+		</div>
+	</div>
+	<!-- Contact success modal -->
+	<div id="modalContactSuccess" class="modal">
+		<div class="modal-content">
+			<div class="modal-header"> <span onclick="{!c.hideConSuccessModal}" class="close">&times;</span>
+				<h2>{!$Label.c.ThankYou}!</h2>
+			</div>
+			<div class="modal-body bodycomapny">
+				<p> <i class="fa fa-check fa-padding-5 success" aria-hidden="true"></i>
+					{!$Label.c.Add_Contractor_Title_1}&nbsp;
+					<b>{!v.newContact.FirstName}&nbsp;{!v.newContact.LastName}</b>
+					at
+					<b>{!v.newContact.Email}</b>.
+					{!$Label.c.Add_Contractor_Title_2} </p>
+			</div>
+			<div class="clearfix"></div>
+			<br></br><br></br>
+			<button type="button" onclick="{!c.hideConSuccessModal}" class="primary-btn marginleft" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+				 class="fa fa-close fa-padding-5"></i>{!$Label.c.Close_Window}</button>
+		</div>
+	</div>
+	<!-- Remove contractor -->
+	<div id="modalRemoveContarctor" class="modal">
+		<div class="modal-content">
+			<div class="modal-header"> <span onclick="{!c.hideRemoveConModal}" class="close">&times;</span>
+				<h2>{!$Label.c.Remove_Contractor} </h2>
+			</div>
+			<div class="modal-body bodycomapny ">
+				<p class="slds-align_absolute-center">{!$Label.c.Remove_Contractor_Title_1}&nbsp;<b>{!v.removeCon.name}</b>&nbsp;{!$Label.c.Remove_Contractor_Title_2}</p>
+				<p class="slds-align_absolute-center slds-m-vertical_xx-large"><b>{!$Label.c.Are_you_sure_you_wish_continue}?</b></p>
+				<p class="slds-align_absolute-center">
+					<button type="button" onclick="{!c.removeContractor}" class="primary-btn marginleft" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+						 class="fa fa-check-square-o fa-padding-5"></i>{!$Label.c.Yes_Remove_this_contractor}</button>
+					<button type="button" onclick="{!c.hideRemoveConModal}" class="primary-btn marginleft" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+						 class="fa fa-close fa-padding-5"></i>{!$Label.c.Cancel}</button>
+				</p>
+			</div>
+		</div>
+	</div>
+	<!-- Edit contractor Services-->
+	<div id="modalEditServices" class="modal">
+		<div class="modal-content">
+			<div class="modal-header"> <span onclick="{!c.hideEditServicesModal}" class="close">&times;</span>
+				<h2>{!$Label.c.Update_Services} </h2>
+			</div>
+			<div class="modal-body bodycomapny ">
+				<div class="col-sm-6">
+					<aura:iteration items="{!v.services}" var="ser">
+						<div class="col-sm-6">
+							<div class="procatlabel">
+								<input id="{!ser.Id}" class="chkServices" type="checkbox" />
+								{!ser.Contractor_Service__c}
+							</div>
+						</div>
+					</aura:iteration>
+				</div>
+				<div class="clearfix"></div>
+				<p class="slds-m-top_large">
+					<button type="button" onclick="{!c.saveUpdatedServices}" class="primary-btn" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+						 class="fa fa-check-square-o fa-padding-5"></i>{!$Label.c.Save_Changes}</button>
+					<button type="button" onclick="{!c.hideEditServicesModal}" class="primary-btn marginleft" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+						 class="fa fa-close fa-padding-5"></i>{!$Label.c.Cancel}</button>
+				</p>
+			</div>
+		</div>
+		<input type="hidden" id="hdnmapId" name="mapId" value="" />
+	</div>
+	<!-- Edit contractor Services-->
+	<div id="modalAlreadyExists" class="modal">
+		<div class="modal-content">
+			<div class="modal-header"> <span onclick="{!c.hideAlreadyExistsModal}" class="close">&times;</span>
+				<h2>{!$Label.c.Contractor_Contact_Already_Exists}</h2>
+			</div>
+			<div class="modal-body bodycomapny ">
+				<div class="col-sm-12">
+					<p>{!$Label.c.Contractor_Contact_Already_Exists_Title}</p>
+				</div>
+				<br></br><br></br>
+				<div class="clearfix"></div>
+				<p class="slds-m-top_large">
+					<button type="button" onclick="{!c.hideAlreadyExistsModal}" class="primary-btn marginleft" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+						 class="fa fa-close fa-padding-5"></i>{!$Label.c.Close}</button>
+				</p>
+			</div>
+		</div>
+	</div>
+
+	<!-- Remove self managed booth -->
+	<div id="modalCancelSelf" class="modal">
+		<div class="modal-content">
+			<div class="modal-header"> <span onclick="{!c.hidemodalCancelSelf}" class="close">&times;</span>
+				<h2>{!$Label.c.Confirm} </h2>
+			</div>
+			<div class="modal-body bodycomapny ">
+				<p class="slds-m-bottom_xx-large slds-align_absolute-center">{!$Label.c.Cancel_Self_Management_Message}</p>
+				<p class="slds-align_absolute-center">
+					<button type="button" onclick="{!c.removeContractor}" class="primary-btn marginleft" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+						 class="fa fa-check-square-o fa-padding-5"></i>{!$Label.c.Yes}</button>
+					<button type="button" onclick="{!c.hidemodalCancelSelf}" class="primary-btn marginleft" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+						 class="fa fa-close fa-padding-5"></i>{!$Label.c.No}</button>
+				</p>
+			</div>
+		</div>
+	</div>
+	<!--End-->
+
+	<!-- pavilion Space Help Box -->	
+		<div id="pavillionSpaceHelpModel" class="modal">
+				<div class="modal-content pavilionmodel ">
+					<div > <span onclick="{!c.hidePavillionSpaceHelp}" class="close">&times;</span>
+						<h2></h2>
+					</div>
+					<div class="modal-body bodycomapny">
+						<!-- <p> <h2><i class="fa fa-question-circle" aria-hidden="true"></i>
+								pavilion Space Exhibitor </h2><br/>
+								<div>A pavilion space exhibitor is an exhibitor that shares the same stand design as every other exhibitor that is exhibiting in same pavilion space.</div>
+						</p> -->
+						<div class="slds-grid slds-wrap">
+								<div class="slds-col slds-size_1-of-9 slds-m-right_large">
+									<div class="tooltip">
+										<i class="fa fa-question-circle" style="font-size: large;"></i>
+									</div>
+								</div>
+							<div class="slds-col slds-size_7-of-8">
+									<b>Pavilion Space Exhibitor &nbsp;</b>
+									<br/>										
+									<div>A pavilion space exhibitor is an exhibitor that shares the same stand design as every other exhibitor that is exhibiting in same pavilion space.</div>
+							</div>
+						</div>
+					</div>
+					<div class="clearfix"></div>
+				</div>
+			</div>
+	<!-- End-->
+
+	<!--loading spinner start... style=Brand Medium (blue dots)-->
+	<aura:if isTrue="{!v.Spinner}">
+		 <lightning:spinner size="small" variant="brand"/>
+	</aura:if>
+	<!-- Loading spinner end-->
+
+</aura:component>

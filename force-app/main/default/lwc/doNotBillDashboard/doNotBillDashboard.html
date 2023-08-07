@@ -1,0 +1,15 @@
+<!--
+    Created By		: Girikon( Palla Kishore [BK-25375] )
+    Created On		: 6/1/2023
+    @description 	: This component is used to fetch all Do Not Bill Status records from Opportunity.
+    Modified By		: 
+-->
+<template>
+    <template if:true={oppFields}>
+        <c-common-table filter1-label="Event Edition" filter-field1="EventEdition__r.Name" condition={doNotBillCond} filter-delegate-opp="Do Not Bill Status" condition-delegate={toggleDelegateOppCon}
+            fields={oppFields}
+            fields-label={oppFieldsLabels} is-multi-language="true" custom-label="-1,0,1,3,5,8,11"
+            object-name="Opportunity" modal-icon-name1="View Record Details" object-label="Opportunity" is-support-new-record="false" onopenactionmodal={handleActionModal} is-show-action="false" is-view-file="false">
+        </c-common-table>
+    </template>
+</template>

@@ -1,0 +1,27 @@
+.editMode .slds-form-element__static{
+	max-width: 95%;
+}
+.edit
+{
+    float: right;
+    margin-top: -18px;
+}
+.longtext{
+    margin-bottom: 4%;
+}
+.containerDiv
+{
+    padding-bottom : 50px;
+}
+.absolute{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    display: flex;
+}
+.longtext2{
+    min-height: 65px;
+}
+[interop-accordionSection_accordionSection-host] {
+    display: contents !important;
+}

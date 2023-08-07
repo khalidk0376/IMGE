@@ -1,0 +1,24 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId" access="global">
+	<aura:attribute name="isAttachAgreement" default="false" type="Boolean" access="public" />
+    <aura:attribute name="recordId" type="String"  access="public"/>
+    <aura:attribute name="oppName" type="string" />
+    
+    <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" style="height: 340px;margin-top: 10%;z-index: 9003;" 
+             class="slds-modal slds-fade-in-open">
+        <div class="slds-modal__container"> 
+            <header class="slds-modal__header">
+                <button onclick="{!c.closeDocuModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                    <lightning:icon iconName="utility:close" size="small" variant="bare" />
+                    <span class="slds-assistive-text">Close</span>
+                </button>
+                <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Agreement for {!v.oppName}</h2>
+            </header>
+            <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1" style="height:300px;max-height:auto">
+                <center> 
+                        <c:FileUploadAgreement parentId ="{!v.recordId}"/>
+                </center>
+            </div>
+        </div>
+    </section>
+    <div class="slds-backdrop slds-backdrop_open" style="z-index:9002"></div>
+</aura:component>

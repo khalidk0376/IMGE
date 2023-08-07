@@ -1,0 +1,23 @@
+.THIS label.slds-form-element__label {
+    display: none;
+}
+.THIS .customRequired{
+    font-weight: 400; 
+} 
+.THIS .customRequired:before{    
+   content: "*";
+   margin: 0 0.125rem 0 0.125rem;
+   color: rgb(194, 57, 52);
+   float: left; 
+   margin-top: 3px;
+}
+.THIS .makeitrequire{
+    font-weight: 400; 
+} 
+.THIS .makeitrequire:before{    
+   content: "*";
+   margin: 0 0.125rem 0 0.125rem;
+   color: rgb(194, 57, 52);
+   float: left; 
+   margin-top: 3px;
+}

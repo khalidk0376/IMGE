@@ -1,0 +1,54 @@
+<aura:component implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickAction" access="global" controller="UpdateUserTypeModalHandler">
+    <aura:attribute name="oppMappingRecordsActive" type="Opportunity_ExpoCAD_Booth_Mapping__c" />
+    <aura:attribute name="oppMappingRecordsInactive" type="Opportunity_ExpoCAD_Booth_Mapping__c" />
+    <aura:attribute name="showSpinner" default="false" type="Boolean" access="private"/>
+    <aura:attribute name="isOpenModal" default="false" type="Boolean" access="public"/>	
+    
+    <aura:attribute name="sortBy1" type="String"/>
+    <aura:attribute name="sortBy2" type="String"/>
+    <aura:attribute name="sortDirection1" type="String"/>
+    <aura:attribute name="sortDirection2" type="String"/>
+    <aura:attribute name="columnsInactiveMappings" type="List"/>
+    <aura:attribute name="columnsActiveMappings" type="List"/>
+    <aura:attribute name="selectedActiveId" type="Id"/>
+    <aura:attribute name="selectedInactiveId" type="Id"/>
+    
+    <aura:attribute name="mRSInactiveMappings" type="Integer" default="1"/>
+    <aura:attribute name="mRSActiveMappings" type="Integer" default="1"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.loadData}" />
+    <aura:registerEvent name="userTypeCCToggle" type="c:userTypeCCToggle"/>
+    <aura:if isTrue="{!v.showSpinner}">
+        <lightning:spinner size="small" variant="brand"/>
+    </aura:if>    
+    <div class="slds-grid slds-gutters">
+        <div class="slds-col slds-size_6-of-12">
+            <div class="slds-text-heading_small slds-text-align_center">Released Booths.</div>
+            <lightning:datatable columns="{! v.columnsInactiveMappings }" 
+                                 aura:id="tableInactive"
+                                 data="{! v.oppMappingRecordsInactive }"
+                                 keyField="id"
+                                 maxRowSelection="{! v.mRSInactiveMappings }"
+                                 sortedBy="{!v.sortBy1}"
+                                 sortedDirection="{!v.sortDirection1}"
+                                 onsort="{!c.handleSort}"
+                                 onrowselection="{!c.selectRow}"/>
+        </div>
+        <div class="slds-col slds-size_6-of-12">
+            <div class="slds-text-heading_small slds-text-align_center">Rented Booths.</div>
+            <lightning:datatable
+                                 columns="{! v.columnsActiveMappings }"
+                                 aura:id="tableActive"
+                                 data="{! v.oppMappingRecordsActive }"
+                                 keyField="id"
+                                 maxRowSelection="{! v.mRSActiveMappings }"
+                                 sortedBy="{!v.sortBy2}"
+                                 sortedDirection="{!v.sortDirection2}"
+                                 onsort="{!c.handleSort}"
+                                 onrowselection="{!c.selectRow}"/>
+        </div>
+    </div>
+    <footer class="slds-modal__footer"> 
+        <lightning:button label="Move Data" disabled = "false"  variant="brand" iconName="utility:check" iconPosition="left" onclick="{!c.moveCCData}"/>
+    </footer>
+</aura:component>

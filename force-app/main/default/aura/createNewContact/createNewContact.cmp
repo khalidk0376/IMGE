@@ -1,0 +1,151 @@
+<!-- 
+@Name: createNewContact.cmp 
+@CreatedDate: 31 Oct, 2019
+@CreatedBy: Girikon(Mukesh Gupta)
+@Description: This component used on contact standard layout to create new Contact.
+-->
+<aura:component controller="OppActionButtonController" implements="lightning:actionOverride,force:lightningQuickActionWithoutHeader" access="global">
+    <aura:attribute name="accObj" type="Object"/>
+    <aura:attribute name="contactObj" type="Object" default="{sobjectType:'Contact',AccountId:'',Email:'',FirstName:''}"/>
+    <aura:attribute name="spinner" type="Boolean" default="false"/>
+    <aura:attribute name="meta" type="Object" access="private"/>
+    <aura:attribute name="showFields" type="Boolean" default="false"/>
+    <aura:attribute name="showModal" type="Boolean" default="false"/>
+    <aura:attribute name="recordTypeId" type="String" access="private"/>
+    <aura:attribute name="accId" type="String" access="private"/>
+    <aura:attribute name="depnedentFieldMap" type="map" description="map to store dependent values with controlling value" />
+    <aura:attribute name="isLoading" type="Boolean" default="false"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <ltng:require scripts="{!$Resource.LtngUtility}"/>
+    
+    <aura:if isTrue="{!v.spinner}">
+        <lightning:spinner size="small" variant="brand"/>
+    </aura:if>
+    <lightning:card iconName="standard:contact" title="Create New Contact"> <!-- recordTypeId="{!v.recordTypeId}" -->
+       
+        <lightning:recordEditForm aura:id="contactRecordForm" onerror="{!c.handleError}" onsuccess="{!c.handleSuccess}" 
+                                  objectApiName="Contact" onsubmit="{!c.handleSubmit}" >
+            
+            <div class="slds-p-around_small">
+                
+                <lightning:layout multipleRows="true">
+                    <lightning:layoutItem size="12" padding="around-small">
+                        Enter Account Name to Proceed!
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="6" padding="horizontal-small">
+                        <div class="slds-form-element">
+                            <label class="slds-form-element__label" for="form-element-01">Account</label>
+                            <div class="slds-form-element__control">
+                                <lightning:inputField onchange="{!c.handleAccountChange}" 
+                                                      value="{!v.accId}" 
+                                                      fieldName="AccountId" aura:id="fAcc" variant="label-hidden"/>
+                            </div>
+                        </div>
+                        <aura:if isTrue="{!v.showFields}">
+                            <lightning:combobox options="{!v.meta.Salutation.FieldPicklist}" value="{!v.contactObj.Title}" 
+                                                label="{!v.meta.Salutation.FieldLabel}" aura:id="Salutation"/>                            
+                            
+                            <lightning:input type="text" value="{!v.contactObj.FirstName}" 
+                                             label="First Name" required="true" aura:id="inputFields" maxlength="40" 
+                                             messageWhenValueMissing="{!$Label.c.FirstNameMessage}" messageWhenTooLong="{!$Label.c.FirstNameCharacterMessage}"/>
+                            
+                            <lightning:inputField value="{!v.contactObj.LastName}" fieldName="LastName"/>
+                        </aura:if>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="6" padding="horizontal-small">
+                        <aura:if isTrue="{!v.showFields}">
+                            <lightning:input type="Email" value="{!v.contactObj.Email}" 
+                                             label="Email" required="true" aura:id="inputFields"/>                            
+                            <lightning:input type="tel" label="Mobile Phone" value="" aura:id="MobilePhone"/>
+                            <lightning:input type="tel" label="Business Phone" value="" aura:id="Phone"/>
+                            <lightning:inputField value="{!v.contactObj.Contact_Type__c}" fieldName="Contact_Type__c"/>
+                        </aura:if>
+                    </lightning:layoutItem>                   
+                </lightning:layout> 
+                
+                
+                <lightning:layout multipleRows="true">
+                    <aura:if isTrue="{!v.showFields}">
+                        <lightning:layoutItem size="12" class="slds-p-around_small">
+                            <div style="color:red">Note: If you leave contact address as blank, then it will automatically pick account's billing address!</div>    
+                        </lightning:layoutItem>
+                        
+                        <lightning:layoutItem size="6" class="slds-p-around_small">
+                            <lightning:inputField fieldName="MailingStreet"/>
+                            <lightning:inputField fieldName="MailingCity"/>
+                            <lightning:inputField fieldName="MailingPostalCode"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" class="slds-p-around_small">		      
+                            <lightning:combobox value="" options="{!v.meta.MailingCountryCode.FieldPicklist}" label="Mailing Country" aura:id="billingCountry" onchange="{!c.onBillingCountryChange}"/>  			
+                            <lightning:combobox value="" spinnerActive="{!v.isLoading}" label="Mailing State" aura:id="billingState"/>
+                            
+                        </lightning:layoutItem>
+                    </aura:if> 
+                </lightning:layout>	 
+                
+                <aura:if isTrue="{!v.showFields}">
+                    <div class="slds-clearfix">
+                        <div class="slds-float_right slds-m-around_small">
+                            <lightning:button variant="destructive" label="Cancel" iconName="utility:close" onclick="{!c.handleCancel}"/>&nbsp;
+                            <lightning:button type="submit" variant="brand" label="Save" iconName="utility:check"/>
+                        </div>
+                    </div>
+                </aura:if>
+                
+            </div>
+            
+        </lightning:recordEditForm>
+        
+    </lightning:card>
+    
+    <!--  <aura:if isTrue="{!v.showModal}">
+        <lightning:recordEditForm aura:id="addForm" objectApiName="Contact" onsubmit="{!c.saveModalData}" onload="{!c.onload}" >
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_medium">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button onclick="{!c.closeModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                        <lightning:icon iconName="utility:close" size="small" variant="bare"/>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate"></h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <aura:if isTrue="{!v.spinner}">
+                        <lightning:spinner size="small" variant="brand"/>
+                    </aura:if>
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem size="12" class="slds-p-around_small">
+                         <div style="color:red">Note: If you leave contact address as blank, then it will automatically pick account's billing address!</div>    
+                        </lightning:layoutItem>
+                        
+                        <lightning:layoutItem size="6" class="slds-p-around_small">
+                            <lightning:inputField fieldName="MailingStreet"/>
+                            <lightning:inputField fieldName="MailingCity"/>
+                            <lightning:inputField fieldName="MailingPostalCode"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" class="slds-p-around_small">		      
+                            <lightning:combobox value="" options="{!v.meta.MailingCountryCode.FieldPicklist}" label="Mailing Country" aura:id="billingCountry" onchange="{!c.onBillingCountryChange}"/>  			
+                            <lightning:combobox value="" spinnerActive="{!v.isLoading}" label="Mailing State" aura:id="billingState"/>
+
+                        </lightning:layoutItem>
+                    </lightning:layout>	    
+                    <div class="slds-m-top_small">&nbsp;</div>    	
+                    <div class="slds-m-top_small">&nbsp;</div>    	
+                    <div class="slds-m-top_small">&nbsp;</div>    	
+                    <div class="slds-m-top_small">&nbsp;</div>    	
+                    <div class="slds-m-top_small">&nbsp;</div>    	
+                    <div class="slds-m-top_small">&nbsp;</div> 
+                    <div class="slds-m-top_small">&nbsp;</div>    	
+                    <div class="slds-m-top_small">&nbsp;</div>    	
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning:button type="reset" label="Cancel" onclick="{!c.closeModal}" iconName="utility:close" iconPosition="left" variant="destructive"/>
+                    <lightning:button type="submit" label="Save" iconName="utility:check" iconPosition="left" variant="brand"/>
+                </footer>
+            </div>
+        </section>
+        </lightning:recordEditForm>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>-->
+</aura:component>

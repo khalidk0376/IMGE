@@ -1,0 +1,1421 @@
+<aura:component controller="NewCreateTemplateCtr">
+    <ltng:require scripts="{!join(',', $Resource.resources + '/jquery/jquery-3.0.0.js', 
+                           $Resource.resources + '/jquery/jquery-ui-1.12.1.js')}" afterScriptsLoaded="{!c.scriptsLoaded}" />
+    <!-- Start attribute --> 
+    <aura:attribute name="viewType" type="String" />
+    <aura:attribute name="richTextCharLimit" type="Integer" default="0" />
+    <aura:attribute name="QnaireId" type="String" />
+    <aura:attribute name="branchingQuestnIndex" type="Integer" />
+    <aura:attribute name="className1" type="String" default="" />
+    <aura:attribute name="QnaireName" type="String" />
+    <aura:attribute name="objQnaire" type="Object" default="{ 'sobjectType': 'Questionnaire__c'}" />
+    <aura:attribute name="lstQuesCategory" type="List" />
+    <aura:attribute name="selTabId" type="String" />
+    <aura:attribute name="lstQuesGroup" type="Question_Questionnaire__c[]" />
+    <aura:attribute name="lstQQuesnnaire" type="QuestionGroupWithQuestionsWrap" />
+    <aura:attribute name="lstQQuesnnaireMain" type="QuestionGroupWithQuestionsWrap" />
+    <aura:attribute name="objQues" type="Question__c" default="{ 'sobjectType': 'Question__c'}" />
+    <aura:attribute name="objCrteQues" type="Question__c" default="{ 'sobjectType': 'Question__c'}" />
+    <aura:attribute name="dropColNumber" type="String" />
+    <aura:attribute name="description" type="String" default=" " />
+    <aura:attribute name="isShowDateModal" type="Boolean" default="false" />
+    <aura:attribute name="dragId" type="String" default=" " />
+    <aura:attribute name="isShowModal" type="Boolean" default="false" />
+    <aura:attribute name="isShowSection" type="Boolean" default="false" />
+    <aura:attribute name="isShowHelpText" type="Boolean" default="false" />
+    <aura:attribute name="modalHeader" type="String" default=" " />
+    <aura:attribute name="isEditQue" type="boolean" default="false" />
+    <aura:attribute name="emailValue" type="String" default="" />
+    <aura:attribute name="alertMsg" type="String" default="" />
+    <aura:attribute name="selColumnNo" type="String" />
+    <aura:attribute name="isShowURLModal" type="Boolean" default="false" />
+    <aura:attribute name="isShowDatetimeModal" type="Boolean" default="false" />
+    <aura:attribute name="richTextVal" type="String" default=" " />
+    <aura:attribute name="isShowTextPlainModal" type="Boolean" default="false" />
+    <aura:attribute name="isShowGPSLocationModal" type="Boolean" default="false" />
+    <aura:attribute name="isShowRichTextModal" type="Boolean" default="false" />
+    <aura:attribute name="isShowAddressModal" type="Boolean" default="false" />
+    <aura:attribute name="isShowEmailModal" type="Boolean" default="false" />
+    <aura:attribute name="isShowPhoneModal" type="Boolean" default="false" />
+    <aura:attribute name="isShowInformationModal" type="Boolean" default="false" />
+    <aura:attribute name="isShowRadioModal" type="Boolean" default="false" />
+    <aura:attribute name="isShowCheckboxModal" type="Boolean" default="false" />
+    <aura:attribute name="isShowLookupModal" type="Boolean" default="false" />
+    <aura:attribute name="isShowSwitchModal" type="Boolean" default="false" />
+    <aura:attribute name="isShowMediaModal" type="Boolean" default="false" />
+    <aura:attribute name="isShowHeaderModal" type="Boolean" default="false" />
+    <aura:attribute name="isShowPicklistModal" type="Boolean" default="false" />
+    <aura:attribute name="isShowSliderModal" type="Boolean" default="false" />
+    <aura:attribute name="isShowNumberAndCurrencyModal" type="Boolean" default="false" />
+    <aura:attribute name="isShowSignatureModal" type="Boolean" default="false" />
+    <aura:attribute name="url" type="String" />
+    <aura:attribute name="openDeleteModal" type="Boolean" default="false" />
+    <aura:attribute name="deleteModal" type="Boolean" default="false" />
+    <aura:attribute name="questionDeleteModal" type="Boolean" default="false" />
+    <aura:attribute name="deleteModalContent" type="String" />
+    <aura:attribute name="deleteQuestionId" type="String" />
+    <aura:attribute name="qstnOptions" type="String[]" />
+    <aura:attribute name="questionPrintOrder" type="Integer" />
+    <aura:attribute name="questionQuestnnaireBranchingId" type="String" />
+    <aura:attribute name="openBranchingModal" type="Boolean" default="false" />
+    <aura:attribute name="showSign" type="Boolean" default="false" />
+    <aura:attribute name="questnLfPanel" type="String" default="" />
+    <aura:attribute name="questnLfPanelStyleValue" type="String" default="" />
+    <aura:attribute name="questionBuilderleftbox" type="String" default="" />
+    <aura:attribute name="calculatedScore" type="Decimal" default="0.0" />
+    <aura:attribute name="totalScorePosibility" type="Decimal" default="0.0" />
+    <aura:attribute name="scoreTotalValues" type="Decimal" default="0.0" />
+    <aura:attribute name="selectedScore" type="Object[]" />
+    <aura:attribute name="selectedScoreIds" type="String[]" />
+    <aura:attribute name="isAddQuestionInSectionModal" type="Boolean" default="false" />
+    <aura:attribute name="lstQDynLogicOption" type="Question_Option__c[]" />
+    <aura:attribute name="lstQDynLogicMain" type="Questionnaire_Dynamic_Logic__c[]" />
+    <aura:attribute name="lst_Question_Questionnaires" type="Question_Questionnaire__c[]" />
+    <aura:attribute name="Obj_Question_Questionnaires" type="Question_Questionnaire__c" default="{ 'sobjectType': 'Question_Questionnaire__c'}" />
+    <aura:attribute name="questionQuestnnaireInSection" type="Question_Questionnaire__c" />
+    <aura:attribute name="isBranchedQuestion" type="Boolean" default="false" />
+    <!-- End attribute -->
+    <!-- event handlers -->
+    <aura:handler name="init" action="{!c.doInit}" value="{!this}"></aura:handler>
+    <aura:handler event="c:QFFieldModelCloseEvt" action="{!c.handleCloseModelEvent}" />
+    <aura:handler event="c:QFDeleteModalEvt" action="{!c.handleDeleteModelEvent}" />
+    <aura:handler event="aura:waiting" action="{!c.showSpinner}" />
+    <aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}" />
+    <aura:attribute name="Spinner" type="boolean" default="false" />
+    <aura:attribute name="is_BranchingUnder" type="boolean" default="false" />
+    <aura:attribute name="selectedSection" type="String"/>
+    <aura:attribute name="isTemplatePublished" type="boolean" default="false" />
+    <aura:attribute name="isReorderSectionsModal" type="boolean" default="false" />
+    <aura:if isTrue="{!v.Spinner}">
+        <lightning:spinner size="medium" variant="brand"/>
+    </aura:if>
+    <!-- event handlers -->
+    <lightning:card aura:id="templateHeader">
+        <aura:set attribute="title">
+            <div class="slds-media slds-no-space slds-grow">
+                <div class="slds-media__figure">
+                    <lightning:icon iconName="standard:template" title="Search Questionnaire Template" />
+                </div>
+                <div class="slds-media__body">
+                    <h1 class="slds-page-header__title slds-p-right_x-small">
+                        <button class="slds-button slds-button_reset slds-type-focus slds-truncate" aria-haspopup="true" title="">
+                            <span class="slds-grid slds-has-flexi-truncate slds-grid_vertical-align-center">
+                                <span class="slds-truncate" title="Recently Viewed">{!v.objQnaire.Name}</span>
+                            </span>
+                        </button>
+                    </h1>
+                    <nav class="slds-text-heading_small">
+                        {!v.objQnaire.Description__c}
+                    </nav>
+                </div>
+            </div>
+        </aura:set>
+        <aura:set attribute="actions">
+            Version :{!v.objQnaire.Version__c} &nbsp;&nbsp; Category :{!v.objQnaire.Category__c}&nbsp;&nbsp;
+            <lightning:buttonGroup >
+                <lightning:button label="Preview"  onclick="{!c.redirectPreview}" />
+                <lightning:button label="Publish" onclick="{!c.showpublishConfirmModal}" />
+            </lightning:buttonGroup>
+        </aura:set>
+    </lightning:card>
+   
+    <!--Start container section -->
+    <lightning:card class="qstnBuilderContent qf-card-remove">
+        <div class="slds-size_12-of-12">
+            <div class="slds-grid">
+                <div class="slds-col slds-size_4-of-12 slds-box border0 slds-p-top_none slds-p-bottom_none qf-left-panel-box">
+                    <div aura:id="lftPnlDiv" class="{!'qf-left-panel'+v.questnLfPanel}" style="{!v.questnLfPanelStyleValue}">
+                        <div id="question-builder-panel" class="slds-panel slds-grid slds-grid_vertical slds-nowrap slds-box question-builder-panel">
+                            <div class="slds-form slds-form_stacked slds-grow ">
+                                <div class="slds-panel__section  slds-p-top_none slds-p-bottom_none paddingL0 paddingR0">
+                                    <div class="slds-media__body">
+                                        <div class="slds-grid">
+                                            <div class="slds-col ">
+                                                <div class="slds-form-element">
+                                                    <div class="slds-form-element__control">
+                                                        <h2><span class="slds-text-heading_small slds-card__header-link">Question Builder</span></h2>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-col slds-no-flex slds-grid slds-align-bottom">
+                                                <lightning:buttonIcon aura:id="articleOne" class="slds-show slds-button marginB12 slds-button slds-button--icon-small slds-button--icon-border slds-button--icon-bare" iconName="utility:minimize_window" variant="bare" alternativeText="Minimize Window" iconClass="dark" onclick="{!c.minMaxWindow}" />
+                                                <lightning:buttonIcon aura:id="articleOne" class="slds-hide slds-button slds-button slds-button--icon-small slds-button--icon-border slds-button--icon-bare" iconName="utility:add" variant="bare" alternativeText="Maximize Window" iconClass="dark" onclick="{!c.minMaxWindow}" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-panel__section paddingL0 paddingR0 dragable-box slds-show" aura:id="articleOne">
+                                    <div class="slds-scrollable slds-grow questionBuilder-left-box" style="{!v.questionBuilderleftbox}">
+                                        <div class="marginT5 selecttableField" id="Header/Footer">
+                                            <a href="javascript:void(0);" class="slds-box qf-button-box slds-box_link slds-box_x-small slds-media qf-QuestionBuilder-cursor">
+                                                <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small qf-QuestionBuilder-cursor">
+                                                    <span class="slds-icon_container slds-icon-utility-knowledge_base" title="Header/Footer">
+                                                        <lightning:icon iconName="utility:snippet" size="medium" alternativeText="Header/Footer"/>
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body slds-border_left slds-p-around_small qf-QuestionBuilder-cursor">
+                                                    <h2 class="slds-truncate slds-text-heading_small" title="Header/Footer output field">Header/Footer</h2>
+                                                </div>
+                                            </a>
+                                        </div>
+
+                                        <div class="selecttableField " id="TextPlain" >
+                                            <div class="slds-box slds-box_link slds-box_x-small slds-media qf-button-box qf-QuestionBuilder-cursor" id="Text Plain">
+                                                <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small qf-QuestionBuilder-cursor">
+                                                    <span class="slds-icon_container slds-icon-utility-knowledge_base" title="Text (Plain)">
+                                                        <lightning:icon iconName="utility:richtextbulletedlist" size="medium" alternativeText="Text Plain"/>
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body slds-border_left slds-p-around_small qf-QuestionBuilder-cursor">
+                                                    <h2 class="slds-truncate slds-text-heading_small" title="Text (Plain) input field">Text (Plain)</h2>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="marginT5 selecttableField" id="RichText">
+                                            <a href="javascript:void(0);" class="slds-box qf-button-box slds-box_link slds-box_x-small slds-media qf-QuestionBuilder-cursor">
+                                                <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small qf-QuestionBuilder-cursor">
+                                                    <span class="slds-icon_container slds-icon-utility-knowledge_base qf-QuestionBuilder-cursor" title="Text (Rich)">
+                                                        <lightning:icon iconName="utility:richtextnumberedlist" size="medium" alternativeText="Text (Rich)"/>
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body slds-border_left slds-p-around_small qf-QuestionBuilder-cursor">
+                                                    <h2 class="slds-truncate slds-text-heading_small" title="Text (Rich) input field">Text (Rich)</h2>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        <div class="marginT5 selecttableField" id="Address">
+                                            <a href="javascript:void(0);" class="slds-box qf-button-box slds-box_link slds-box_x-small slds-media qf-QuestionBuilder-cursor">
+                                                <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small qf-QuestionBuilder-cursor">
+                                                    <span class="slds-icon_container slds-icon-utility-knowledge_base" title="Address">
+                                                        <lightning:icon iconName="utility:identity" size="medium" alternativeText="Address"/>
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body slds-border_left slds-p-around_small qf-QuestionBuilder-cursor">
+                                                    <h2 class="slds-truncate slds-text-heading_small" title="Address input field">Address</h2>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        <div class="marginT5 selecttableField" id="Email">
+                                            <a href="javascript:void(0);" class="slds-box qf-button-box slds-box_link slds-box_x-small slds-media qf-QuestionBuilder-cursor">
+                                                <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small qf-QuestionBuilder-cursor">
+                                                    <span class="slds-icon_container slds-icon-utility-knowledge_base" title="Email">
+                                                        <lightning:icon iconName="utility:email" size="medium" alternativeText="Email"/>
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body slds-border_left slds-p-around_small qf-QuestionBuilder-cursor">
+                                                    <h2 class="slds-truncate slds-text-heading_small" title="Email input field">Email</h2>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        <div class="marginT5 selecttableField" id="Phone">
+                                            <a href="javascript:void(0);" class="slds-box qf-button-box slds-box_link slds-box_x-small slds-media qf-QuestionBuilder-cursor">
+                                                <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small qf-QuestionBuilder-cursor">
+                                                    <span class="slds-icon_container slds-icon-utility-knowledge_base" title="Phone">
+                                                        <lightning:icon iconName="utility:call" size="medium" alternativeText="Phone"/>                                                        
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body slds-border_left slds-p-around_small qf-QuestionBuilder-cursor">
+                                                    <h2 class="slds-truncate slds-text-heading_small" title="Phone input field">Phone</h2>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        <div class="marginT5 selecttableField" id="Information">
+                                            <a href="javascript:void(0);" class="slds-box qf-button-box slds-box_link slds-box_x-small slds-media qf-QuestionBuilder-cursor">
+                                                <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small qf-QuestionBuilder-cursor">
+                                                    <span class="slds-icon_container slds-icon-utility-knowledge_base" title="info">
+                                                        <lightning:icon iconName="utility:info" size="medium" alternativeText="info"/>                                                       
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body slds-border_left slds-p-around_small qf-QuestionBuilder-cursor">
+                                                    <h2 class="slds-truncate slds-text-heading_small" title="Information/Instruction output field">Information/Instruction</h2>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        <div class="marginT5 selecttableField" id="Date">
+                                            <a href="javascript:void(0);" class="slds-box qf-button-box slds-box_link slds-box_x-small slds-media qf-QuestionBuilder-cursor">
+                                                <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small qf-QuestionBuilder-cursor">
+                                                    <span class="slds-icon_container slds-icon-utility-knowledge_base qf-QuestionBuilder-cursor" title="info">
+                                                        <lightning:icon iconName="utility:event" size="medium" alternativeText="info"/>                                                       
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body slds-border_left slds-p-around_small qf-QuestionBuilder-cursor">
+                                                    <h2 class="slds-truncate slds-text-heading_small" title="Date input field">Date</h2>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        <div class="marginT5 selecttableField" id="DateTime">
+                                            <a href="javascript:void(0);" class="slds-box qf-button-box slds-box_link slds-box_x-small slds-media qf-QuestionBuilder-cursor">
+                                                <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small qf-QuestionBuilder-cursor">
+                                                    <span class="slds-icon_container slds-icon-utility-knowledge_base qf-QuestionBuilder-cursor" title="info">
+                                                        <lightning:icon iconName="utility:clock" size="medium" alternativeText="info"/>                                                        
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body slds-border_left slds-p-around_small qf-QuestionBuilder-cursor">
+                                                    <h2 class="slds-truncate slds-text-heading_small" title="DateTime input field">DateTime</h2>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        <div class="marginT5 selecttableField" id="URL">
+                                            <a href="javascript:void(0);" class="slds-box qf-button-box slds-box_link slds-box_x-small slds-media qf-QuestionBuilder-cursor">
+                                                <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small qf-QuestionBuilder-cursor">
+                                                    <span class="slds-icon_container slds-icon-utility-knowledge_base" title="info">
+                                                        <lightning:icon iconName="utility:world" size="medium" alternativeText="info"/>                                                        
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body slds-border_left slds-p-around_small qf-QuestionBuilder-cursor">
+                                                    <h2 class="slds-truncate slds-text-heading_small" title="URL input field">URL</h2>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        <div class="marginT5 selecttableField" id="Checkbox">
+                                            <a href="javascript:void(0);" class="slds-box qf-button-box slds-box_link slds-box_x-small slds-media qf-QuestionBuilder-cursor">
+                                                <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small qf-QuestionBuilder-cursor">
+                                                    <span class="slds-icon_container slds-icon-utility-knowledge_base" title="Checkbox">
+                                                        <lightning:icon iconName="utility:check" size="medium" alternativeText="Checkbox"/>
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body slds-border_left slds-p-around_small qf-QuestionBuilder-cursor">
+                                                    <h2 class="slds-truncate slds-text-heading_small" title="Checkbox input field">Checkbox</h2>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        <div class="marginT5 selecttableField" id="Radio">
+                                            <a href="javascript:void(0);" class="slds-box qf-button-box slds-box_link slds-box_x-small slds-media qf-QuestionBuilder-cursor">
+                                                <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small qf-QuestionBuilder-cursor">
+                                                    <span class="slds-icon_container slds-icon-utility-knowledge_base" title="Radio">
+                                                        <lightning:icon iconName="utility:process" size="medium" alternativeText="Radio"/>
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body slds-border_left slds-p-around_small qf-QuestionBuilder-cursor">
+                                                    <h2 class="slds-truncate slds-text-heading_small" title="Group radio button input field">Radio</h2>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        
+                                        <div class="marginT5 selecttableField" id="Picklist">
+                                            <a href="javascript:void(0);" class="slds-box qf-button-box slds-box_link slds-box_x-small slds-media qf-QuestionBuilder-cursor">
+                                                <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small qf-QuestionBuilder-cursor">
+                                                    <span class="slds-icon_container slds-icon-utility-knowledge_base" title="Picklist">
+                                                        <lightning:icon iconName="utility:picklist" size="medium" alternativeText="Picklist"/>
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body slds-border_left slds-p-around_small qf-QuestionBuilder-cursor">
+                                                    <h2 class="slds-truncate slds-text-heading_small" title="Picklist input field">Picklist</h2>
+                                                </div>
+                                            </a>
+                                        </div>
+
+                                        <div class="marginT5 selecttableField" id="Number">
+                                            <a href="javascript:void(0);" class="slds-box qf-button-box slds-box_link slds-box_x-small slds-media qf-QuestionBuilder-cursor">
+                                                <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small qf-QuestionBuilder-cursor">
+                                                    <span class="slds-icon_container slds-icon-utility-knowledge_base" title="Number/Currency">
+                                                        <lightning:icon iconName="utility:richtextnumberedlist" size="medium" alternativeText="Number/Currency"/>                                                        
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body slds-border_left slds-p-around_small qf-QuestionBuilder-cursor">
+                                                    <h2 class="slds-truncate slds-text-heading_small" title="Number/Currency input field">Number/Currency</h2>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        <div class="marginT5 selecttableField" id="Lookup">
+                                            <a href="javascript:void(0);" class="slds-box qf-button-box slds-box_link slds-box_x-small slds-media qf-QuestionBuilder-cursor">
+                                                <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small qf-QuestionBuilder-cursor">
+                                                    <span class="slds-icon_container slds-icon-utility-knowledge_base" title="Lookup">
+                                                        <lightning:icon iconName="utility:search" size="medium" alternativeText="Lookup"/>
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body slds-border_left slds-p-around_small qf-QuestionBuilder-cursor">
+                                                    <h2 class="slds-truncate slds-text-heading_small" title="Lookup input field">Lookup</h2>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        <div class="marginT5 selecttableField" id="Signature">
+                                            <a href="javascript:void(0);" class="slds-box qf-button-box slds-box_link slds-box_x-small slds-media qf-QuestionBuilder-cursor">
+                                                <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small qf-QuestionBuilder-cursor">
+                                                    <span class="slds-icon_container slds-icon-utility-knowledge_base" title="Signature">
+                                                        <lightning:icon iconName="utility:note" size="medium" alternativeText="Signature"/>
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body slds-border_left slds-p-around_small qf-QuestionBuilder-cursor">
+                                                    <h2 class="slds-truncate slds-text-heading_small" title="Signature input field">Signature</h2>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        <div class="marginT5 selecttableField" id="Switch">
+                                            <a href="javascript:void(0);" class="slds-box qf-button-box slds-box_link slds-box_x-small slds-media qf-QuestionBuilder-cursor">
+                                                <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small qf-QuestionBuilder-cursor">
+                                                    <span class="slds-icon_container slds-icon-utility-knowledge_base" title="Switch">
+                                                        <lightning:icon iconName="utility:switch" size="medium" alternativeText="Switch"/>
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body slds-border_left slds-p-around_small qf-QuestionBuilder-cursor">
+                                                    <h2 class="slds-truncate slds-text-heading_small" title="Switch input field">Switch</h2>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        <div class="marginT5 selecttableField" id="Slider">
+                                            <a href="javascript:void(0);" class="slds-box qf-button-box slds-box_link slds-box_x-small slds-media qf-QuestionBuilder-cursor">
+                                                <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small qf-QuestionBuilder-cursor">
+                                                    <span class="slds-icon_container slds-icon-utility-knowledge_base" title="Slider">
+                                                        <lightning:icon iconName="utility:rating" size="medium" alternativeText="Slider"/>
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body slds-border_left slds-p-around_small qf-QuestionBuilder-cursor">
+                                                    <h2 class="slds-truncate slds-text-heading_small" title="Slider input field">Slider</h2>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        <div class="marginT5 selecttableField" id="GPS Location">
+                                            <a href="javascript:void(0);" class="slds-box qf-button-box slds-box_link slds-box_x-small slds-media qf-QuestionBuilder-cursor">
+                                                <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small qf-QuestionBuilder-cursor">
+                                                    <span class="slds-icon_container slds-icon-utility-knowledge_base" title="GPS Location">
+                                                        <lightning:icon iconName="utility:location" size="medium" alternativeText="GPS Location"/>
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body slds-border_left slds-p-around_small qf-QuestionBuilder-cursor">
+                                                    <h2 class="slds-truncate slds-text-heading_small" title="GPS Location input field">GPS Location</h2>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        <div class="marginT5 selecttableField" id="Media">
+                                            <a href="javascript:void(0);" class="slds-box qf-button-box slds-box_link slds-box_x-small slds-media qf-QuestionBuilder-cursor">
+                                                <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small qf-QuestionBuilder-cursor">
+                                                    <span class="slds-icon_container slds-icon-utility-knowledge_base" title="Media File">
+                                                        <lightning:icon iconName="utility:announcement" size="medium" alternativeText="Media File"/>
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body slds-border_left slds-p-around_small qf-QuestionBuilder-cursor">
+                                                    <h2 class="slds-truncate slds-text-heading_small" title="Media File input field">Media File</h2>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <aura:if isTrue="{!v.alertMsg != ''}">
+                    <c:ShowAlertMessage message="{!v.alertMsg}" />
+                </aura:if>
+                <div class="slds-col slds-size_8-of-12 slds-box border0 paddingL0 slds-p-top_none slds-p-bottom_none">
+                    <div id="questionnaireTemplateAria" class="slds-p-around_x-small slds-box">
+                        <div class="slds-scrollable slds-grow questionBuilder ">
+                            <div class="slds-grid">
+                                <div class="slds-col ">
+                                    <lightning:select name="selectItem" label="Select Section" onchange="{!c.tabSelected}" value="{!v.selTabId}" variant="label-hidden">
+                                        <aura:iteration items="{!v.lstQuesGroup}" var="QuesGroup" indexVar="0">
+                                            <option value="{!QuesGroup.Question_Group__c}" selected="{!v.selectedSection==QuesGroup.Question_Group__c?true:false}">{!QuesGroup.Question_Group__r.Name}</option>
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </div>
+                                <div class="slds-col girikon">
+                                    <lightning:button iconPosition="left" iconName="utility:add" label="Add Section" variant="brand" onclick="{!c.showSectionModel}" class="slds-float_right" />                                   
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slds-panel slds-p-top_none slds-grid slds-grid_vertical slds-nowrap slds-box slds-m-top_x-small">
+                        <div class="slds-form slds-form_stacked slds-grow ">
+                            <div class="slds-panel__section  slds-p-bottom_none slds-p-left_none slds-p-right_none qf-section-name">
+                                <div class="slds-media__body">
+                                    <div class="slds-grid">
+                                        <div class="slds-col ">
+                                            <div class="slds-form-element">
+                                                <div class="slds-form-element__control">
+                                                    <aura:if isTrue="{!v.lstQQuesnnaire.sectionColNumber !='0'}">
+                                                        <h1><span class="slds-text-heading_small slds-card__header-link"> {!v.lstQQuesnnaire.groupName} </span></h1>
+                                                    </aura:if>                                                    
+                                                </div>
+                                            </div>
+
+
+                                        </div>
+                                        <div class="slds-col slds-no-flex slds-grid slds-align-top">
+                                            <aura:if isTrue="{!v.lstQQuesnnaire.sectionColNumber !='0'}">
+                                                <lightning:buttonIcon aura:id="deleteSection" class="slds-button slds-button_icon slds-m-left_xx-small slds-button--icon-bare" iconName="utility:delete" variant="bare" alternativeText="Delete Section" iconClass="dark" onclick="{!c.deleteSection}" />
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Start Column 0 for default section -->
+                            <!--style="{!(v.lstQQuesnnaire.sectionColNumber == '0' || v.lstQQuesnnaire.sectionColNumber == '1' )? 'display:block;' : 'display:none;'}"-->
+                            
+                            <div style="{!v.lstQQuesnnaire.sectionColNumber=='1'||v.lstQQuesnnaire.sectionColNumber=='0'?'':'display:none'}">
+                                <div class="slds-panel__section slds-show slds-p-around_none dropSection" id="col0">
+                                    <div class="slds-scrollable slds-grow questionBuilder slds-is-relative sortableArea" id="sortableArea1">
+                                        <aura:iteration items="{!v.lstQQuesnnaire.lstQuestn}" var="Question" indexVar="QuesIndex">
+                                            <aura:iteration items="{!Question.Question_Questionnaires__r}" var="QuestionQuestnnaire" indexVar="QuestionQuestnnaireIndex">
+                                                <aura:if isTrue="{!QuestionQuestnnaire.Related_To_Column__c =='col0'}">
+                                                    <div class="slds-panel slds-p-top_none qf-box slds-p-left_none slds-p-right_none slds-p-bottom_none slds-grid slds-grid_vertical slds-nowrap  slds-m-top_x-small" data-qid="{!QuestionQuestnnaire.Question__c}" data-qqid="{!QuestionQuestnnaire.Id}">
+                                                        <div class="slds-form slds-form_stacked slds-grow ">
+                                                            <div class="{!Question.Type__c == 'Information' ? 'slds-panel__section qf-information-section' : 'slds-panel__section slds-p-bottom_none'}" Style="{!Question.Type__c == 'Information' ? 'background:'+ Question.Metadata__c+' ; border-radius: 5xp;' : ''}">
+                                                                <div class="slds-media__body">
+                                                                    <div class="slds-grid">
+                                                                        <div class="slds-col">
+                                                                            <div class="slds-form-element">
+                                                                                <div class="slds-form-element__control">
+                                                                                    <h2>
+                                                                                        <span class="qf-text slds-is-relative">
+                                                                                            <div class="slds-grid  slds-wrap">
+                                                                                                <aura:if isTrue="{!QuestionQuestnnaire.Required__c==true}">
+                                                                                                    <span id="asteric">&#42;</span>
+                                                                                                </aura:if>
+                                                                                                <div class="slds-col qf-Question-col" >
+                                                                                                    <span><aura:unescapedHtml value="{!QuestionQuestnnaire.Question__r.Label__c}"  /> <span>({!QuestionQuestnnaire.Question__r.Type__c})</span></span>
+                                                                                                    <lightning:helptext iconName="utility:info"  content="{!QuestionQuestnnaire.Help_Text__c}" class="{!QuestionQuestnnaire.Help_Text_Required__c==false?'hidehelptextIcon':'helptextIcon'}" />
+                                                                                                </div>
+                                                                                                
+                                                                                            </div>  
+                                                                                        </span>
+                                                                                    </h2>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="slds-col slds-no-flex slds-grid slds-align-bottom slds-text-align_right align-self qf-edit-delete">
+                                                                            <div>
+                                                                                <aura:if isTrue="{!v.lstQuesGroup.length>1}">
+                                                                                    <lightning:buttonIcon onclick="{!c.addQuestnInSection}" size="medium" iconName="utility:add" variant="bare" alternativeText="move question" value="{!QuesIndex}" />
+                                                                                </aura:if>
+                                                                            </div>
+                                                                            <aura:if isTrue="{!QuestionQuestnnaire.Is_Allow_Branching__c==true}">
+                                                                                <div class="qf-branching-btn">
+                                                                                    <lightning:buttonIcon onclick="{!c.openBranchingPopup}" value="{!QuesIndex}" name="{!'Qustn_Branching_'+QuestionQuestnnaire.Question_Order__c}" size="medium" iconName="utility:hierarchy" variant="bare" alternativeText="Branching" />
+                                                                                </div>
+                                                                            </aura:if>
+                                                                            <div>
+                                                                                <lightning:buttonIcon onclick="{!c.getOnlyOneQuestionRecrod}" value="{!QuestionQuestnnaire.Question__c}" size="medium" iconName="utility:edit" variant="bare" alternativeText="edit" />
+                                                                            </div>
+                                                                            <div>
+                                                                                <lightning:buttonIcon onclick="{!c.delQues}" value="{!QuestionQuestnnaire.Id}" size="medium" iconName="utility:delete" variant="bare" alternativeText="delete" name="{!QuesIndex}"/>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>                                                        
+                                                            <!--Start branching section-->
+                                                            <aura:iteration items="{!QuestionQuestnnaire.branchingQuestnQuetnnaire}" var="branchingRecord" indexVar="branchingIndex">
+                                                                <aura:if isTrue="{!branchingRecord.isShowQuestion==true}">
+                                                                    <div class="slds-panel slds-p-top_none qf-box slds-p-left_none slds-p-right_none slds-p-bottom_none slds-grid slds-grid_vertical slds-nowrap  slds-m-top_x-small" style="margin-left:3%;margin-bottom: 3%;margin-right: 3%;">
+                                                                        <div class="slds-form slds-form_stacked slds-grow ">
+                                                                            <div class="{!branchingRecord.Question__r.Type__c == 'Information' ? 'slds-panel__section qf-information-section' : 'slds-panel__section slds-p-bottom_none'}" Style="{!branchingRecord.Question__r.Type__c == 'Information' ? 'background:'+ branchingRecord.Question__r.Metadata__c+' ; border-radius: 5xp;' : ''}">
+                                                                                <div class="slds-media__body">
+                                                                                    <div class="slds-grid">
+                                                                                        <div class="slds-col">
+                                                                                            <div class="slds-form-element">
+                                                                                                <div class="slds-form-element__control">
+                                                                                                    <h2>
+                                                                                                        <span class="qf-text slds-is-relative">
+                                                                                                            <div class="slds-grid  slds-wrap">
+                                                                                                                <aura:if isTrue="{!QuestionQuestnnaire.Required__c==true}">
+                                                                                                                    <span id="asteric">&#42;</span>
+                                                                                                                </aura:if>
+                                                                                                                <div class="slds-col qf-Question-col" >
+                                                                                                                    <span><aura:unescapedHtml value="{!branchingRecord.Question__r.Label__c}"  /><span>({!branchingRecord.Question__r.Type__c})</span></span>
+                                                                                                                    <lightning:helptext iconName="utility:info"  content="{!branchingRecord.Help_Text__c}" class="{!branchingRecord.Help_Text_Required__c==false?'hidehelptextIcon':'helptextIcon'}" />
+                                                                                                                </div>
+                                                                                                            </div>  
+                                                                                                        </span>
+                                                                                                    </h2>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <div class="slds-col slds-no-flex slds-grid slds-align-bottom slds-text-align_right align-self qf-edit-delete">
+                                                                                            <div>
+                                                                                                <lightning:buttonIcon onclick="{!c.getBranchingOnlyOneQuestionRecrod}" value="{!branchingRecord.Question__c}" size="medium" iconName="utility:edit" variant="bare" alternativeText="edit" />
+                                                                                            </div>
+                                                                                            <div>
+                                                                                                <lightning:buttonIcon onclick="{!c.delQues}" value="{!branchingRecord.Id}" size="medium" iconName="utility:delete" variant="bare" alternativeText="delete" />
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            
+                                                                        </div>
+                                                                    </div>
+                                                                </aura:if>
+                                                                <!--end branching section-->
+                                                            </aura:iteration>
+                                                        </div>
+                                                    </div>
+                                                </aura:if>
+                                            </aura:iteration>
+                                        </aura:iteration>
+                                    </div>
+                                </div>     
+                            </div>
+                            <!-- Colomns-2-->
+                            <div class="slds-grid slds-wrap" style="{!v.lstQQuesnnaire.sectionColNumber=='2'?'':'display:none'}">
+                                <div class="dropSection slds-p-around--small slds-box slds-size_1-of-2" id="col1">
+                                    <strong>Col-1</strong>
+                                    <div class="slds-scrollable slds-grow questionBuilder slds-is-relative sortableArea" id="sortableArea1">
+                                        <aura:iteration items="{!v.lstQQuesnnaire.lstQuestn}" var="Question" indexVar="QuesIndex">
+                                            <aura:iteration items="{!Question.Question_Questionnaires__r}" var="QuestionQuestnnaire" indexVar="QuestionQuestnnaireIndex">
+                                                <aura:if isTrue="{!QuestionQuestnnaire.Related_To_Column__c =='col1'}">
+                                                    <div class="slds-panel slds-p-top_none qf-box slds-p-left_none slds-p-right_none slds-p-bottom_none slds-grid slds-grid_vertical slds-nowrap  slds-m-top_x-small" data-qid="{!QuestionQuestnnaire.Question__c}" data-qqid="{!QuestionQuestnnaire.Id}">
+                                                        <div class="slds-form slds-form_stacked slds-grow ">
+                                                            <div class="{!Question.Type__c == 'Information' ? 'slds-panel__section qf-information-section' : 'slds-panel__section slds-p-bottom_none'}" Style="{!Question.Type__c == 'Information' ? 'background:'+ Question.Metadata__c+' ; border-radius: 5xp;' : ''}">
+                                                                <div class="slds-media__body">
+                                                                    <div class="slds-grid">
+                                                                        <div class="slds-col ">
+                                                                            <div class="slds-form-element">
+                                                                                <div class="slds-form-element__control">
+                                                                                    <h2>
+                                                                                        <span class="qf-text slds-is-relative">
+                                                                                            <div class="slds-grid  slds-wrap">
+                                                                                                <aura:if isTrue="{!QuestionQuestnnaire.Required__c==true}">
+                                                                                                    <span id="asteric">&#42;</span>
+                                                                                                </aura:if>
+                                                                                                <div class="slds-col qf-Question-col" >
+                                                                                                    <span><aura:unescapedHtml value="{!QuestionQuestnnaire.Question__r.Label__c}"  /> <span>({!QuestionQuestnnaire.Question__r.Type__c})</span></span>
+                                                                                                    <lightning:helptext iconName="utility:info"  content="{!QuestionQuestnnaire.Help_Text__c}" class="{!QuestionQuestnnaire.Help_Text_Required__c==false?'hidehelptextIcon':'helptextIcon'}" />
+                                                                                                </div>
+                                                                                                
+                                                                                            </div>  
+                                                                                        </span>
+                                                                                    </h2>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="slds-col slds-no-flex slds-grid slds-align-bottom slds-text-align_right align-self qf-edit-delete">
+                                                                            <div>
+                                                                                <aura:if isTrue="{!v.lstQuesGroup.length>1}">
+                                                                                    <lightning:buttonIcon onclick="{!c.addQuestnInSection}" size="medium" iconName="utility:add" variant="bare" alternativeText="move question" value="{!QuesIndex}" />
+                                                                                </aura:if>
+                                                                            </div>
+                                                                            <aura:if isTrue="{!QuestionQuestnnaire.Is_Allow_Branching__c==true}">
+                                                                                <div class="qf-branching-btn">
+                                                                                    <lightning:buttonIcon onclick="{!c.openBranchingPopup}" value="{!QuesIndex}" name="{!'Qustn_Branching_'+QuestionQuestnnaire.Question_Order__c}" size="medium" iconName="utility:hierarchy" variant="bare" alternativeText="Branching" />
+                                                                                </div>
+                                                                            </aura:if>
+                                                                            <div>
+                                                                                <lightning:buttonIcon onclick="{!c.getOnlyOneQuestionRecrod}" value="{!QuestionQuestnnaire.Question__c}" size="medium" iconName="utility:edit" variant="bare" alternativeText="edit" />
+                                                                            </div>
+                                                                            <div>
+                                                                                <lightning:buttonIcon onclick="{!c.delQues}" value="{!QuestionQuestnnaire.Id}" size="medium" iconName="utility:delete" variant="bare" alternativeText="delete" name="{!QuesIndex}"/>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>                                                        
+                                                            <!--Start branching section-->
+                                                            <aura:iteration items="{!QuestionQuestnnaire.branchingQuestnQuetnnaire}" var="branchingRecord" indexVar="branchingIndex">
+                                                                <aura:if isTrue="{!branchingRecord.isShowQuestion==true}">
+                                                                    <div class="slds-panel slds-p-top_none qf-box slds-p-left_none slds-p-right_none slds-p-bottom_none slds-grid slds-grid_vertical slds-nowrap  slds-m-top_x-small" style="margin-left:3%;margin-bottom: 3%;margin-right: 3%;">
+                                                                        <div class="slds-form slds-form_stacked slds-grow ">
+                                                                            <div class="{!branchingRecord.Question__r.Type__c == 'Information' ? 'slds-panel__section qf-information-section' : 'slds-panel__section slds-p-bottom_none'}" Style="{!branchingRecord.Question__r.Type__c == 'Information' ? 'background:'+ branchingRecord.Question__r.Metadata__c+' ; border-radius: 5xp;' : ''}">
+                                                                                <div class="slds-media__body">
+                                                                                    <div class="slds-grid">
+                                                                                        <div class="slds-col ">
+                                                                                            <div class="slds-form-element">
+                                                                                                <div class="slds-form-element__control">
+                                                                                                    <h2>
+                                                                                                        <span class="qf-text slds-is-relative">
+                                                                                                            <div class="slds-grid  slds-wrap">
+                                                                                                                <aura:if isTrue="{!QuestionQuestnnaire.Required__c==true}">
+                                                                                                                    <span id="asteric">&#42;</span>
+                                                                                                                </aura:if>
+                                                                                                                <div class="slds-col qf-Question-col" >
+                                                                                                                    <span><aura:unescapedHtml value="{!branchingRecord.Question__r.Label__c}"  /><span>({!branchingRecord.Question__r.Type__c})</span></span>
+                                                                                                                    <lightning:helptext iconName="utility:info"  content="{!branchingRecord.Help_Text__c}" class="{!branchingRecord.Help_Text_Required__c==false?'hidehelptextIcon':'helptextIcon'}" />
+                                                                                                                </div>
+                                                                                                            </div>  
+                                                                                                        </span>
+                                                                                                    </h2>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <div class="slds-col slds-no-flex slds-grid slds-align-bottom slds-text-align_right align-self qf-edit-delete">
+                                                                                            <div>
+                                                                                                <lightning:buttonIcon onclick="{!c.getBranchingOnlyOneQuestionRecrod}" value="{!branchingRecord.Question__c}" size="medium" iconName="utility:edit" variant="bare" alternativeText="edit" />
+                                                                                            </div>
+                                                                                            <div>
+                                                                                                <lightning:buttonIcon onclick="{!c.delQues}" value="{!branchingRecord.Id}" size="medium" iconName="utility:delete" variant="bare" alternativeText="delete" />
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            
+                                                                        </div>
+                                                                    </div>
+                                                                </aura:if>
+                                                                <!--end branching section-->
+                                                            </aura:iteration>
+                                                        </div>
+                                                    </div>
+                                                </aura:if>
+                                            </aura:iteration>
+                                        </aura:iteration>
+                                    </div>
+                                </div>
+                                <div class="dropSection slds-p-around--small slds-box slds-size_1-of-2" id="col2">
+                                    <strong>Col-2</strong>
+                                    <div class="slds-scrollable slds-grow questionBuilder slds-is-relative sortableArea" id="sortableArea2">
+                                        <aura:iteration items="{!v.lstQQuesnnaire.lstQuestn}" var="Question" indexVar="QuesIndex">
+                                            <aura:iteration items="{!Question.Question_Questionnaires__r}" var="QuestionQuestnnaire" indexVar="QuestionQuestnnaireIndex">
+                                                <aura:if isTrue="{!QuestionQuestnnaire.Related_To_Column__c =='col2'}">
+                                                    <div class="slds-panel slds-p-top_none qf-box slds-p-left_none slds-p-right_none slds-p-bottom_none slds-grid slds-grid_vertical slds-nowrap  slds-m-top_x-small" data-qid="{!QuestionQuestnnaire.Question__c}" data-qqid="{!QuestionQuestnnaire.Id}">
+                                                        <div class="slds-form slds-form_stacked slds-grow ">
+                                                            <div class="{!Question.Type__c == 'Information' ? 'slds-panel__section qf-information-section' : 'slds-panel__section slds-p-bottom_none'}" Style="{!Question.Type__c == 'Information' ? 'background:'+ Question.Metadata__c+' ; border-radius: 5xp;' : ''}">
+                                                                <div class="slds-media__body">
+                                                                    <div class="slds-grid">
+                                                                        <div class="slds-col ">
+                                                                            <div class="slds-form-element">
+                                                                                <div class="slds-form-element__control">
+                                                                                    <h2>
+                                                                                        <span class="qf-text slds-is-relative">
+                                                                                            <div class="slds-grid  slds-wrap">
+                                                                                                <aura:if isTrue="{!QuestionQuestnnaire.Required__c==true}">
+                                                                                                    <span id="asteric">&#42;</span>
+                                                                                                </aura:if>
+                                                                                                <div class="slds-col qf-Question-col" >
+                                                                                                    <span><aura:unescapedHtml value="{!QuestionQuestnnaire.Question__r.Label__c}"  /> <span>({!QuestionQuestnnaire.Question__r.Type__c})</span></span>
+                                                                                                    <lightning:helptext iconName="utility:info"  content="{!QuestionQuestnnaire.Help_Text__c}" class="{!QuestionQuestnnaire.Help_Text_Required__c==false?'hidehelptextIcon':'helptextIcon'}" />
+                                                                                                </div>
+                                                                                                
+                                                                                            </div>  
+                                                                                        </span>
+                                                                                    </h2>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="slds-col slds-no-flex slds-grid slds-align-bottom slds-text-align_right align-self qf-edit-delete">
+                                                                            <div>
+                                                                                <aura:if isTrue="{!v.lstQuesGroup.length>1}">
+                                                                                    <lightning:buttonIcon onclick="{!c.addQuestnInSection}" size="medium" iconName="utility:add" variant="bare" alternativeText="move question" value="{!QuesIndex}" />
+                                                                                </aura:if>
+                                                                            </div>
+                                                                            <aura:if isTrue="{!QuestionQuestnnaire.Is_Allow_Branching__c==true}">
+                                                                                <div class="qf-branching-btn">
+                                                                                    <lightning:buttonIcon onclick="{!c.openBranchingPopup}" value="{!QuesIndex}" name="{!'Qustn_Branching_'+QuestionQuestnnaire.Question_Order__c}" size="medium" iconName="utility:hierarchy" variant="bare" alternativeText="Branching" />
+                                                                                </div>
+                                                                            </aura:if>
+                                                                            <div>
+                                                                                <lightning:buttonIcon onclick="{!c.getOnlyOneQuestionRecrod}" value="{!QuestionQuestnnaire.Question__c}" size="medium" iconName="utility:edit" variant="bare" alternativeText="edit" />
+                                                                            </div>
+                                                                            <div>
+                                                                                <lightning:buttonIcon onclick="{!c.delQues}" value="{!QuestionQuestnnaire.Id}" size="medium" iconName="utility:delete" variant="bare" alternativeText="delete" name="{!QuesIndex}"/>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>                                                        
+                                                            
+                                                            <aura:iteration items="{!QuestionQuestnnaire.branchingQuestnQuetnnaire}" var="branchingRecord" indexVar="branchingIndex">
+                                                                <aura:if isTrue="{!branchingRecord.isShowQuestion==true}">
+                                                                    <div class="slds-panel slds-p-top_none qf-box slds-p-left_none slds-p-right_none slds-p-bottom_none slds-grid slds-grid_vertical slds-nowrap  slds-m-top_x-small" style="margin-left:3%;margin-bottom: 3%;margin-right: 3%;">
+                                                                        <div class="slds-form slds-form_stacked slds-grow ">
+                                                                            <div class="{!branchingRecord.Question__r.Type__c == 'Information' ? 'slds-panel__section qf-information-section' : 'slds-panel__section slds-p-bottom_none'}" Style="{!branchingRecord.Question__r.Type__c == 'Information' ? 'background:'+ branchingRecord.Question__r.Metadata__c+' ; border-radius: 5xp;' : ''}">
+                                                                                <div class="slds-media__body">
+                                                                                    <div class="slds-grid">
+                                                                                        <div class="slds-col ">
+                                                                                            <div class="slds-form-element">
+                                                                                                <div class="slds-form-element__control">
+                                                                                                    <h2>
+                                                                                                        <span class="qf-text slds-is-relative">
+                                                                                                            <div class="slds-grid  slds-wrap">
+                                                                                                                <aura:if isTrue="{!QuestionQuestnnaire.Required__c==true}">
+                                                                                                                    <span id="asteric">&#42;</span>
+                                                                                                                </aura:if>
+                                                                                                                <div class="slds-col qf-Question-col" >
+                                                                                                                    <span><aura:unescapedHtml value="{!branchingRecord.Question__r.Label__c}"  /><span>({!branchingRecord.Question__r.Type__c})</span></span>
+                                                                                                                    <lightning:helptext iconName="utility:info"  content="{!branchingRecord.Help_Text__c}" class="{!branchingRecord.Help_Text_Required__c==false?'hidehelptextIcon':'helptextIcon'}" />
+                                                                                                                </div>
+                                                                                                            </div>  
+                                                                                                        </span>
+                                                                                                    </h2>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <div class="slds-col slds-no-flex slds-grid slds-align-bottom slds-text-align_right align-self qf-edit-delete">
+                                                                                            <div>
+                                                                                                <lightning:buttonIcon onclick="{!c.getBranchingOnlyOneQuestionRecrod}" value="{!branchingRecord.Question__c}" size="medium" iconName="utility:edit" variant="bare" alternativeText="edit" />
+                                                                                            </div>
+                                                                                            <div>
+                                                                                                <lightning:buttonIcon onclick="{!c.delQues}" value="{!branchingRecord.Id}" size="medium" iconName="utility:delete" variant="bare" alternativeText="delete" />
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            
+                                                                        </div>
+                                                                    </div>
+                                                                </aura:if>
+                                                                
+                                                            </aura:iteration>
+                                                        </div>
+                                                    </div>
+                                                </aura:if>
+                                            </aura:iteration>
+                                        </aura:iteration>
+                                    </div>
+                                </div>                           
+                            </div>
+
+                            <!-- Colomns-3-->
+                            <div class="slds-grid slds-wrap" style="{!v.lstQQuesnnaire.sectionColNumber=='3'?'':'display:none'}">
+                                <div class="dropSection slds-p-around--small slds-box slds-size_1-of-3" id="col1">
+                                    <strong>Col-1</strong>
+                                    <div class="slds-scrollable slds-grow questionBuilder slds-is-relative sortableArea" id="sortableArea1">
+                                        <aura:iteration items="{!v.lstQQuesnnaire.lstQuestn}" var="Question" indexVar="QuesIndex">
+                                            <aura:iteration items="{!Question.Question_Questionnaires__r}" var="QuestionQuestnnaire" indexVar="QuestionQuestnnaireIndex">
+                                                <aura:if isTrue="{!QuestionQuestnnaire.Related_To_Column__c =='col1'}">
+                                                    <div class="slds-panel slds-p-top_none qf-box slds-p-left_none slds-p-right_none slds-p-bottom_none slds-grid slds-grid_vertical slds-nowrap  slds-m-top_x-small" data-qid="{!QuestionQuestnnaire.Question__c}" data-qqid="{!QuestionQuestnnaire.Id}">
+                                                        <div class="slds-form slds-form_stacked slds-grow ">
+                                                            <div class="{!Question.Type__c == 'Information' ? 'slds-panel__section qf-information-section' : 'slds-panel__section slds-p-bottom_none'}" Style="{!Question.Type__c == 'Information' ? 'background:'+ Question.Metadata__c+' ; border-radius: 5xp;' : ''}">
+                                                                <div class="slds-media__body">
+                                                                    <div class="slds-grid">
+                                                                        <div class="slds-col ">
+                                                                            <div class="slds-form-element">
+                                                                                <div class="slds-form-element__control">
+                                                                                    <h2>
+                                                                                        <span class="qf-text slds-is-relative">
+                                                                                            <div class="slds-grid  slds-wrap">
+                                                                                                <aura:if isTrue="{!QuestionQuestnnaire.Required__c==true}">
+                                                                                                    <span id="asteric">&#42;</span>
+                                                                                                </aura:if>
+                                                                                                <div class="slds-col qf-Question-col" >
+                                                                                                    <span><aura:unescapedHtml value="{!QuestionQuestnnaire.Question__r.Label__c}"  /> <span>({!QuestionQuestnnaire.Question__r.Type__c})</span></span>
+                                                                                                    <lightning:helptext iconName="utility:info"  content="{!QuestionQuestnnaire.Help_Text__c}" class="{!QuestionQuestnnaire.Help_Text_Required__c==false?'hidehelptextIcon':'helptextIcon'}" />
+                                                                                                </div>
+                                                                                                
+                                                                                            </div>  
+                                                                                        </span>
+                                                                                    </h2>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="slds-col slds-no-flex slds-grid slds-align-bottom slds-text-align_right align-self qf-edit-delete">
+                                                                            <div>
+                                                                                <aura:if isTrue="{!v.lstQuesGroup.length>1}">
+                                                                                    <lightning:buttonIcon onclick="{!c.addQuestnInSection}" size="medium" iconName="utility:add" variant="bare" alternativeText="move question" value="{!QuesIndex}" />
+                                                                                </aura:if>
+                                                                            </div>
+                                                                            <aura:if isTrue="{!QuestionQuestnnaire.Is_Allow_Branching__c==true}">
+                                                                                <div class="qf-branching-btn">
+                                                                                    <lightning:buttonIcon onclick="{!c.openBranchingPopup}" value="{!QuesIndex}" name="{!'Qustn_Branching_'+QuestionQuestnnaire.Question_Order__c}" size="medium" iconName="utility:hierarchy" variant="bare" alternativeText="Branching" />
+                                                                                </div>
+                                                                            </aura:if>
+                                                                            <div>
+                                                                                <lightning:buttonIcon onclick="{!c.getOnlyOneQuestionRecrod}" value="{!QuestionQuestnnaire.Question__c}" size="medium" iconName="utility:edit" variant="bare" alternativeText="edit" />
+                                                                            </div>
+                                                                            <div>
+                                                                                <lightning:buttonIcon onclick="{!c.delQues}" value="{!QuestionQuestnnaire.Id}" size="medium" iconName="utility:delete" variant="bare" alternativeText="delete" name="{!QuesIndex}"/>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>                                                        
+                                                            <!--Start branching section-->
+                                                            <aura:iteration items="{!QuestionQuestnnaire.branchingQuestnQuetnnaire}" var="branchingRecord" indexVar="branchingIndex">
+                                                                <aura:if isTrue="{!branchingRecord.isShowQuestion==true}">
+                                                                    <div class="slds-panel slds-p-top_none qf-box slds-p-left_none slds-p-right_none slds-p-bottom_none slds-grid slds-grid_vertical slds-nowrap  slds-m-top_x-small" style="margin-left:3%;margin-bottom: 3%;margin-right: 3%;">
+                                                                        <div class="slds-form slds-form_stacked slds-grow ">
+                                                                            <div class="{!branchingRecord.Question__r.Type__c == 'Information' ? 'slds-panel__section qf-information-section' : 'slds-panel__section slds-p-bottom_none'}" Style="{!branchingRecord.Question__r.Type__c == 'Information' ? 'background:'+ branchingRecord.Question__r.Metadata__c+' ; border-radius: 5xp;' : ''}">
+                                                                                <div class="slds-media__body">
+                                                                                    <div class="slds-grid">
+                                                                                        <div class="slds-col ">
+                                                                                            <div class="slds-form-element">
+                                                                                                <div class="slds-form-element__control">
+                                                                                                    <h2>
+                                                                                                        <span class="qf-text slds-is-relative">
+                                                                                                            <div class="slds-grid  slds-wrap">
+                                                                                                                <aura:if isTrue="{!QuestionQuestnnaire.Required__c==true}">
+                                                                                                                    <span id="asteric">&#42;</span>
+                                                                                                                </aura:if>
+                                                                                                                <div class="slds-col qf-Question-col" >
+                                                                                                                    <span><aura:unescapedHtml value="{!branchingRecord.Question__r.Label__c}"  /><span>({!branchingRecord.Question__r.Type__c})</span></span>
+                                                                                                                    <lightning:helptext iconName="utility:info"  content="{!branchingRecord.Help_Text__c}" class="{!branchingRecord.Help_Text_Required__c==false?'hidehelptextIcon':'helptextIcon'}" />
+                                                                                                                </div>
+                                                                                                            </div>  
+                                                                                                        </span>
+                                                                                                    </h2>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <div class="slds-col slds-no-flex slds-grid slds-align-bottom slds-text-align_right align-self qf-edit-delete">
+                                                                                            <div>
+                                                                                                <lightning:buttonIcon onclick="{!c.getBranchingOnlyOneQuestionRecrod}" value="{!branchingRecord.Question__c}" size="medium" iconName="utility:edit" variant="bare" alternativeText="edit" />
+                                                                                            </div>
+                                                                                            <div>
+                                                                                                <lightning:buttonIcon onclick="{!c.delQues}" value="{!branchingRecord.Id}" size="medium" iconName="utility:delete" variant="bare" alternativeText="delete" />
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            
+                                                                        </div>
+                                                                    </div>
+                                                                </aura:if>
+                                                                <!--end branching section-->
+                                                            </aura:iteration>
+                                                        </div>
+                                                    </div>
+                                                </aura:if>
+                                            </aura:iteration>
+                                        </aura:iteration>
+                                    </div>
+                                </div>
+                                <div class="dropSection slds-p-around--small slds-box slds-size_1-of-3" id="col2">
+                                    <strong>Col-2</strong>
+                                    <div class="slds-scrollable slds-grow questionBuilder slds-is-relative sortableArea" id="sortableArea2">
+                                        <aura:iteration items="{!v.lstQQuesnnaire.lstQuestn}" var="Question" indexVar="QuesIndex">
+                                            <aura:iteration items="{!Question.Question_Questionnaires__r}" var="QuestionQuestnnaire" indexVar="QuestionQuestnnaireIndex">
+                                                <aura:if isTrue="{!QuestionQuestnnaire.Related_To_Column__c =='col2'}">
+                                                    <div class="slds-panel slds-p-top_none qf-box slds-p-left_none slds-p-right_none slds-p-bottom_none slds-grid slds-grid_vertical slds-nowrap  slds-m-top_x-small" data-qid="{!QuestionQuestnnaire.Question__c}" data-qqid="{!QuestionQuestnnaire.Id}">
+                                                        <div class="slds-form slds-form_stacked slds-grow ">
+                                                            <div class="{!Question.Type__c == 'Information' ? 'slds-panel__section qf-information-section' : 'slds-panel__section slds-p-bottom_none'}" Style="{!Question.Type__c == 'Information' ? 'background:'+ Question.Metadata__c+' ; border-radius: 5xp;' : ''}">
+                                                                <div class="slds-media__body">
+                                                                    <div class="slds-grid">
+                                                                        <div class="slds-col ">
+                                                                            <div class="slds-form-element">
+                                                                                <div class="slds-form-element__control">
+                                                                                    <h2>
+                                                                                        <span class="qf-text slds-is-relative">
+                                                                                            <div class="slds-grid  slds-wrap">
+                                                                                                <aura:if isTrue="{!QuestionQuestnnaire.Required__c==true}">
+                                                                                                    <span id="asteric">&#42;</span>
+                                                                                                </aura:if>
+                                                                                                <div class="slds-col qf-Question-col" >
+                                                                                                    <span><aura:unescapedHtml value="{!QuestionQuestnnaire.Question__r.Label__c}"  /> <span>({!QuestionQuestnnaire.Question__r.Type__c})</span></span>
+                                                                                                    <lightning:helptext iconName="utility:info"  content="{!QuestionQuestnnaire.Help_Text__c}" class="{!QuestionQuestnnaire.Help_Text_Required__c==false?'hidehelptextIcon':'helptextIcon'}" />
+                                                                                                </div>
+                                                                                                
+                                                                                            </div>  
+                                                                                        </span>
+                                                                                    </h2>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="slds-col slds-no-flex slds-grid slds-align-bottom slds-text-align_right align-self qf-edit-delete">
+                                                                            <div>
+                                                                                <aura:if isTrue="{!v.lstQuesGroup.length>1}">
+                                                                                    <lightning:buttonIcon onclick="{!c.addQuestnInSection}" size="medium" iconName="utility:add" variant="bare" alternativeText="move question" value="{!QuesIndex}" />
+                                                                                </aura:if>
+                                                                            </div>
+                                                                            <aura:if isTrue="{!QuestionQuestnnaire.Is_Allow_Branching__c==true}">
+                                                                                <div class="qf-branching-btn">
+                                                                                    <lightning:buttonIcon onclick="{!c.openBranchingPopup}" value="{!QuesIndex}" name="{!'Qustn_Branching_'+QuestionQuestnnaire.Question_Order__c}" size="medium" iconName="utility:hierarchy" variant="bare" alternativeText="Branching" />
+                                                                                </div>
+                                                                            </aura:if>
+                                                                            <div>
+                                                                                <lightning:buttonIcon onclick="{!c.getOnlyOneQuestionRecrod}" value="{!QuestionQuestnnaire.Question__c}" size="medium" iconName="utility:edit" variant="bare" alternativeText="edit" />
+                                                                            </div>
+                                                                            <div>
+                                                                                <lightning:buttonIcon onclick="{!c.delQues}" value="{!QuestionQuestnnaire.Id}" size="medium" iconName="utility:delete" variant="bare" alternativeText="delete" name="{!QuesIndex}"/>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>                                                        
+                                                            <!--Start branching section-->
+                                                            <aura:iteration items="{!QuestionQuestnnaire.branchingQuestnQuetnnaire}" var="branchingRecord" indexVar="branchingIndex">
+                                                                <aura:if isTrue="{!branchingRecord.isShowQuestion==true}">
+                                                                    <div class="slds-panel slds-p-top_none qf-box slds-p-left_none slds-p-right_none slds-p-bottom_none slds-grid slds-grid_vertical slds-nowrap  slds-m-top_x-small" style="margin-left:3%;margin-bottom: 3%;margin-right: 3%;">
+                                                                        <div class="slds-form slds-form_stacked slds-grow ">
+                                                                            <div class="{!branchingRecord.Question__r.Type__c == 'Information' ? 'slds-panel__section qf-information-section' : 'slds-panel__section slds-p-bottom_none'}" Style="{!branchingRecord.Question__r.Type__c == 'Information' ? 'background:'+ branchingRecord.Question__r.Metadata__c+' ; border-radius: 5xp;' : ''}">
+                                                                                <div class="slds-media__body">
+                                                                                    <div class="slds-grid">
+                                                                                        <div class="slds-col ">
+                                                                                            <div class="slds-form-element">
+                                                                                                <div class="slds-form-element__control">
+                                                                                                    <h2>
+                                                                                                        <span class="qf-text slds-is-relative">
+                                                                                                            <div class="slds-grid  slds-wrap">
+                                                                                                                <aura:if isTrue="{!QuestionQuestnnaire.Required__c==true}">
+                                                                                                                    <span id="asteric">&#42;</span>
+                                                                                                                </aura:if>
+                                                                                                                <div class="slds-col qf-Question-col" >
+                                                                                                                    <span><aura:unescapedHtml value="{!branchingRecord.Question__r.Label__c}"  /><span>({!branchingRecord.Question__r.Type__c})</span></span>
+                                                                                                                    <lightning:helptext iconName="utility:info"  content="{!branchingRecord.Help_Text__c}" class="{!branchingRecord.Help_Text_Required__c==false?'hidehelptextIcon':'helptextIcon'}" />
+                                                                                                                </div>
+                                                                                                            </div>  
+                                                                                                        </span>
+                                                                                                    </h2>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <div class="slds-col slds-no-flex slds-grid slds-align-bottom slds-text-align_right align-self qf-edit-delete">
+                                                                                            <div>
+                                                                                                <lightning:buttonIcon onclick="{!c.getBranchingOnlyOneQuestionRecrod}" value="{!branchingRecord.Question__c}" size="medium" iconName="utility:edit" variant="bare" alternativeText="edit" />
+                                                                                            </div>
+                                                                                            <div>
+                                                                                                <lightning:buttonIcon onclick="{!c.delQues}" value="{!branchingRecord.Id}" size="medium" iconName="utility:delete" variant="bare" alternativeText="delete" />
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            
+                                                                        </div>
+                                                                    </div>
+                                                                </aura:if>
+                                                                <!--end branching section-->
+                                                            </aura:iteration>
+                                                        </div>
+                                                    </div>
+                                                </aura:if>
+                                            </aura:iteration>
+                                        </aura:iteration>
+                                    </div>
+                                </div>   
+                                <div class="dropSection slds-p-around--small slds-box slds-size_1-of-3" id="col3">
+                                    <strong>Col-3</strong>
+                                    <div class="slds-scrollable slds-grow questionBuilder slds-is-relative sortableArea" id="sortableArea3">
+                                        <aura:iteration items="{!v.lstQQuesnnaire.lstQuestn}" var="Question" indexVar="QuesIndex">
+                                            <aura:iteration items="{!Question.Question_Questionnaires__r}" var="QuestionQuestnnaire" indexVar="QuestionQuestnnaireIndex">
+                                                <aura:if isTrue="{!QuestionQuestnnaire.Related_To_Column__c =='col3'}">
+                                                    <div class="slds-panel slds-p-top_none qf-box slds-p-left_none slds-p-right_none slds-p-bottom_none slds-grid slds-grid_vertical slds-nowrap  slds-m-top_x-small" data-qid="{!QuestionQuestnnaire.Question__c}" data-qqid="{!QuestionQuestnnaire.Id}">
+                                                        <div class="slds-form slds-form_stacked slds-grow ">
+                                                            <div class="{!Question.Type__c == 'Information' ? 'slds-panel__section qf-information-section' : 'slds-panel__section slds-p-bottom_none'}" Style="{!Question.Type__c == 'Information' ? 'background:'+ Question.Metadata__c+' ; border-radius: 5xp;' : ''}">
+                                                                <div class="slds-media__body">
+                                                                    <div class="slds-grid">
+                                                                        <div class="slds-col ">
+                                                                            <div class="slds-form-element">
+                                                                                <div class="slds-form-element__control">
+                                                                                    <h2>
+                                                                                        <span class="qf-text slds-is-relative">
+                                                                                            <div class="slds-grid  slds-wrap">
+                                                                                                <aura:if isTrue="{!QuestionQuestnnaire.Required__c==true}">
+                                                                                                    <span id="asteric">&#42;</span>
+                                                                                                </aura:if>
+                                                                                                <div class="slds-col qf-Question-col" >
+                                                                                                    <span><aura:unescapedHtml value="{!QuestionQuestnnaire.Question__r.Label__c}"  /> <span>({!QuestionQuestnnaire.Question__r.Type__c})</span></span>
+                                                                                                    <lightning:helptext iconName="utility:info"  content="{!QuestionQuestnnaire.Help_Text__c}" class="{!QuestionQuestnnaire.Help_Text_Required__c==false?'hidehelptextIcon':'helptextIcon'}" />
+                                                                                                </div>
+                                                                                                
+                                                                                            </div>  
+                                                                                        </span>
+                                                                                    </h2>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="slds-col slds-no-flex slds-grid slds-align-bottom slds-text-align_right align-self qf-edit-delete">
+                                                                            <div>
+                                                                                <aura:if isTrue="{!v.lstQuesGroup.length>1}">
+                                                                                    <lightning:buttonIcon onclick="{!c.addQuestnInSection}" size="medium" iconName="utility:add" variant="bare" alternativeText="move question" value="{!QuesIndex}" />
+                                                                                </aura:if>
+                                                                            </div>
+                                                                            <aura:if isTrue="{!QuestionQuestnnaire.Is_Allow_Branching__c==true}">
+                                                                                <div class="qf-branching-btn">
+                                                                                    <lightning:buttonIcon onclick="{!c.openBranchingPopup}" value="{!QuesIndex}" name="{!'Qustn_Branching_'+QuestionQuestnnaire.Question_Order__c}" size="medium" iconName="utility:hierarchy" variant="bare" alternativeText="Branching" />
+                                                                                </div>
+                                                                            </aura:if>
+                                                                            <div>
+                                                                                <lightning:buttonIcon onclick="{!c.getOnlyOneQuestionRecrod}" value="{!QuestionQuestnnaire.Question__c}" size="medium" iconName="utility:edit" variant="bare" alternativeText="edit" />
+                                                                            </div>
+                                                                            <div>
+                                                                                <lightning:buttonIcon onclick="{!c.delQues}" value="{!QuestionQuestnnaire.Id}" size="medium" iconName="utility:delete" variant="bare" alternativeText="delete" name="{!QuesIndex}"/>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>                                                        
+                                                            <!--Start branching section-->
+                                                            <aura:iteration items="{!QuestionQuestnnaire.branchingQuestnQuetnnaire}" var="branchingRecord" indexVar="branchingIndex">
+                                                                <aura:if isTrue="{!branchingRecord.isShowQuestion==true}">
+                                                                    <div class="slds-panel slds-p-top_none qf-box slds-p-left_none slds-p-right_none slds-p-bottom_none slds-grid slds-grid_vertical slds-nowrap  slds-m-top_x-small" style="margin-left:3%;margin-bottom: 3%;margin-right: 3%;">
+                                                                        <div class="slds-form slds-form_stacked slds-grow ">
+                                                                            <div class="{!branchingRecord.Question__r.Type__c == 'Information' ? 'slds-panel__section qf-information-section' : 'slds-panel__section slds-p-bottom_none'}" Style="{!branchingRecord.Question__r.Type__c == 'Information' ? 'background:'+ branchingRecord.Question__r.Metadata__c+' ; border-radius: 5xp;' : ''}">
+                                                                                <div class="slds-media__body">
+                                                                                    <div class="slds-grid">
+                                                                                        <div class="slds-col ">
+                                                                                            <div class="slds-form-element">
+                                                                                                <div class="slds-form-element__control">
+                                                                                                    <h2>
+                                                                                                        <span class="qf-text slds-is-relative">
+                                                                                                            <div class="slds-grid  slds-wrap">
+                                                                                                                <aura:if isTrue="{!QuestionQuestnnaire.Required__c==true}">
+                                                                                                                    <span id="asteric">&#42;</span>
+                                                                                                                </aura:if>
+                                                                                                                <div class="slds-col qf-Question-col" >
+                                                                                                                    <span><aura:unescapedHtml value="{!branchingRecord.Question__r.Label__c}"  /><span>({!branchingRecord.Question__r.Type__c})</span></span>
+                                                                                                                    <lightning:helptext iconName="utility:info"  content="{!branchingRecord.Help_Text__c}" class="{!branchingRecord.Help_Text_Required__c==false?'hidehelptextIcon':'helptextIcon'}" />
+                                                                                                                </div>
+                                                                                                            </div>  
+                                                                                                        </span>
+                                                                                                    </h2>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <div class="slds-col slds-no-flex slds-grid slds-align-bottom slds-text-align_right align-self qf-edit-delete">
+                                                                                            <div>
+                                                                                                <lightning:buttonIcon onclick="{!c.getBranchingOnlyOneQuestionRecrod}" value="{!branchingRecord.Question__c}" size="medium" iconName="utility:edit" variant="bare" alternativeText="edit" />
+                                                                                            </div>
+                                                                                            <div>
+                                                                                                <lightning:buttonIcon onclick="{!c.delQues}" value="{!branchingRecord.Id}" size="medium" iconName="utility:delete" variant="bare" alternativeText="delete" />
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            
+                                                                        </div>
+                                                                    </div>
+                                                                </aura:if>
+                                                                <!--end branching section-->
+                                                            </aura:iteration>
+                                                        </div>
+                                                    </div>
+                                                </aura:if>
+                                            </aura:iteration>
+                                        </aura:iteration>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </lightning:card>
+    <!--End container section -->
+    <!--start model -->
+    <aura:if isTrue="{!v.isShowModal==true}">
+        <div class="modal-container hideModalCSS" aura:id="modalcontainer">
+            <section role="dialog" id="text-plain-popup" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-slide-down-cancel">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon iconName="utility:close" onclick="{!c.hideModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" />
+                        <h3 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate "><strong>Question Editor <aura:if isTrue="{!v.isEditQue==false}">: {!v.modalHeader}</aura:if></strong></h3>
+                    </header>
+                    <aura:if isTrue="{!v.isEditQue==false}">
+                        <div class="slds-modal__content slds-p-around_medium " id="modal-content-id-1">                            
+                            <fieldset class="slds-form-element slds-m-top_small">
+                                <div class="slds-grid slds-gutters">
+                                    <div class="slds-col slds-size_7-of-12">
+                                        <div class="slds-form-element">
+                                            <div class="slds-form-element__control">
+                                                <lightning:select aura:id="categoryId" messageWhenValueMissing="Please enter the category name." name="selectItem" label="Select an category" value="{!v.objCrteQues.Category__c}" required="true">
+                                                    <option value="">choose one...</option>
+                                                    <aura:iteration var="categories" items="{!v.lstQuesCategory}">
+                                                        <option value="{!categories}">{!categories}</option>
+                                                    </aura:iteration>
+                                                </lightning:select>
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element slds-m-top_x-small">
+                                            <label class="slds-form-element__label" for="select-01">Question Text</label>
+                                            <div class="demo-only" style="min-height: 180px;">
+                                                <lightning:inputRichText messageWhenBadInput="write your question" aura:id="qustNameRich" placeholder="Compose text..." value="{!v.objCrteQues.Label__c}" />
+                                            </div>
+                                        </div>
+                                        <aura:if isTrue="{!v.dragId!='Information'}">
+                                            <div class="slds-file-selector slds-file-selector_files slds-clearfix  slds-m-top_x-small">
+                                                <div class="slds-form-element">
+                                                    <lightning:input type="toggle" label="Make this mandatory" name="reimbursed" checked="{!v.objCrteQues.Required__c}" />
+                                                </div>
+                                            </div>
+                                        </aura:if>
+                                    </div>
+                                    <div class="slds-col slds-size_5-of-12">
+                                        <aura:if isTrue="{!v.dragId!='Information'}">
+                                            <div class="slds-form-element slds-m-top_x-small slds-m-left_small">
+                                                <lightning:input type="checkbox" label="Help Text" name="helptext" onchange="{!c.showHelpText}" checked="{!v.objCrteQues.Help_Text_Required__c}" />
+                                            </div>
+                                            <aura:if isTrue="{!v.isShowHelpText==true}">
+                                                <div class="slds-form-element slds-m-top_x-small slds-m-left_small">
+                                                    <lightning:input aura:id="helpTextInp" label=" " placeholder="Help Text" name="Help Text" value="{!v.objCrteQues.Help_Text__c}" maxlength="255" minlength="0" />
+                                                </div>
+                                            </aura:if>
+                                        </aura:if>
+                                        <aura:if isTrue="{!v.dragId!='Information'}">
+                                            <div class="slds-form-element slds-m-top_x-small slds-m-left_small">
+                                                <lightning:input type="checkbox" label="Comment (allow user to comment)" name="Comment" checked="{!v.objCrteQues.Allow_Comment__c}" />
+                                            </div>
+                                        </aura:if>                                        
+                                        <aura:if isTrue="{!and(v.dragId !='Phone',v.dragId!='Information')}">
+                                            <div class="slds-form-element slds-m-top_x-small slds-m-left_small">
+                                                <lightning:input type="checkbox" label="Upload file (allow user to upload)" name="Upload file" checked="{!v.objCrteQues.Allow_Attachments__c}" />
+                                            </div>                                            
+                                        </aura:if>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                    </aura:if>
+                    <aura:if isTrue="{!v.isEditQue==true}">
+                        <div class="slds-modal__content slds-p-around_medium " id="modal-content-id-1">
+                            <!--<h1 class="slds-text-align_center slds-card__header-link color-blue">Add question categories and preview the question</h1>-->
+                            <p class="slds-text-align_center"></p>
+                            <fieldset class="slds-form-element slds-m-top_small">
+                                <div class="slds-grid slds-gutters">
+                                    <div class="slds-col slds-size_7-of-12">
+                                        <div class="slds-form-element">
+                                            <div class="slds-form-element__control">
+                                                <lightning:select aura:id="categoryId" messageWhenValueMissing="Please enter the category name." name="selectItem" label="Select an category" value="{!v.objQues.Category__c}" required="true">
+                                                    <option value="">choose one...</option>
+                                                    <aura:iteration var="categories" items="{!v.lstQuesCategory}">
+                                                        <option value="{!categories}">{!categories}</option>
+                                                    </aura:iteration>
+                                                </lightning:select>
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element slds-m-top_x-small">
+                                            <label class="slds-form-element__label" for="select-01">Question Text</label>
+                                            <div class="demo-only" style="min-height: 180px;">                                                
+                                                <lightning:inputRichText disabledCategories="" aura:id="qustNameRich" placeholder="Compose text..." value="{!v.description}" />
+                                            </div>
+                                        </div>
+                                        <aura:if isTrue="{!v.dragId!='Information'}">
+                                            <div class="slds-file-selector slds-file-selector_files slds-clearfix  slds-m-top_x-small">
+                                                <div class="slds-form-element">
+                                                    <lightning:input type="toggle" label="Make this mandatory" name="reimbursed" checked="{!v.objQues.Required__c}" />
+                                                </div>
+                                            </div>
+                                        </aura:if>
+                                    </div>
+                                    <div class="slds-col slds-size_5-of-12">
+                                        <div class="slds-form-element slds-m-top_x-small slds-m-left_small">
+                                            <lightning:input aura:id="helpcheckbox" type="checkbox" label="Help Text" name="helptext" onchange="{!c.showHelpText}" checked="{!v.objQues.Help_Text_Required__c}" />
+                                        </div>
+                                        <aura:if isTrue="{!v.objQues.Help_Text_Required__c==true}">
+                                            <div class="slds-form-element slds-m-top_x-small slds-m-left_small">
+                                                <lightning:input aura:id="helpTextInp" label="Help Text" placeholder="Help Text" name="Help Text" value="{!v.objQues.Help_Text__c}" maxlength="255" minlength="0" />
+                                            </div>
+                                        </aura:if>
+                                        <div class="slds-form-element slds-m-top_x-small slds-m-left_small">
+                                            <lightning:input type="checkbox" label="Comment (allow user to comment)" name="Comment" checked="{!v.objQues.Allow_Comment__c}" />
+                                        </div>                                        
+                                        <aura:if isTrue="{!v.dragId !='Phone'}">
+                                            <div class="slds-form-element slds-m-top_x-small slds-m-left_small">
+                                                <lightning:input type="checkbox" label="Upload file (allow user to upload)" name="Upload file" checked="{!v.objQues.Allow_Attachments__c}" />
+                                            </div>                                            
+                                        </aura:if>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                    </aura:if>
+                    <footer class="slds-modal__footer">
+                        <lightning:button class="slds-button slds-button_neutral slds-float_left slds-button_destructive" label="Cancel" onclick="{!c.hideModal}" />
+                        <aura:if isTrue="{!v.isEditQue==false}">
+                            <lightning:button class="slds-button slds-button_brand" label="Save" onclick="{!c.saveQues}" />
+                        </aura:if>
+                        <aura:if isTrue="{!v.isEditQue==true}">
+                            <lightning:button class="slds-button slds-button_brand" label="Save" onclick="{!c.saveEditQuesrecord}" />
+                        </aura:if>
+                    </footer>
+                </div>
+            </section>
+            <!--<div class="slds-backdrop slds-backdrop_open"></div>-->
+            <div class="slds-backdrop  slds-backdrop_open" id="slds-backdrop"></div>
+        </div>
+    </aura:if>
+    <!--end model -->
+    <!-- Start Add Section Model -->
+    <aura:if isTrue="{!v.isShowSection==true}">
+        <div class="modal-container hideModalCSS" aura:id="modalcontainer">
+            <section role="dialog" id="text-plain-popup" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon iconName="utility:close" onclick="{!c.hideModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" />
+                        <h3 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate "><strong>Add Section</strong></h3>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                            <fieldset class="slds-form-element slds-m-top_small">
+                                <div class="slds-grid slds-gutters">
+                                    <div class="slds-col slds-size_7-of-12">
+                                        <div class="slds-form-element">
+                                            <div class="slds-form-element__control">
+                                                <lightning:input label="Section Name" placeholder="Enter Section Name" name="section" aura:id="sectionName" />
+                                            </div>
+                                            <div class="slds-form-element__control">
+                                                <lightning:select name="selectItem" label="No of Column" value="{!v.selColumnNo}">
+                                                    <option value="1">1</option>
+                                                    <option value="2">2</option>
+                                                    <option value="3">3</option>
+                                                </lightning:select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                     </div>
+                    
+                    <footer class="slds-modal__footer">
+                        <lightning:button class="slds-button slds-button_neutral slds-float_left slds-button_destructive" label="Cancel" onclick="{!c.hideModal}" />
+                        <lightning:button class="slds-button slds-button_brand" label="Save" onclick="{!c.saveSection}" />
+                    </footer>
+                </div>
+            </section>
+            <!--<div class="slds-backdrop slds-backdrop_open"></div>-->
+            <div class="slds-backdrop  slds-backdrop_open" id="slds-backdrop"></div>
+        </div>
+    </aura:if>
+    <!-- End Section Modal-->
+    <!-- Start Delete Section Model -->
+    
+    <aura:if isTrue="{!v.openDeleteModal==true}">
+        <c:DeleteModalComponent isDelete="{!v.deleteModal}" deleteContent="{!v.deleteModalContent}" sectionId="{!v.selTabId}" qnaireId="{!v.QnaireId}" />
+    </aura:if>
+    <!-- End Delete Add Section Model -->
+    <aura:if isTrue="{!v.isShowDateModal==true}">
+        <c:DateInputComp modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objCrteQues="{!v.objQues}" />
+    </aura:if>
+    <aura:if isTrue="{!v.isShowURLModal==true}">
+        <c:URLInputComp modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objCrteQues="{!v.objQues}" />
+    </aura:if>
+    
+    <aura:if isTrue="{!v.isShowHeaderModal==true}">
+        <c:HeaderFooterComp modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objCrteQues="{!v.objQues}" />
+    </aura:if>
+
+    <aura:if isTrue="{!v.isShowDatetimeModal==true}">
+        <c:DateTimeInputComp modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objCrteQues="{!v.objQues}" />
+    </aura:if>
+    <aura:if isTrue="{!v.isShowTextPlainModal==true}">
+        <c:TextPlainInputComp modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objCrteQues="{!v.objQues}" />
+    </aura:if>
+    <aura:if isTrue="{!v.isShowRichTextModal==true}">
+        <c:RichTextInputComp modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objCrteQues="{!v.objQues}" />
+    </aura:if>
+    <aura:if isTrue="{!v.isShowAddressModal==true}">
+        <c:AddressInputComp modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objCrteQues="{!v.objQues}" />
+    </aura:if>
+    <aura:if isTrue="{!v.isShowPhoneModal==true}">
+        <c:PhoneInputComp modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objCrteQues="{!v.objQues}" />
+    </aura:if>
+    <aura:if isTrue="{!v.isShowEmailModal==true}">
+        <c:EmailInputComp modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objCrteQues="{!v.objQues}" />
+    </aura:if>
+    <aura:if isTrue="{!v.isShowInformationModal==true}">
+        <c:InformationInputComp modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objeditQues="{!v.objQues}" />
+    </aura:if>
+    <aura:if isTrue="{!v.isShowCheckboxModal==true}">
+        <c:CheckboxInputComp modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" isUnderBranching="{!v.is_BranchingUnder}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objCrteQues="{!v.objQues}" />
+    </aura:if>
+    <aura:if isTrue="{!v.isShowRadioModal==true}">
+        <c:PicklistInputComp modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" isUnderBranching="{!v.is_BranchingUnder}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objeditQues="{!v.objQues}" />
+    </aura:if>
+
+    <!--<aura:if isTrue="{!v.isShowMultiSelectModal==true}">
+        <c:QFMultiSelectInputComp modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objeditQues="{!v.objQues}" />
+    </aura:if>-->
+    <aura:if isTrue="{!v.isShowPicklistModal==true}">
+        <c:PicklistInputComp modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" isUnderBranching="{!v.is_BranchingUnder}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objeditQues="{!v.objQues}" />
+    </aura:if>
+    <aura:if isTrue="{!v.isShowNumberAndCurrencyModal==true}">
+        <c:NumberAndCurrencyInput modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objeditQues="{!v.objQues}" />
+    </aura:if>
+    <aura:if isTrue="{!v.isShowLookupModal==true}">
+        <c:LookupInputComp modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objCrteQues="{!v.objQues}" />
+    </aura:if>
+    <aura:if isTrue="{!v.openBranchingModal==true}">
+        <c:QuestionBranching QnaireId="{!v.QnaireId}" lstQuesOptions="{!v.lstQDynLogicOption}" QuestnGroupId="{!v.lstQQuesnnaire.groupId}" MainQuesQuetnnaireId="{!v.questionQuestnnaireBranchingId}" questionPrintOrder="{!v.questionPrintOrder}" />
+    </aura:if>
+    <aura:if isTrue="{!v.isShowSignatureModal==true}">
+        <c:SignatureInputComp modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objCrteQues="{!v.objQues}" />
+    </aura:if>
+    <aura:if isTrue="{!v.isShowSwitchModal==true}">
+        <c:SwitchInputComp modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" isUnderBranching="{!v.is_BranchingUnder}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objCrteQues="{!v.objQues}" />
+    </aura:if>
+    <aura:if isTrue="{!v.isShowSliderModal==true}">
+        <c:SliderInputComp modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objCrteQues="{!v.objQues}" />
+    </aura:if>
+    <aura:if isTrue="{!v.isShowGPSLocationModal==true}">
+        <c:GPSLocationInputComp modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objCrteQues="{!v.objQues}" />
+    </aura:if>
+    <aura:if isTrue="{!v.isShowMediaModal==true}">
+        <c:MediaInputComp modalHeader="{!v.modalHeader}" QnaireId="{!v.QnaireId}" QuestnGroupId="{!v.selTabId}" isEditQue="{!v.isEditQue}" fieldType="{!v.dragId}" lstQuesCategory="{!v.lstQuesCategory}" dropColNumber="{!v.dropColNumber}" QnaireName="{!v.QnaireName}" objCrteQues="{!v.objQues}" />
+    </aura:if>
+    <aura:if isTrue="{!v.isAddQuestionInSectionModal==true}">
+        <c:AddQuestionInSection lstQuesGroup="{!v.lstQuesGroup}" qstnQnaireObject="{!v.questionQuestnnaireInSection}" showConfirmModal="false"/>
+    </aura:if>
+    <aura:if isTrue="{!v.isReorderSectionsModal==true}">
+        <c:SectionReorder QnaireId="{!v.QnaireId}"/>
+    </aura:if>
+    <aura:if isTrue="{!v.showSign==true}">
+        <c:SignatureUIComp />
+        <!--<c:QFSignatureDemo />-->
+    </aura:if>
+    <!-- Start delete model-->
+    <aura:if isTrue="{!v.questionDeleteModal==true}">
+        <div class="modal-container hideModalCSS" aura:id="deletemodalcontainer">
+            <section role="dialog" id="text-plain-popup" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon iconName="utility:close" onclick="{!c.hideModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" />
+                        <h3 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate "><strong>Delete Question</strong></h3>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <fieldset class="slds-form-element slds-m-top_small">
+                            <div class="slds-grid slds-gutters">
+                                <div class="slds-col slds-size_7-of-12">
+                                    <div class="slds-form-element">
+                                        Do you want to delete this question?
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning:button class="slds-button slds-button_neutral slds-float_left slds-button_destructive" label="Cancel" onclick="{!c.hideModal}" />
+                        <lightning:button class="slds-button slds-button_brand" label="Ok" onclick="{!c.delQuestionRecord}" />
+                    </footer>
+                </div>
+            </section>
+            <!--<div class="slds-backdrop slds-backdrop_open"></div>-->
+            <div class="slds-backdrop  slds-backdrop_open" id="slds-backdrop"></div>
+        </div>
+    </aura:if>
+    <!-- End delete model -->
+    <!-- End Add Section Model -->
+    <!--Start Show Prompt when delete branched question -->
+    <aura:if isTrue="{!v.isBranchedQuestion==true}">
+        <div style="height: 24rem;">
+            <section role="alertdialog" tabindex="-1" aria-labelledby="prompt-heading-id" aria-describedby="prompt-message-wrapper" class="slds-modal slds-fade-in-open slds-modal_prompt" aria-modal="true">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header slds-theme_error slds-theme_alert-texture">
+                        <h2 class="slds-text-heading_medium" id="prompt-heading-id">Alert</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="prompt-message-wrapper">
+                        <p>You can not delete this question because it is already branched with other questions. Please remove branching then delete question.</p>
+                    </div>
+                    <footer class="slds-modal__footer slds-theme_default">
+                        <button class="slds-button slds-button_neutral" onclick="{!c.hideModal}">Okay</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </aura:if>
+    <!--End Show Prompt when delete branched question -->
+    
+    <!--Start Confirm dialog for publish template -->
+    <aura:if isTrue="{!v.isTemplatePublished==true}">
+        <div class="modal-container hideModalCSS" aura:id="deletemodalcontainer">
+            <section role="dialog" id="text-plain-popup" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon iconName="utility:close" onclick="{!c.hideModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" />
+                        <h3 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate "><strong>Publish template</strong></h3>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <fieldset class="slds-form-element slds-m-top_small">
+                            <div class="slds-grid slds-gutters">
+                                <div class="slds-col slds-size_7-of-12">
+                                    <div class="slds-form-element publishCntn">
+                                        Do you want to publish this template?
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning:button class="slds-button slds-button_neutral slds-float_left slds-button_destructive" label="No" onclick="{!c.hideModal}" />
+                        <lightning:button class="slds-button slds-button_brand" label="Yes" onclick="{!c.publishTemplate}" />
+                    </footer>
+                </div>
+            </section>
+            <!--<div class="slds-backdrop slds-backdrop_open"></div>-->
+            <div class="slds-backdrop  slds-backdrop_open" id="slds-backdrop"></div>
+        </div>
+    </aura:if>
+    <!--End Confirm dialog for publish template -->
+</aura:component>

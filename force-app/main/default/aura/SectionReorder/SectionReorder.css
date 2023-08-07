@@ -1,0 +1,6 @@
+.THIS {
+}
+.THIS .section{background: #727272;font-weight: bold;color:#fff;border-radius: 5px;}
+.THIS #sortable { list-style-type: none; margin: 0; padding: 0; width: 100%; }
+.THIS #sortable li { margin: 0 5px 5px 5px; padding: 5px; font-size: 1.2em; height: 2.5em; border:1px solid lightgray; text-align: center;cursor:move;}
+.THIS .ui-state-highlight { height: 35px; border:1px solid rgb(0, 161, 223);box-shadow: inset 0 0 8px rgb(0, 161, 223); border-style: dashed;}

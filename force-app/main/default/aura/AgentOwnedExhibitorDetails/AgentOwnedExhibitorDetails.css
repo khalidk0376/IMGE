@@ -1,0 +1,15 @@
+.THIS .mainTabSet .slds-tabs_default__nav{background-color: white !important;}
+.THIS .titleheading{
+    font-size: 30px !important; 
+    font-weight: bold !important; 
+    color: #333333;
+}
+.THIS .accDetails {
+    float: left;
+    width: 100%;
+    margin-bottom: auto;
+}
+.THIS .header
+{
+    height:100px;display:flex;
+}

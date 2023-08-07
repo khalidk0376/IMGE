@@ -1,0 +1,4 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId" access="global">
+	<div style="height: 10px;">&nbsp;</div>
+</aura:component>

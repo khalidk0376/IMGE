@@ -1,0 +1,44 @@
+<aura:component controller="OppActionButtonController" implements="flexipage:availableForAllPageTypes,force:hasRecordId" access="global">
+	<ltng:require scripts="{!$Resource.LtngUtility}"/>
+
+	<aura:attribute name="isAllowProfile" type="Boolean" access="private"/>
+	<aura:attribute name="loggedInUserProfile" type="Boolean" access="private"/>
+	<aura:attribute name="loggedInUserRole" type="Boolean" access="private"/>
+	
+    <!-- added on 05/18/2019 by Mukesh to make action buttons postion dynamic from top-->
+	<aura:attribute name="top" type="Integer" default="80" access="global"/>
+
+	<aura:attribute name="accObj" type="Object" access="private"/>
+	<aura:attribute name="isOpenNewOppModal" type="Boolean" access="private"/>
+    <aura:attribute name="isOpenDocModal" type="Boolean" access="private" default="false"/>
+	<aura:attribute name="isOpenAddParnerModal" type="Boolean" access="private"/>
+	<aura:attribute name="isUAE" type="Boolean" default="false"/>
+	<aura:handler event="c:refreshUpload" action="{!c.handleButtonRender}"/>
+	<aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+	
+	<div style="height: 42px;left: 0;right: 0;padding-left: 15px;padding-right: 15px;border-radius: 0;transform: translate3d(0px, -25px, 0px);position: fixed;border-top: none;z-index: 99;margin-top: 1px;background-color:#f3f2f2;border-bottom: 1px solid rgb(221, 219, 218);box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.10);">        
+        <div class="box">
+            <lightning:button onclick="{!c.openNewOppModal}" variant="brand" label="Create New Opportunity" iconName="utility:magicwand" iconPosition="left" disabled="{!v.accObj.Inactive__c}"/>	
+				<!-- 
+					Modified By: Yash Gupta
+					@description Remove the functionality from account as per ticket no. GGCKB-49
+				-->
+				<!-- <aura:if isTrue="{!(v.accObj.Is_Billing_Country_AE__c &amp;&amp; ((v.loggedInUserProfile=='System Administrator' || v.loggedInUserProfile=='GE System Administrator' || v.loggedInUserProfile=='GE BA Administrator' || v.loggedInUserProfile=='SSC Finance-Accounting') || v.loggedInUserRole==true))}">
+                	<lightning:button onclick="{!c.openUploadDocModal}" variant="brand" label="Upload Declaration Document" iconName="utility:image" iconPosition="left"/>
+                </aura:if> -->
+            <aura:if isTrue="{!v.accObj.Inactive__c==false &amp;&amp;v.isAllowProfile==true&amp;&amp;v.loggedInUserProfile!='SSC Finance-Accounting'}">
+                <lightning:button onclick="{!c.openPartnerModal}" variant="brand" label="Add Partner" iconName="utility:people" iconPosition="left"/>
+            </aura:if>
+        </div>
+	</div>
+
+	<aura:if isTrue="{!v.isOpenNewOppModal}">
+		<c:NewOppModal isOpenModal="{!v.isOpenNewOppModal}" accountId="{!v.recordId}" isFromAc="true"/>
+	</aura:if>	
+	<aura:if isTrue="{!v.isOpenAddParnerModal}">
+		<c:AddPartnerModal isOpenModal="{!v.isOpenAddParnerModal}" recordId="{!v.recordId}"/>
+	</aura:if>
+    <!--<aura:if isTrue="{!v.isOpenDocModal}">
+		<c:UploadDeclarationDocumentPopup isOpenDocuModal="{!v.isOpenDocModal}" recordId="{!v.recordId}" acName = "{!v.accObj.Name}"/>
+	</aura:if>-->
+</aura:component>

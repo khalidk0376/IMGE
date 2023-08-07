@@ -1,0 +1,73 @@
+/*.THIS .slds-accordion__summary-heading {
+	display: flex;
+    align-items: center;
+    background: rgb(243, 242, 242);
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    color: currentColor;
+    font-size: inherit;
+    padding: 0 .5rem;
+}*/
+
+.THIS .slds-accordion__summary-action {
+    display: flex;
+    align-items: center;
+    background: rgb(243, 242, 242);
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    color: currentColor;
+    font-size: inherit;
+   /* padding: 6px; BK-12435*/
+    padding: 20px !important;  
+    height: 45px !important;
+}
+.THIS .slds-form-element__static {
+    flex-basis: 0%;
+    border-bottom: 1px solid rgb(221, 219, 218);
+    margin-bottom: 0;
+    padding-bottom: .125rem;
+}
+.THIS .edit
+{
+	float: right;
+    margin-top: -30px;
+    display: none;
+}
+.THIS .change
+{
+    position: absolute;
+    top: 24px;
+    left: 50px;
+}
+.THIS .form-element {
+	position: relative;
+	display: inline-block;
+}
+.THIS .form-element:hover .edit {
+	display: block;
+}
+.THIS div.sticky {
+  	position: -webkit-sticky;
+  	position: sticky;
+  	bottom: 0;
+	padding: 20px 0;
+	background-color: white;
+    z-index: 999;
+}
+.THIS .slds-accordion__list-item
+{
+	border-top: 0;
+}
+.THIS .slds-accordion__section {
+    padding: 5px;
+}
+
+.THIS .slds-form-element__control .slds-radio {
+    display: -webkit-inline-box; 
+    width: 20%;
+}
+.THIS .form-element-hidden lightning-input label{
+    display: none !important;
+}

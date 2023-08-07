@@ -1,0 +1,132 @@
+<!--
+    ************ Modification Log  ************
+    * Modified by : Girikon(Sunil[CCEN-592 Jan 18 2019]) ,    
+-->
+<aura:component implements="flexipage:availableForAllPageTypes" controller="SubContractorCtrl">
+    <aura:handler name="init" value="{!this}" action="{!c.onloadData}" />
+    <aura:attribute name="eventId" type="string" />
+    <aura:attribute name="SubContractors" type="BoothContractorMapping__c[]" default="" />
+    <aura:attribute name="boothMapId" type="string" default="" />
+    <aura:handler name="change" value="{!v.boothMapId}" action="{!c.boothMapIdChanged}"/>
+    <aura:attribute name="isSpinner" type="Boolean" default="false" />
+    <div>
+        <aura:if isTrue="{!v.isSpinner}">
+            <lightning:spinner class="position" size="large" variant="brand" />
+        </aura:if>
+
+        <aura:if isTrue="{!v.boothMapId != ''}">
+            <table class="slds-table slds-table_bordered slds-max-medium-table--stacked-horizontal " role="grid"
+                cellspacing="0">
+                <thead>
+                    <tr>
+                        <th class="tabHeader">First name</th>
+                        <th class="tabHeader">Last name</th>
+                        <th class="tabHeader">Mobile</th>
+                        <th class="tabHeader">Email address</th>
+                        <th class="tabHeader">Company name</th>
+                    </tr>
+                </thead>
+                <aura:iteration items="{!v.SubContractors}" var="bth">
+                    <tr>
+                        <td>
+                            {!bth.TempContact__r.FirstName__c}
+                        </td>
+                        <td>
+                            {!bth.TempContact__r.LastName__c}
+                        </td>
+                        <td>
+                            {!bth.TempContact__r.MobilePhone__c}
+                        </td>
+                        <td>
+                            {!bth.TempContact__r.Email__c}
+                        </td>
+                        <td>
+                            {!bth.TempContact__r.TempAccount__r.Name}
+                        </td>
+                    </tr>
+                </aura:iteration>
+            </table>
+            <aura:set attribute="else">
+                <div style="float:left">
+                    <lightning:button variant="brand" label="{!$Label.c.Export}" onclick="{!c.downloadCsv}" />
+                </div>
+                <br /><br />
+                <table class="slds-table slds-table_bordered slds-max-medium-table--stacked-horizontal " role="grid"
+                    cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th class="tabHeader">{!$Label.c.Booth}#</th>
+                            <th class="tabHeader">Matched Product Name</th>
+                            <th class="tabHeader">{!$Label.c.Exhibitor}</th>
+                            <th class="tabHeader">{!$Label.c.Exhibiting_Name}</th>
+                            <!-- <th class="tabHeader">{!$Label.c.Contractor}</th> -->
+                            <th class="tabHeader">{!$Label.c.Subcontractor}&nbsp;{!$Label.c.Company} </th>
+                            <th class="tabHeader">{!$Label.c.Subcontractor}&nbsp;{!$Label.c.Contact}</th>
+                            <th class="tabHeader">{!$Label.c.Services}</th>
+                            <th class="tabHeader">Stand Contractor Company</th>
+                            <th class="tabHeader">Contractor Contact Person</th>
+                            <th class="tabHeader">Contractor Mobile</th>
+                            <th class="tabHeader">Contractor Email</th>
+                            <th class="tabHeader">{!$Label.c.Date}&nbsp;{!$Label.c.Added} </th>
+                        </tr>
+                    </thead>
+                    <aura:iteration items="{!v.SubContractors}" var="bth">
+                        <tr>
+                            <td>
+                                {!bth.Opp_Booth_Mapping__r.Booth_Number__c}
+                            </td>
+                            <td>
+                                {!bth.Opp_Booth_Mapping__r.Expocad_Booth__r.Matched_Product_Name__c}
+                            </td>
+                            <td>
+                                {!bth.Opp_Booth_Mapping__r.Opportunity__r.Account.Name}
+                            </td>
+                            <td>
+                                <aura:if isTrue="{!bth.Opp_Booth_Mapping__r.Display_Name__c}">
+                                    {!bth.Opp_Booth_Mapping__r.Display_Name__c}
+                                    <aura:set attribute="else">
+                                        {!bth.Opp_Booth_Mapping__r.Opportunity__r.Account.Name}
+                                    </aura:set>
+                                </aura:if>
+                            </td>
+                            <!-- <td>
+                                {!bth.Parent_BoothMapping__r.Contact__r.Account.Name}
+                            </td> -->
+                            <td>
+                                {!bth.TempContact__r.TempAccount__r.Name}
+                            </td>
+                            <td>
+                                    {!bth.TempContact__r.Name__c}
+                                </td>
+                            <td>
+                                <aura:iteration items="{!bth.CustomerContractorServices__r}" var="ser" indexVar="index">
+                                    <aura:if isTrue="{!index}">
+                                        {!', '+ser.ContractorService__r.Contractor_Service__c}
+                                        <aura:set attribute="else">
+                                            {!ser.ContractorService__r.Contractor_Service__c}
+                                        </aura:set>
+                                    </aura:if>
+                                </aura:iteration>
+                            </td>
+                            <td>
+                                {!bth.Parent_BoothMapping__r.Contact__r.Account.Name}
+                            </td>
+                            <td>
+                                {!bth.Parent_BoothMapping__r.Contact__r.Name}
+                            </td>
+                            <td>
+                                {!bth.Parent_BoothMapping__r.Contact__r.MobilePhone}
+                            </td>
+                            <td>
+                                {!bth.Parent_BoothMapping__r.Contact__r.Email}
+                            </td>
+                            <td>
+                                <ui:outputDate format="MM-DD-YYYY" value="{!bth.CreatedDate}" />
+                            </td>
+                        </tr>
+                    </aura:iteration>
+                </table>
+            </aura:set>
+        </aura:if>
+    </div>
+</aura:component>

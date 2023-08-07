@@ -1,0 +1,52 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId" access="global" controller="LtngUtilityCtrl">
+    <aura:attribute name="activeSections" type="List"/>
+    <aura:handler name="init" value="{!this}" action="{!c.loadData}" />
+    <aura:attribute name="recordDtls" type="object"/>
+    <aura:attribute name="relatedAcc" type="object"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="PageNumber" type="integer" default="1"/>
+    <aura:attribute name="TotalPages" type="integer" default="0"/>
+    <aura:attribute name="TotalRecords" type="integer" default="0"/>
+    <aura:attribute name="RecordStart" type="integer" default="0"/>
+    <aura:attribute name="RecordEnd" type="integer" default="0"/>
+    <aura:attribute name="showSpinner" type="Boolean" default="false" />
+    
+    <aura:if isTrue="{!v.showSpinner}">
+        <lightning:spinner size="small" variant="brand" title="Loading..."/>
+    </aura:if>
+
+    <lightning:accordion  aura:id="oppAccordion" allowMultipleSectionsOpen="true" activeSectionName="{!v.activeSections}" onsectiontoggle="{!c.handleSectionToggle}" >
+        <lightning:accordionSection name="accountInfo" label="Account Information" aura:id="accountInfo" > 
+            <aura:if isTrue="{!v.recordDtls}">
+                 <lightning:recordViewForm recordId="{!v.recordDtls.AccountId}" objectApiName="Account">
+                   <lightning:layout multipleRows="true">
+                       <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                           <lightning:outputField fieldName="Name" />
+                           <lightning:outputField fieldName="BillingStreet" />
+                       </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                           <lightning:outputField fieldName="BillingCity" />
+                           <lightning:outputField fieldName="BillingState" />
+                       </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                           <lightning:outputField fieldName="BillingCountry" />
+                           <lightning:outputField fieldName="BillingPostalCode" />
+                       </lightning:layoutItem>
+                    </lightning:layout> 
+                </lightning:recordViewForm>
+            </aura:if>
+        </lightning:accordionSection>
+        <lightning:accordionSection name="accountCon" label="Account Contact Relationship" aura:id="accountCon">
+           <lightning:datatable keyField="id" data="{!v.relatedAcc}" columns="{!v.columns}" hideCheckboxColumn="true"/>
+           <aura:if isTrue="{!v.TotalRecords > 5}">
+               <footer class="slds-card__footer">    
+                  Showing {!v.RecordStart}-{!v.RecordEnd} of {!v.TotalRecords}  &nbsp;             
+                  <lightning:button variant="brand" iconPosition="left" iconName="utility:chevronleft" onclick="{!c.handlePrev}" label="Previous" disabled="{!v.PageNumber == 1}" />
+                  <lightning:button variant="brand" iconPosition="right" iconName="utility:chevronright" onclick="{!c.handleNext}" label="Next" disabled="{!v.PageNumber == v.TotalPages}"/>
+              </footer>
+          </aura:if>
+     </lightning:accordionSection> 
+    </lightning:accordion>
+    
+</aura:component>

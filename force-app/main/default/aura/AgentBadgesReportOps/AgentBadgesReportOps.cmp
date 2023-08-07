@@ -1,0 +1,478 @@
+<!--
+    ************ Creation Log  ************
+    * Created by     : Girikon(Ashish)
+    * Created On     : 17 Sep 2019 [C2E-105]
+    * @description   : This class provides following functionalities: 
+    *                  Allow ops admin to approve,reject the Agents's badges And Send Mass Email.
+    ************ Modification Log  ************
+    *
+-->
+<aura:component  implements="flexipage:availableForAllPageTypes" controller="AgentBadgesReportOpsCtrl">
+   
+<ltng:require scripts="{!join(',',$Resource.CustomerCenterWS11 +'/CustomerCenterWS11/js/jquery-1.7.1.min.js?v=149',$Resource.FormTabUtility)}" afterScriptsLoaded="{!c.scriptsLoaded}" />
+   
+    <aura:attribute name="eventId" type="string"/> 
+    <aura:attribute name="eventSettings" type="object"/> 
+
+    <!--Attribute for Data -->
+    <aura:attribute name="boothAggreResult" type="list" default="[]"/>
+    <aura:attribute name="accBadges" type="object" />
+    <aura:attribute name="mapAccBadges" type="Map" /> 
+    <aura:attribute name="currentAccount" type="object" />
+    <aura:attribute name="selectedBadge" type="object"/>
+
+    <!--Attribute For UI -->
+    <aura:attribute name="options" type="List" />
+    <aura:attribute name="accBooths" type="List" />
+    <aura:attribute name="selectedBooth" type="String" default="All"/>
+	<aura:attribute name="selectedValue" type="String" default="All"/>
+    <aura:attribute name="nationalityPicklist" type="list" default="[]"/> 
+    <aura:attribute name="ageBracketPicklist" type="list" default="[]"/> 
+    <aura:attribute name="countryPicklist" type="list" default="[]"/>  
+    <aura:attribute name="countryCodePicklist" type="list" default="[]"/>
+    <aura:attribute name="toMassApproveBadgesIds" type="list" default="[]"/>
+    <aura:attribute name="toMassRejectBadgesIds" type="list" default="[]"/>
+    <aura:attribute name="sendApproveMail" type="Boolean" default="true"/>
+    <aura:attribute name="sendRejectMail" type="Boolean" default="true"/> 
+    <aura:attribute name="ApproveNote" type="string" />
+    <aura:attribute name="RejectNote" type="string" /> 
+    <aura:attribute name="readOnly" type="Boolean" default="false"/>
+
+    <!--Attribute For pagination -->
+	<aura:attribute name="exhibitorsData" type="object[]"/>
+	<aura:attribute name="PageNumber" type="integer" default="1"/>
+	<aura:attribute name="pageSize" type="integer" default="10"/>
+    <aura:attribute name="TotalPages" type="integer" default="0"/>
+    <aura:attribute name="TotalRecords" type="integer" default="0"/>
+    <aura:attribute name="RecordStart" type="integer" default="0"/>
+    <aura:attribute name="RecordEnd" type="integer" default="0"/>
+    
+    <!--Attribute For Models -->
+    <aura:attribute name="isViewAccBadgesDetail" type="Boolean" default="false"/>
+    <aura:attribute name="isSpinner" type="Boolean" default="false"/>
+    <aura:attribute name="isMassApproveConfirm" type="Boolean" default="false"/>
+    <aura:attribute name="isMassRejectConfirm" type="Boolean" default="false"/>
+    <aura:attribute name="isSingleEditBadge" type="Boolean" default="false"/>
+    <aura:attribute name="isMassSelected" type="Boolean" default="false"/>
+    <aura:attribute name="isBadgeEditable" type="Boolean" default="false"/>  <!-- Is badge record Editable if status is pendening --> 
+
+    <aura:handler name="init" value="{!this}" action="{!c.onLoad}" />
+    <aura:handler event="aura:waiting" action="{!c.waiting}"/> 
+    <aura:handler event="aura:doneWaiting" action="{!c.doneWaiting}"/>    
+
+    {!v.body} <!-- To Show Body Of Another Components If Avaliable -->
+    <aura:attribute name="medOptions" type="List" default="[
+                                                        {'label': 'Yes', 'value': 'Yes'},
+                                                        {'label': 'No', 'value': 'No'}
+                                                        ]" />
+    <aura:attribute name="medValues" type="String" />
+
+    <aura:if isTrue="{!v.isSpinner}">
+        <lightning:spinner size="small" variant="brand"/>
+    </aura:if>
+
+    <div class="slds-grid slds-gutters">        
+        <div class="slds-col slds-size_1-of-10" >              
+            <lightning:select name="mySelect" label="" class="removemrgn" aura:id="mySelect" value="{!v.selectedValue}" onchange="{!c.onChangeFunction}">
+                <aura:iteration items="{!v.options}" var="item" >
+                    <option text="{!item.label}" value="{!item.value}" selected="{!item.selected}"/>
+                </aura:iteration>
+            </lightning:select>  
+        </div>
+        <div class="slds-col" align="right"> 
+            <lightning:button variant="brand" label="Send Badge Reminder Email" iconName="utility:email" iconPosition="left" onclick="{!c.sendBadgeReminderEmail}"/>                      
+            <lightning:button variant="brand" label="Export Badges" iconName="utility:download" iconPosition="left" onclick="{!c.exportBadges}"/> 
+            <lightning:button variant="brand" label="Export Agents Without Badges" iconName="utility:download" iconPosition="left" onclick="{!c.exportAgentsWithoutBadges}"/>  
+        </div>
+    </div>
+<lightning:layout>    
+    <lightning:layoutItem size="12" class="slds-p-top_small">
+            <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                <thead>
+                    <tr class="slds-text-title_caps">
+                      <th scope="col" width="30px">
+                        <div class="slds-truncate" title="Filter"> </div>
+                      </th>
+                      <th scope="col" width="45%">
+                        <div class="slds-truncate" title="Company"><b>Company</b></div>
+                      </th>
+                      <th scope="col">
+                        <div class="slds-truncate" title="Submitted"><b>Submitted</b></div>
+                      </th>
+                      <th scope="col">
+                        <div class="slds-truncate" title="Approved"><b>Approved</b></div>
+                      </th>
+                      <th scope="col">
+                        <div class="slds-truncate" title="Total Allocated Field"><b>Total Allocated Field</b></div>
+                      </th>
+                    </tr>
+                </thead>                
+                <tbody>
+                    <aura:iteration items="{!v.boothAggreResult}" var="boothAgg"  indexVar="index">
+                        <tr>
+                            <td>
+                                <aura:if isTrue="{!boothAgg.submitted > 0}">
+                                        <lightning:buttonIcon value="{!boothAgg.companyAccId +'##'+ boothAgg.companyName}" onclick="{!c.showAccBadgesDetailModal}"   size="Medium" iconName="utility:preview" variant="bare" alternativeText="View Records" />   
+                                    <aura:set attribute="else">
+                                        <lightning:buttonIcon disabled="true" size="Medium" iconName="utility:preview" variant="bare" alternativeText="No Record To View" /> 
+                                    </aura:set>
+                                </aura:if>                                
+                            </td>
+                            <td>{!boothAgg.companyName}</td>
+                            <td>{!boothAgg.submitted}</td>
+                            <td>{!boothAgg.approved}</td>
+                            <td>{!boothAgg.totalBadgesAllowed}</td>
+                        </tr>
+                    </aura:iteration>
+                </tbody>                
+            </table>
+        </lightning:layoutItem>	<br/>
+    </lightning:layout>
+        <!-- pagination buttons -->
+		<lightning:layoutItem size="12" class="{!v.boothAggreResult.length==0?'slds-hide':''}">
+            <div class="slds-float_left slds-m-vertical_small">
+                <ui:inputSelect aura:id="pageSize" label="Display Records Per Page: " change="{!c.onSelectChange}">
+                    <ui:inputSelectOption text="5" label="5" />
+                    <ui:inputSelectOption text="10" label="10" value="true"/>
+                    <ui:inputSelectOption text="25" label="25"/>
+                    <!-- <ui:inputSelectOption text="40" label="40"/> -->
+                    <ui:inputSelectOption text="50" label="50"/>
+                </ui:inputSelect>
+            </div>
+            <div class="slds-float_right slds-m-vertical_small">         
+                <span class="slds-m-right_small">{!v.RecordStart}-{!v.RecordEnd} of {!v.TotalRecords} | Page {!v.PageNumber} of {!v.TotalPages}</span>
+                <lightning:button iconPosition="left" iconName="utility:chevronleft" disabled="{!v.PageNumber == 1}" variant="brand" aura:id="prevPage" label="Prev" onclick="{!c.handlePrev}" />            
+                <lightning:button iconPosition="right" iconName="utility:chevronright"  disabled="{!v.PageNumber == v.TotalPages}" aura:id="nextPage" variant="brand" label="Next" onclick="{!c.handleNext}"/>
+            </div>
+    </lightning:layoutItem>
+
+    <!-- Display all badges -->  
+        <aura:if isTrue="{!v.isViewAccBadgesDetail}">
+            <div aria-hidden="false" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+                <div class="slds-modal__container slds-align_absolute-center" style=" width: 90% !important; height: 636px; max-width: none !important; min-width: 80% !important;">
+                    <div class="div-body" > 
+                        <div class="div-body-head" >
+                            <b>{!v.currentAccount.Name}</b>
+                            <span class="closebtn" onclick="{!c.hideAccBadgesDetailModal}">X</span> 
+                        </div>
+                        <!-- <div align="right"><br/>                            
+                            <lightning:select name="mySelect" label="Booths" class="removemrgn" aura:id="mySelectBooth" value="{!v.selectedBooth}" onchange="{!c.onBoothChange}">
+                                    <aura:iteration items="{!v.accBooths}" var="item" >
+                                        <option text="{!item.label}" value="{!item.value}" selected="{!item.selected}"/>
+                                    </aura:iteration>
+                                </lightning:select>  
+                        </div> -->
+                        <br/>
+                        <div class="slds-scrollable" style="overflow-y: auto;height: 50vh;">
+                            <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                                <thead>
+                                    <tr>                                        
+                                        <th style="width:6%;"><b> </b></th>
+                                        <th style="width:13%;">
+                                            <lightning:input aura:id="MassRow" checked="{!v.isMassSelected}" type="checkbox" label="row" variant="label-hidden" onchange="{!c.massCheck}" />
+                                        </th>
+                                        <th><b>NAME</b></th>
+                                        <!-- <th><b>BOOTH</b></th> -->
+                                        <th><b>STATUS</b></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <aura:iteration items="{!v.accBadges}" var="item" indexVar="key">
+                                        <tr>
+                                            <td>
+                                                <lightning:buttonIcon value="{!item.Id}" iconName="utility:share" size="small"   onclick="{! c.openBadgeEditModal }" variant="bare" alternativeText="View More" />
+                                            </td>
+                                            <td>
+                                                <!-- <lightning:input aura:id="badge_row" value="{!item.Id}" type="checkbox" checked="false" label="row" variant="label-hidden" /> -->
+                                                <aura:if isTrue="{!item.Is_VIP__c}">
+                                                <lightning:input class="vipCheck" aura:id="badge_row" value="{!item.Id}" type="checkbox" checked="false" label="row" variant="label-hidden" />
+                                                <span class="vip"><b>(VIP)</b></span>
+                                                <aura:set attribute="else">
+                                                    <lightning:input aura:id="badge_row" value="{!item.Id}" type="checkbox" checked="false" label="row" variant="label-hidden" />
+                                                </aura:set>
+                                            </aura:if>
+                                            </td>
+                                            <td>{!item.First_Name__c+' '+item.Last_Name__c}</td>                                            
+                                            <!-- <td>{!item.Opp_Booth_Mapping__r.Booth_Number__c}</td> -->
+                                            <td>{!item.Status__c}</td>
+                                        </tr>
+                                    </aura:iteration>
+                                </tbody>
+                            </table>
+                        </div> 
+                        <div class="slds-m-top_medium slds-text-align_left">                    
+                            <lightning:button variant="brand" label="{!$Label.c.Approve}" iconName="utility:check" iconPosition="left" onclick="{!c.showMassApproveConfirmModal}"/>
+                            <lightning:button variant="destructive" label="{!$Label.c.Reject}" iconName="utility:close" iconPosition="left" onclick="{!c.sideMassRejectConfirmModal}" />
+                            <lightning:button label="{!$Label.c.Cancel}" iconName="utility:close" iconPosition="left" onclick="{!c.hideAccBadgesDetailModal}" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aura:if>        
+
+<!-- open Badge in Edit Mode-->
+    <aura:if isTrue="{!v.isSingleEditBadge}"> 
+            <div aria-hidden="false" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+                <div class="slds-modal__container slds-align_absolute-center" style=" width: 90% !important; height: 636px; max-width: none !important; min-width: 80% !important;">
+                    <div class="div-body" > 
+                        <div class="div-body-head"><b>{!$Label.c.View_Record_Details} - {!v.selectedBadge.First_Name__c+' '+v.selectedBadge.First_Last__c}</b>
+                            <span class="closebtn" onclick="{!c.hideSingleBadgeEditModal}">X</span> 
+                        </div>
+                        <div class="slds-scrollable" style="overflow-y: auto;height: 50vh;">
+                            <aura:if isTrue="{!v.isBadgeEditable}">
+                                <table class="slds-table slds-table_bordered slds-table_cell-buffer">                            
+                                    <tbody>
+                                         <!-- Added For CCEN -652 -->
+                                    <aura:if isTrue="{!v.eventSettings.Allow_VIP_Badges__c}">
+                                        <tr>
+                                            <td>
+                                                <span class="vipSpan" style="font-weight: bold;
+                                                color: red;">Is this Person VIP ?</span>
+                                            </td>
+                                            <td>
+                                                <lightning:input aura:id="vip" checked="{!v.selectedBadge.Is_VIP__c}" type="checkbox" label="row" variant="label-hidden" />
+                                                <!-- <span style=" font-style: italic;"> <b>Please Note,</b> VIP badges are only for C-Level executives and subject to an approval<br/> process. All other individuals will have their badge rejected and a new badge submission will be <br/>required for entry into the venue</span> -->
+                                            </td>
+                                        </tr>
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.eventSettings.Company_Name_on_Badge__c}">
+                                        <tr>
+                                            <td>Company Name on Badge</td>
+                                            <td>
+                                                <lightning:input type="text" value="{!v.selectedBadge.Account_Name__c}" disabled ="{!v.readOnly}"  label="Company Name on Badge" variant="label-hidden"/>
+                                            </td>
+                                        </tr>
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.eventSettings.Badge_First_Name__c}">
+                                        <tr>
+                                            <td>First Name</td>
+                                            <td>
+                                                <lightning:input type="text" value="{!v.selectedBadge.First_Name__c}" disabled ="{!v.readOnly}"  label="First Name" variant="label-hidden"/>
+                                            </td>
+                                        </tr>
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.eventSettings.Badge_Last_Name__c}">
+
+                                        <tr>
+                                            <td>Last Name</td>
+                                            <td>
+                                                <lightning:input type="text" value="{!v.selectedBadge.Last_Name__c}" disabled ="{!v.readOnly}"  label="Last Name" variant="label-hidden"/>
+                                            </td>
+                                        </tr>
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.eventSettings.Badge_Job_Title__c}">
+
+                                        <tr>
+                                            <td>Job Title</td>
+                                            <td>
+                                                <lightning:input type="text" value="{!v.selectedBadge.Job_Title__c}" disabled ="{!v.readOnly}"  label="Job Title" variant="label-hidden"/>
+                                            </td>
+                                        </tr>
+                                    
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.eventSettings.Badge_Country__c}">
+                                        <tr>
+                                            <td>Country</td>
+                                            <td>
+                                                <lightning:select value="{!v.selectedBadge.Country__c}" label="Country" disabled ="{!v.readOnly}"  variant="label-hidden">
+                                                    <aura:iteration items="{!v.countryPicklist}" var="option">
+                                                        <option text="{!option.label}" value="{!option.value}"/>
+                                                    </aura:iteration>
+                                                </lightning:select>
+                                            </td>
+                                        </tr>
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.eventSettings.Badge_Nationality__c}">
+
+                                        <tr>
+                                            <td>Nationality</td>
+                                            <td>
+                                                <lightning:select  value="{!v.selectedBadge.Nationality__c}" disabled ="{!v.readOnly}"  label="Nationality" variant="label-hidden">
+                                                    <aura:iteration items="{!v.nationalityPicklist}" var="option">
+                                                        <option text="{!option.label}" value="{!option.value}"/>
+                                                    </aura:iteration>
+                                                </lightning:select>
+                                            </td>
+                                        </tr>
+
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.eventSettings.Badge_Address__c}">
+                                        <tr>
+                                            <td>Address</td>
+                                            <td>
+                                                <lightning:input type="text" value="{!v.selectedBadge.Address__c}" disabled ="{!v.readOnly}"  label="Address" variant="label-hidden"/>
+                                            </td>
+                                        </tr>
+
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.eventSettings.Badge_City__c}">
+                                        <tr>
+                                            <td>City</td>
+                                            <td>
+                                                <lightning:input type="text" value="{!v.selectedBadge.City__c}" disabled ="{!v.readOnly}"  label="City" variant="label-hidden"/>
+                                            </td>
+                                        </tr>
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.eventSettings.Badge_State__c}">
+
+                                        <tr>
+                                            <td>State</td>
+                                            <td>
+                                                <lightning:input type="text" value="{!v.selectedBadge.State__c}" disabled ="{!v.readOnly}"  label="State" variant="label-hidden"/>
+                                            </td>
+                                        </tr>
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.eventSettings.Badge_Age_Bracket__c}">
+
+                                        <tr>
+                                            <td>Age Bracket</td>
+                                            <td>
+                                                <lightning:select label="Age Bracket" disabled ="{!v.readOnly}"  variant="label-hidden" 
+                                                    value="{!v.selectedBadge.Age_Bracket__c}">
+                                                    <aura:iteration items="{!v.ageBracketPicklist}" var="option">
+                                                        <option text="{!option.label}" value="{!option.value}"/>
+                                                    </aura:iteration>
+                                                </lightning:select>
+                                            </td>
+                                        </tr>
+
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.eventSettings.Badge_Mobile_Number__c}">
+                                        <tr>
+                                            <td>Mobile</td>
+                                            <td>
+                                               <div class="slds-grid slds-wrap">
+                                                    <div class="slds-size_2-of-12 CountryCode">
+                                                        <lightning:select  value="{!v.selectedBadge.Country_Code__c}" disabled ="{!v.readOnly}"  label="Country Code" variant="label-hidden">
+                                                        <aura:iteration items="{!v.countryCodePicklist}" var="option">
+                                                        <option text="{!option.label}" value="{!option.value}"/>
+                                                        </aura:iteration>
+                                                        </lightning:select>
+                                                    </div>
+                                                    <div class="slds-size_10-of-12">
+                                                        <lightning:input type="text" style="margin-left: 1%;" disabled ="{!v.readOnly}"  value="{!v.selectedBadge.Mobile_Number__c}" label="Mobile" variant="label-hidden"/>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </aura:if>                                    
+                                    <aura:if isTrue="{!v.eventSettings.Badge_Email__c}">
+
+                                        <tr>
+                                            <td>Email</td>
+                                            <td>
+                                                <lightning:input type="text" value="{!v.selectedBadge.Email__c}" disabled ="{!v.readOnly}"  label="Email" variant="label-hidden"/>
+                                            </td>
+                                        </tr>
+                                    </aura:if>  
+
+                                    <aura:if isTrue="{!v.eventSettings.Badges_MatchMaking__c}">
+                                        <tr>
+                                            <td>{!$Label.c.Matchmaking}</td>
+                                            <td> 
+                                                <lightning:radioGroup name="goMed2MedVal" label="" options="{!v.medOptions}" variant="label-hidden" 
+                                                disabled ="{!v.readOnly}" value="{!v.selectedBadge.Matchmaking__c}" type="radio"  />
+                                            </td>
+                                        </tr>
+                                    </aura:if>  
+                                    </tbody>
+                                </table>
+                                <aura:set attribute="else">
+                                    <aura:if isTrue="{!v.selectedBadge.Status__c=='Approved'}">
+                                        <div style="padding:20px;background-color:lightgreen;font-size:1.25rem;">This badge has been approved. Would you like to make changes?</div>
+                                        <aura:set attribute="else">
+                                            <div style="padding:20px;background-color:red;font-size:1.25rem;">This badge has been rejected. Would you like to make changes?</div>
+                                        </aura:set>
+                                    </aura:if>
+                                </aura:set>
+                            </aura:if>
+                        </div> 
+                        <div class="slds-m-top_medium slds-text-align_left">              
+                            <aura:if isTrue="{!v.isBadgeEditable}">
+                                <lightning:button variant="brand" label="{!$Label.c.Approve}" iconName="utility:check" iconPosition="left" onclick="{!c.approveSingleEditBadge}"/>
+                                <lightning:button variant="destructive" label="{!$Label.c.Reject}" iconName="utility:close" iconPosition="left" onclick="{!c.rejectSingleEditBadge}" />
+                                <lightning:button label="{!$Label.c.Cancel}" iconName="utility:close" iconPosition="left" onclick="{!c.hideSingleBadgeEditModal}" />
+                                <aura:set attribute="else">
+                                    <lightning:button label="Yes" iconName="utility:check" iconPosition="left" onclick="{!c.confirmEdit}" variant="brand" />
+                                    <lightning:button label="No" iconName="utility:close" iconPosition="left" onclick="{!c.hideSingleBadgeEditModal}" variant="destructive"/>
+                                </aura:set>
+                            </aura:if>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aura:if>
+
+    <!--Aproval Window  -->
+    <aura:if isTrue="{!v.isMassApproveConfirm}">
+        <div aria-hidden="false" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+            <div class="slds-modal__container slds-align_absolute-center" style=" width: 50% !important; height: 636px; max-width: none !important;">
+                <div class="div-body" > 
+                    <div class="div-body-head"><b>Mass Approval</b>
+                        <span class="closebtn" onclick="{!c.hideMassApproveConfirmModal}">X</span> 
+                    </div>                        
+                    <div>  
+                        <br/>
+                        <p>An E-mail will be sent to a Exhibitor informing his badge is approved.Use the following field to add any note to the E-mail he receive.</p><br/>
+                        <aura:if isTrue="{!v.sendApproveMail}">
+                            <div >
+                                <b>Approval Note</b><br/> 
+                                <lightning:input label=" " value="{!v.ApproveNote}" name="myname" /><br/>
+                            </div>
+                        </aura:if>
+                        <div class="slds-grid slds-gutters">
+                            <div class="slds-col ">
+                                <span><b>Approve Badge And Send E-Mail</b></span>
+                            </div>
+                            <div class="slds-col ">
+                                <lightning:input type="checkbox" label=" " name="input1" checked="{!v.sendApproveMail}"  />
+                            </div>
+                        </div>                            
+                    </div> 
+                    <div class="slds-m-top_medium slds-text-align_left">                    
+                        <lightning:button variant="brand" label="{!$Label.c.Confirm}" iconName="utility:check" iconPosition="left" 
+                        onclick="{!c.MassApproveBadges}" />     
+                        <lightning:button label="{!$Label.c.Cancel}" iconName="utility:close" iconPosition="left" onclick="{!c.hideMassApproveConfirmModal}" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aura:if>
+    
+    <!--Reject Window  -->
+    <aura:if isTrue="{!v.isMassRejectConfirm}">
+            <div aria-hidden="false" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+                <div class="slds-modal__container slds-align_absolute-center" style=" width: 50% !important; height: 636px; max-width: none !important;">
+                    <div class="div-body" > 
+                        <div class="div-body-head"><b>Mass Reject</b>
+                            <span class="closebtn" onclick="{!c.hideMassRejectConfirmModal}">X</span> 
+                        </div>                        
+                        <div>  
+                            <br/>
+                            <p>An E-mail will be sent to a Exhibitor informing his badge is Rejected.Use the following field to add any note to the E-mail he receive.</p><br/>
+                            <aura:if isTrue="{!v.sendRejectMail}">
+                                <div >
+                                    <b>Reject Note</b><br/> 
+                                    <lightning:input label=" " value="{!v.RejectNote}" name="myname" /><br/>
+                                </div>
+                            </aura:if>
+                            <div class="slds-grid slds-gutters">
+                                <div class="slds-col ">
+                                    <span><b>Reject Badge And Send E-Mail</b></span>
+                                </div>
+                                <div class="slds-col ">
+                                    <lightning:input type="checkbox" checked="{!v.sendRejectMail}" label=" " name="input1"/>
+                                </div>
+                            </div>                                
+                        </div> 
+                        <div class="slds-m-top_medium slds-text-align_left">                    
+                            <lightning:button variant="brand" label="{!$Label.c.Confirm}" iconName="utility:check" iconPosition="left"
+                            onclick="{!c.MassRejectBadges}" />
+                            
+                            <lightning:button label="{!$Label.c.Cancel}" iconName="utility:close" iconPosition="left" onclick="{!c.hideMassRejectConfirmModal}" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aura:if>
+</aura:component>

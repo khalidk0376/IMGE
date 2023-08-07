@@ -1,0 +1,41 @@
+<!--
+  @description       : 
+  @author            : ChangeMeIn@UserSettingsUnder.SFDoc
+  @group             : 
+  @last modified on  : 06-14-2022
+  @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
+-->
+<aura:component implements="force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global" controller="SyncRecords3EExpocadUtil">
+    <aura:attribute name="confirm" type="Boolean" description="description" default="false" />
+    <aura:attribute name="OpportunityProbability" type="String" />
+    <aura:attribute name="startSync" type="Boolean"  default="false" />
+    <aura:handler name="init" value="{!this}" action="{!c.getOpportunityProbability}"/> 
+    <aura:if isTrue="{!v.confirm}">
+        <Div style="text-align:center;margin:60px 0px;"> 
+            <!--Are you sure want to Invite Exhibitor?  --> 
+            <!--Are you sure you want to invite exhibitors with Opportunities having probability higher than {!v.OpportunityProbability} percentage.-->
+            Please confirm you would like to invite this Exhibitor.
+        </Div>
+        <div style="Float:right;margin: 12px;">
+            <lightning:button variant="Brand" label="No" title="No" onclick="{!c.modalClose}"/>
+            <lightning:button variant="Brand" label="Yes" title="Yes" onclick="{!c.startSync}"/>
+        </div>
+    </aura:if>
+    <aura:if isTrue="{!v.startSync}">
+        <c:processApiSyncronizationBatch recordId="{!v.recordId}" syncProcess="syncExhibitorInvite" onclose="{!c.modalClose}" />
+    </aura:if>
+
+	<aura:html tag="style">
+		.cuf-content { 
+		padding: 0 0rem !important; 
+		}
+		.slds-p-around--medium {
+		padding: 0rem !important;
+		}
+		.slds-modal__content{
+		overflow-y:hidden !important;
+		height:unset !important;
+		max-height:unset !important;
+		}
+	</aura:html>
+</aura:component>

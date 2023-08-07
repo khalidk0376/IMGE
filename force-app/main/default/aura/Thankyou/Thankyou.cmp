@@ -1,0 +1,17 @@
+<aura:component implements="forceCommunity:availableForAllPageTypes" access="global" >
+    <aura:attribute name="message" type="String" default="Thankyou for submit survey"/>
+    <aura:attribute name="qid" type="String" default=""/>
+	<aura:attribute name="downloadLink" type="String" default="/"/>
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+
+    <lightning:card title="Thankyou" iconName="standard:thanks">
+    	<div class="slds-p-horizontal_small">
+    		<div class="slds-align_absolute-center" style="font-size:1.5rem">{!v.message}</div><br/>
+    		<div class="slds-align_absolute-center">
+    			<lightning:button variant="brand" iconName="utility:download" iconPosition="left" label="Download Response As PDF" onclick="{!c.downloadResponse}"/>
+    			<a aura:id="download-link" style="display:none" href="{!'https://ws10devpro-formbuildergrk.cs90.force.com/TemplateDemo/DownloadResponsePDF?qnaireId='+v.qid}" target="_self" download="{!Response}">Download</a>
+    		</div>
+    	</div>
+    </lightning:card>
+</aura:component>

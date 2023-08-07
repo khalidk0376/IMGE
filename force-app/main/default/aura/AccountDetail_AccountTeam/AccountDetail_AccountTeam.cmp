@@ -1,0 +1,101 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId" controller="AccountLtnCtrl">
+    <!-- attributes -->
+    <aura:attribute name="recordId" type="String" />
+    <aura:attribute name="data" type="Object" />
+    <aura:attribute name="columns" type="List" />
+    <aura:attribute name="PageNumber" type="integer" default="1" />
+    <aura:attribute name="TotalPages" type="integer" default="0" />
+    <aura:attribute name="TotalRecords" type="integer" default="0" />
+    <aura:attribute name="RecordStart" type="integer" default="0" />
+    <aura:attribute name="RecordEnd" type="integer" default="0" />
+    <aura:attribute name="showButton" type="boolean" default="true" />
+    <aura:attribute name="showSpinner" type="boolean" default="true"/>
+    <aura:attribute name="AccountTeamObject" type="Object" access="private"/>
+    <aura:attribute name="isClickSaveAndNew" default="false" type="Boolean"/>
+    <aura:attribute name="isNotVisibleforNoAdmin" default="false" type="Boolean"/>
+    <aura:attribute name="spinner" default="false" type="Boolean" access="private"/>
+    <aura:attribute name="newAddAccountTeam" type="boolean" default="false" />  <!-- Add Attribute for open modal while click on Add team member from Accounts: BK-5025 on Rajesh Kumar - 16-06-2020 -->
+    <aura:attribute name="AddAccountTeam" type="Note"  default="{'sobjectType':'AccountTeamMemeber',                             'AccountId' : '', 'UserId' : '',  'TeamMemberRole' : '', 'AccountAccessLevel' : '' , 'OpportunityAccessLevel' : '', 'CaseAccessLevel' : ''}"></aura:attribute>
+    <!-- handlers-->
+    <aura:handler name="init" value="{!this}" action="{!c.loadData}" />
+    <div class="slds-box">
+        <aura:if isTrue="{!v.showSpinner}">
+            <lightning:spinner size="small" variant="brand" />
+        </aura:if>
+        <div class="slds-clearfix">
+            <div class="slds-clearfix">
+                <aura:If isTrue="{!v.showButton}">
+                    <div class="slds-float_right">
+                        <lightning:button variant="brand" label="Join This Account Team" title="Join This Account Team" onclick="{!c.addNewTeamCCc}" />
+                    </div>
+                </aura:If>
+                <!-- Add button for Add Account Team Members: BK-5025 on Rajesh Kumar - 16-06-2020 -->
+                <div class="slds-float_right" style="margin-right: 10px;">
+                    <lightning:button variant="brand" label="Add Team Members" title="Add Team Members" onclick="{!c.addAccountTeamMember}" />
+                </div>
+            </div>
+        </div>
+        <lightning:datatable keyField="id" data="{!v.data}" columns="{!v.columns}" hideCheckboxColumn="true" onrowaction="{! c.handleRowAction }" />
+        <footer class="slds-card__footer">
+            <aura:if isTrue="{!v.TotalRecords == 0}">
+                No records to show.
+                <aura:set attribute="else">
+                    Showing {!v.RecordStart}-{!v.RecordEnd} of {!v.TotalRecords} &nbsp;
+                    <lightning:button variant="brand" iconPosition="left" iconName="utility:chevronleft" onclick="{!c.handlePrev}" label="Previous" disabled="{!v.PageNumber == 1}" />
+                    <lightning:button variant="brand" iconPosition="right" iconName="utility:chevronright" onclick="{!c.handleNext}" label="Next" disabled="{!v.PageNumber == v.TotalPages}" />
+                </aura:set>
+            </aura:if>
+        </footer>
+        <!-- Add Modal Popup for Add Account Team Members: BK-5025 on Rajesh Kumar - 19-06-2020 -->
+        <aura:if isTrue="{!v.newAddAccountTeam}">
+            <!--<c:addTeamMember AccountTeamObject ="{!v.AccountTeamObject}" isOpenModal="{!v.newAddAccountTeam}" accountId="{!v.recordId}" isRedirect="false"/> -->
+            <lightning:recordEditForm aura:id="editForm2" objectApiName="AccountTeamMember"  onsubmit="{!c.handleSubmit}" onsuccess="{!c.handleSuccess}" onerror="{!c.handleError}">               
+                <section role="dialog"  tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_medium">
+                    <aura:if isTrue="{!v.spinner}">
+                        <lightning:spinner size="small" variant="brand" />
+                    </aura:if>
+                    <div class="slds-modal__container" >
+                        <header class="slds-modal__header">
+                            <button type="button" onclick="{!c.closeModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                                <lightning:icon iconName="utility:close" size="small" variant="bare" />
+                                <span class="slds-assistive-text">Close</span>
+                            </button>
+                            <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">New Account Team Member</h2>
+                        </header>
+                        
+                        <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1" style="height:70%;">
+                            <lightning:messages aura:id="ErrorMessage" />
+                            <lightning:layout multipleRows="true">
+                                <lightning:layoutItem size="6" class="slds-p-around_small">
+                                    <label for="AccountId">Account</label>
+                                    <lightning:inputField aura:id="AccountId" fieldName='AccountId' value="{!v.recordId}" disabled="true" variant="label-hidden" />
+                                    <label for="username">User</label> 
+                                    <lightning:inputField aura:id="username" fieldName='UserId' class="makeitrequire" value="{!v.AccountTeamObject.UserId}" variant="label-hidden"></lightning:inputField>
+                                    <aura:if isTrue="{!v.isNotVisibleforNoAdmin}">
+                                        <lightning:inputField fieldName='OpportunityAccessLevel' value="{!v.AccountTeamObject.OpportunityAccessLevel}"></lightning:inputField>
+                                    </aura:if>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="6" class="slds-p-around_small">
+                                    <lightning:inputField fieldName='TeamMemberRole' value="{!v.AccountTeamObject.TeamMemberRole}" class="customRequired none" aura:id="TeamMemberRoles" ></lightning:inputField>
+                                    <aura:if isTrue="{!v.isNotVisibleforNoAdmin}">
+                                        <lightning:inputField fieldName='AccountAccessLevel' value="{!v.AccountTeamObject.AccountAccessLevel}"></lightning:inputField>
+                                        <lightning:inputField fieldName='CaseAccessLevel' value="{!v.AccountTeamObject.CaseAccessLevel}"></lightning:inputField>
+                                    </aura:if>
+                                </lightning:layoutItem>
+                            </lightning:layout>
+                        </div>
+                        <footer class="slds-modal__footer">
+                            <aura:if isTrue="{!v.isNotVisibleforNoAdmin}">
+                                <lightning:button label="Save And New" aura:id="SaveandNew" onclick="{!c.saveandnew}" type="submit"  iconPosition="left"/>
+                            </aura:if>
+                            <lightning:button type="button" label="Cancel" onclick="{!c.closeModal}" iconPosition="left" />
+                            <lightning:button  label="Save" onclick="{!c.validateForm}" aura:id="Save" type="submit" iconPosition="left" variant="brand" />
+                        </footer>
+                    </div>  
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </lightning:recordEditForm>
+        </aura:if>
+    </div>
+</aura:component>

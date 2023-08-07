@@ -1,0 +1,19 @@
+<!--
+    ************ Creation Log  *************
+    * Created by     : Girikon(Himanshu)
+    * Created On     : 27 Nov 2019 [BK - 2849]
+    * @description   : This class provides following functionalities: 
+    *                  Allow ops admin to export the exhibitor profiles.
+    *
+-->
+
+<aura:component  implements="flexipage:availableForAllPageTypes" access="global" >
+<ltng:require scripts="{!join(',',$Resource.CustomerCenterWS11 +'/CustomerCenterWS11/js/jquery-1.7.1.min.js?v=149',$Resource.FormTabUtility)}" afterScriptsLoaded="{!c.scriptsLoaded}" />   
+<aura:attribute name="eventId" type="string"/> 
+
+    <div class="slds-grid slds-gutters">                
+        <div class="slds-col" align="left">            
+            <lightning:button variant="brand" label="Exhibitor Profiles" iconName="utility:download" iconPosition="left" onclick="{!c.accountData}"/> 
+        </div>
+    </div>
+</aura:component>

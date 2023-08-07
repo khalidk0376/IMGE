@@ -1,0 +1,58 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component implements="flexipage:availableForAllPageTypes"  controller="CustomLoggedInDetailCtrl">
+	
+    <!-- DATATABLE Attributes -->    
+    <!-- filter attribute -->
+    <aura:attribute name="EventId" type="String" default=""/>
+    <aura:attribute name="startDate" type="String" default=""/>
+    <aura:attribute name="endDate" type="String"  default=""/>
+
+    <!--Set object and fields to create datatable-->
+    <!--Used SetupAuditTrail object to fetch logged-in Community User history-->
+    <aura:attribute name="object" type="string" default="SetupAuditTrail" />
+    <aura:attribute name="fields" type="String" default="Display,CreatedById,CreatedBy.Name,CreatedDate"/>   
+    
+    <!-- Datatable column Sorting attributes-->
+    <aura:attribute name="sortedBy" type="string" default="CreatedDate" />
+    <aura:attribute name="show_page_view" type="string" default="" />
+    <aura:attribute name="sortedDirection" type="string" default="desc" />    
+    <aura:attribute name="mydata" type="list" default="[]"/>
+    <aura:attribute name="mycolumn" type="object" default="{}"/>    
+    
+    <!--Pagination attribute-->
+    <aura:attribute name="pagesize" type="integer" default="15"/>
+    <aura:attribute name="totalrows" type="integer" default="0"/>    
+    <aura:attribute name="offset" type="integer" default="0"/>     
+    <aura:attribute name="next" type="boolean" default="0"/>
+    <aura:attribute name="prev" type="boolean" default="0"/>    
+    <!-- DATATABLE Attributes END HERE-->
+	<aura:attribute name="Spinner" type="boolean" default="false" />
+    
+    <!-- Handler -->
+    <aura:handler name="init" action="{!c.doInit}" value="{!this}"/>
+    
+
+    <aura:if isTrue="{!v.Spinner}">
+        <lightning:spinner size="small" variant="brand"/>
+    </aura:if>
+    {!v.body}
+    <lightning:card iconName="standard:customers" title="Logged in as community user">
+        <aura:set attribute="actions">
+            <div class="datefield" style="padding-top:5px;">Filter By: </div>
+            <lightning:input value="{!v.startDate}" class="datefield" type="date" label="Start Date" variant="label-hidden" placeholder="Start Date"/>
+            <div class="datefield" style="padding-top:5px;">To</div>
+            <lightning:input value="{!v.endDate}" class="datefield" type="date" label="End Date" variant="label-hidden" placeholder="End Date"/>
+            <lightning:button label="Apply" variant="brand" onclick="{!c.filterData}"/>
+        </aura:set>
+        <lightning:layout multipleRows="true">                
+            <lightning:layoutItem size="12" padding="around-small">
+                <lightning:datatable data="{!v.mydata}" columns="{!v.mycolumn}" hideCheckboxColumn="true" onsort="{!c.updateColumnSorting}" sortedBy="{!v.sortedBy}" sortedDirection="{!v.sortedDirection}"  keyField="Id"/>
+                <div class="slds-p-left_small slds-p-top_small slds-float-right">
+                    Showing {!v.show_page_view} of {!v.totalrows} &nbsp;             
+                    <lightning:button variant="brand" iconPosition="left" iconName="utility:chevronleft" onclick="{!c.previousDatas}" label="Previous" disabled="{!v.prev}"/>
+                    <lightning:button variant="brand" iconPosition="right" iconName="utility:chevronright" onclick="{!c.nextDatas}" label="Next" disabled="{!v.next}"/>
+                </div>
+            </lightning:layoutItem>
+        </lightning:layout>
+    </lightning:card>
+</aura:component>

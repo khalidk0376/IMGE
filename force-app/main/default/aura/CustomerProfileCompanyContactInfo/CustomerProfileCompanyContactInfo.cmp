@@ -1,0 +1,271 @@
+<!--
+* Modification Log	:
+* Modified by   	:	Girikon(Prashant[CCEN-743 April 12 2019],[C2E-16 August 22 2019], [C2E-102 Sept 24 2019], [STL-282 Oct 16 2019]) 
+						Mukesh Gupta[STL-282 Oct 16, 2019 fixed country dropdown]
+-->
+<aura:component controller="CustomerProfileContactInfo" implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes"
+    access="global">
+
+    <ltng:require scripts="{!$Resource.CustomerCenterWS11 +'/CustomerCenterWS11/js/jquery-1.7.1.min.js?v=149'}"
+    afterScriptsLoaded="{!c.scriptsLoaded}" />
+    <aura:handler name="init" value="{!this}" action="{!c.loadData}" />
+    <aura:handler name="change" value="{!v.boothId}" action="{!c.loadOnBoothData}" />
+    <aura:attribute name="ExpocadBooth" type="object"/>
+    <aura:attribute name="eventcode" type="String" default="" />
+    <aura:attribute name="eventId" type="String" default="" />
+    <aura:attribute name="accountId" type="String" default="" />
+    <aura:attribute name="profileOption" type="Profile_Option_Visibility__c" />
+    <aura:attribute name="profilePackageSetting" type="Profile_Package_Setting__c" />
+    <aura:attribute name="boothId" type="String" default="" />
+    <aura:attribute name="Event_Setting" type="Event_Settings__c" />
+    <aura:attribute name="wrapperList" type="object" />
+    <aura:attribute name="objEditor" type="object" />
+    <aura:attribute name="message" type="string" />
+    <aura:handler event="aura:waiting" action="{!c.showSpinner}" />
+    <aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}" />
+    <aura:attribute name="Spinner" type="boolean" default="false" />
+    <aura:attribute name="noContact" type="boolean" default="false" />
+    <aura:attribute name="noError" type="boolean" default="false" />
+    <aura:attribute name="showAgentLastModified" type="boolean" default="false" />
+    <aura:attribute name="saveMessage" type="String"/>
+    <aura:attribute name="spaceCount" type="Integer" default="0" />
+    <aura:attribute name="enterCount" type="Integer" default="0" />
+    <aura:attribute name="webCount" type="String" default="" />
+    <aura:attribute name="isAgent" type="boolean" default="false" />
+    <aura:attribute name="isReadOnly" type="boolean" default="false" />
+    <aura:attribute name="reachedWebLimit" type="boolean" default="true" />
+    <aura:attribute name="reachedPrintLimit" type="boolean" default="true" />
+    <aura:attribute name="printCount" type="String" default="" />
+    <aura:attribute name="webWordsRemaining" type="Integer" default="" />
+    <aura:attribute name="printWordsRemaining" type="Integer" default="" />
+    <!-- {!v.Spinner} -->
+    <aura:if isTrue="{!v.Spinner}">
+        <lightning:spinner size="small" variant="brand"  />
+    </aura:if>
+    <aura:if isTrue ="{!!v.noContact}">
+        <aura:if isTrue = "{!and(v.wrapperList.isSubmitted, v.showAgentLastModified)}">
+            <div style="float: right; color: grey;"><i>Last Updated by {!v.wrapperList.lastUpdatedByName}, <lightning:formattedDateTime
+                value="{!v.wrapperList.lastUpdatedByDate}"
+                year="2-digit"
+                month="2-digit"
+                day="2-digit">
+            </lightning:formattedDateTime> </i></div>
+        </aura:if>
+        <aura:if isTrue = "{!and(v.wrapperList.isSubmitted, v.isAgent)}">
+            <div style="float: right; color: grey;"><i>Last Updated by {!v.wrapperList.lastUpdatedByName}, <lightning:formattedDateTime
+                value="{!v.wrapperList.lastUpdatedByDate}"
+                year="2-digit"
+                month="2-digit"
+                day="2-digit">
+            </lightning:formattedDateTime> </i></div>
+        </aura:if>
+        <br/>
+        <div class="slds-grid slds-wrap">
+            <div class="slds-size_1-of-2 slds-p-right_xx-large">
+                <aura:if isTrue="{!and(v.profileOption.Booth_Contact_Info__c, v.profilePackageSetting.Booth_Contact_Info__c)}">
+                    <div class="title">{!$Label.c.Company_Contact_Information}</div>
+                    <table class="slds-table slds-max-medium-table--stacked-horizontal" role="grid" cellspacing="0">
+                        <tbody>
+                            <tr>
+                                <td class="form-group-label-1" style="width: 25%">{!$Label.c.Stand} #</td>
+                                <td>
+                                    <ui:outputtext value="{!v.ExpocadBooth.Booth_Number__c}" class="label-text-3" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="form-group-label-1">{!$Label.c.Exhibiting_As}</td>
+                                <td>
+                                    <ui:inputtext value="{!v.ExpocadBooth.Display_Name__c}" disabled= "{!v.isReadOnly}"  class="label-text-1" />
+    
+                                </td>
+                            </tr>
+                            <tr>
+    
+                                <td class="form-group-label-1">{!$Label.c.FirstName}</td>
+                                <td>
+    
+                                    <ui:inputtext value="{!v.wrapperList.firstname}" disabled= "{!v.isReadOnly}" class="label-text-1" />
+    
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="form-group-label-1">{!$Label.c.LastName}</td>
+                                <td>
+                                    <ui:inputtext value="{!v.wrapperList.lastname}" disabled= "{!v.isReadOnly}"  class="label-text-1" />
+    
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="form-group-label-1">{!$Label.c.Address}</td>
+                                <td>
+                                    <ui:inputtext value="{!v.wrapperList.address}" disabled= "{!v.isReadOnly}"  class="label-text-1" />
+    
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="form-group-label-1">{!$Label.c.P_O_Box}</td>
+                                <td>
+                                    <ui:inputtext value="{!v.wrapperList.po_box}" disabled= "{!v.isReadOnly}"  class="label-text-1" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="form-group-label-1">{!$Label.c.City}</td>
+                                <td>
+                                    <ui:inputtext value="{!v.wrapperList.city}" disabled= "{!v.isReadOnly}"  class="label-text-1" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="form-group-label-1">{!$Label.c.State}</td>
+                                <td>
+                                    <ui:inputtext value="{!v.wrapperList.state}" disabled= "{!v.isReadOnly}"  class="label-text-1" />
+    
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="form-group-label-1">{!$Label.c.Zip_Code}</td>
+                                <td>
+                                    <ui:inputtext value="{!v.wrapperList.zipcode}" disabled= "{!v.isReadOnly}"  class="label-text-1" />
+    
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="form-group-label-1">{!$Label.c.Country}</td>
+                                <td>
+                                    <ui:inputSelect value="{!v.wrapperList.country}" aura:id="InputSelectDynamic"  disabled = "{!v.isReadOnly}" class="label-text-2" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="form-group-label-1">{!$Label.c.Telephone}</td>
+                                <td>
+                                    <ui:inputPhone value="{!v.wrapperList.telephone}" disabled= "{!v.isReadOnly}"  class="label-text-1" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="form-group-label-1">{!$Label.c.Fax}</td>
+                                <td>
+                                    <ui:inputtext value="{!v.wrapperList.fax}" disabled= "{!v.isReadOnly}"  class="label-text-1" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="form-group-label-1">{!$Label.c.Email}</td>
+                                <td>
+                                    <ui:inputEmail aura:id="email1" value="{!v.wrapperList.email}" disabled= "{!v.isReadOnly}"  class="label-text-1" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="form-group-label-1">{!$Label.c.CC_Email}</td>
+                                <td>
+                                    <ui:inputEmail aura:id="emailcc" value="{!v.wrapperList.ccEmail}" disabled= "{!v.isReadOnly}"  class="label-text-1" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="form-group-label-1">{!$Label.c.Website}</td>
+                                <td>
+                                    <ui:inputtext value="{!v.wrapperList.website}" disabled= "{!v.isReadOnly}"  class="label-text-1" />
+    
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </aura:if>
+                <aura:if isTrue="{!and(v.profileOption.Social_Media_Links__c, v.profilePackageSetting.Social_Media_Links__c)}">
+                    <div class="title slds-m-top_large">{!$Label.c.Social}</div>
+                    <table class="slds-table slds-max-medium-table--stacked-horizontal" style="float:left;width: 100%;"
+                        role="grid" cellspacing="0">
+                        <tbody>
+                            <tr>
+                                <td class="form-group-label-1" style="width: 25%">{!$Label.c.FaceBook}</td>
+                                <td>
+                                    <ui:inputtext value="{!v.ExpocadBooth.FaceBook__c}" disabled= "{!v.isReadOnly}"  class="label-text-1" />
+    
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="form-group-label-1">{!$Label.c.LinkedIn}</td>
+                                <td>
+                                    <ui:inputURL value="{!v.ExpocadBooth.LinkedIn__c}" disabled= "{!v.isReadOnly}"  class="label-text-1" />
+                                </td>
+                            </tr>
+    
+                            <tr>
+                                <td class="form-group-label-1">{!$Label.c.Twitter}</td>
+                                <td>
+                                    <ui:inputURL value="{!v.ExpocadBooth.Twitter__c}" disabled= "{!v.isReadOnly}"  class="label-text-1" />
+                                </td>
+                            </tr>
+    
+                            <tr>
+                                <td class="form-group-label-1">{!$Label.c.Instagram}</td>
+                                <td>
+                                    <ui:inputURL value="{!v.ExpocadBooth.Instagram__c}" disabled= "{!v.isReadOnly}"  class="label-text-1" />
+                                </td>
+                            </tr>
+    
+                            <tr>
+                                <td class="form-group-label-1">{!$Label.c.YouTube}</td>
+                                <td>
+                                    <ui:inputURL value="{!v.ExpocadBooth.YouTube__c}" disabled= "{!v.isReadOnly}" class="label-text-1" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </aura:if>
+            </div>
+            <div class="slds-size_1-of-2">
+                <aura:if isTrue="{!and(v.profileOption.Logo__c, v.profilePackageSetting.Logo__c)}">
+                    <c:CustomerProfileBoothLogo parentId="{!v.boothId}" eventcode="{!v.eventcode}" isReadOnly = "{!v.isReadOnly}"/>
+                </aura:if>
+                <aura:if isTrue="{!and(v.profileOption.Web_Description__c, v.profilePackageSetting.Web_Description__c)}">
+                    <div class="slds-m-vertical_x-large">
+                        <div class="title">{!$Label.c.Web_Description}:</div>
+                        <div onkeyup="{!c.updateWordCount}">
+                            <lightning:inputRichText class="slds-rich-text-editor richTextDesc" value="{!v.ExpocadBooth.Web_Description__c}" aura:id="webDesc" disabled= "{!v.isReadOnly}" formats="['bold', 'italic', 'underline','strike', 'list', 'script', 'indent']" valid ="{!v.reachedWebLimit}" messageWhenBadInput=""/>
+                            
+                        </div>
+                        <div class="clearfix"></div>
+                        <span class="WordCount">{!v.webCount}</span>
+                    </div>
+                </aura:if>
+                <aura:if isTrue="{!and(v.profileOption.Print_Description__c,v.profilePackageSetting.Print_Description__c)}">
+                    <div class="slds-m-vertical_x-large">
+                        <div class="title">{!$Label.c.Print_Description}:</div>
+                        <div onkeyup="{!c.updateWordCount}">
+                            <lightning:inputRichText class="slds-rich-text-editor richTextDesc" value="{!v.ExpocadBooth.Print_Description__c}" aura:id="printDesc" disabled= "{!v.isReadOnly}" formats="['bold', 'italic', 'underline','strike', 'list', 'script', 'indent']" valid ="{!v.reachedPrintLimit}" messageWhenBadInput=""/>
+
+                        </div>
+                        <div class="clearfix"></div>
+                        <span class="WordCount ">{!v.printCount}</span>
+                    </div>
+                </aura:if>
+            </div>
+        </div>
+        <div class="slds-grid">
+            <div class="slds-col"></div>
+            <div class="slds-col">
+                <aura:if isTrue="{!or(or(or(and(v.profileOption.Booth_Contact_Info__c, v.profilePackageSetting.Booth_Contact_Info__c),and(v.profileOption.Social_Media_Links__c, v.profilePackageSetting.Social_Media_Links__c)),and(v.profileOption.Web_Description__c, v.profilePackageSetting.Web_Description__c)),and(v.profileOption.Print_Description__c,v.profilePackageSetting.Print_Description__c))}">
+                    <div class="slds-float_right ">
+                        <button type="button" disabled= "{!v.isReadOnly}" onclick="{!c.updateProfileDtls}" class="primary-btn" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+                                class="fa fa-check "></i>{!$Label.c.Save}</button>
+            
+                        <button type="button" disabled= "{!v.isReadOnly}" onclick="{!c.resetChanges}" class="primary-btn slds-m-left_small" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+                                class="fa fa-check "></i>Reset changes</button>
+                    </div>
+                    <div class="slds-float_right ">
+                        <aura:if  isTrue="{!!v.noError}" >
+                            <span class="saveContact">{!v.saveMessage}</span>
+                        <aura:set attribute="else">
+                            <span class="error">{!v.saveMessage}</span>
+                        </aura:set>
+                    </aura:if>
+                    </div>
+                </aura:if>
+            </div>
+        </div>
+        <aura:set attribute="else">
+            <div class="slds-align_absolute-center">
+                <span class ="nocontact"><strong><p>{!$Label.c.There_is_no_contact_associated_with_this_booth}</p></strong> </span>
+            </div>
+            <br></br>
+        </aura:set>
+    </aura:if>
+</aura:component>

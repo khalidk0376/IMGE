@@ -1,0 +1,13 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId" controller="OpportunityDetailsCtrl">
+	<ltng:require scripts="{!$Resource.LtngUtility}"/>
+	<aura:attribute name="isEditForm" type="Boolean" default="false" />
+	<aura:attribute name="activeSections" type="List" />
+
+    <div class="{!v.isEditForm ? 'container' : 'slds-hide'}">
+       <c:ConEditForm recordId="{!v.recordId}"  isEditForm ="{!v.isEditForm}" activeSections="{!v.activeSections}"/>
+    </div>
+    <div class="{!!v.isEditForm ? 'container' : 'slds-hide'}">
+       <c:ConViewForm recordId="{!v.recordId}"  isEditForm ="{!v.isEditForm}" activeSections="{!v.activeSections}"/> 
+    </div>
+</aura:component>

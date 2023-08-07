@@ -1,0 +1,16 @@
+.THIS .forceContentFileCard{
+    padding-left: 0% !important;
+    padding-right: 0% !important;
+    width: 50rem !important;
+    /* padding-top: 15% !important; */
+
+}
+.THIS header{
+    display: none !important;
+}
+.THIS .slds-template_default.slds-brand-band:before {
+    top: 0 !important;
+}
+.THIS .slds-p-top_xx-small slds-p-left_small forceContentPreviewerActionsBar forceActionsContainer{
+    display : none !important;
+}

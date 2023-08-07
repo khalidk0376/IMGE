@@ -1,0 +1,18 @@
+<!-- *
+ * Project      :   Opportunity integration
+ * Created Date :   29th Apr 2022
+ * Created By   :   Girikon(Shiv Raghav, Abhishek)
+ * ***************************************************************************
+ * @description : to Show Opportunity Data from GE to UBM Org
+ * -->
+<aura:component controller="callbackLightningOutCtrl">	
+    <!-- GLOBAL Atributes-->
+    <aura:attribute name="geRecordNumber" type="Id" description="GE Record Id" access="global" />
+    <aura:attribute name="mydata" type="Object"/>
+    <aura:attribute name="mycolumns" type="List"/>
+    <aura:handler name="init" value="{! this }" action="{!c.init }"/>
+        <lightning:datatable data="{!v.mydata }"
+            columns="{!v.mycolumns }"
+            keyField="Id"
+            hideCheckboxColumn="true"/>
+</aura:component>

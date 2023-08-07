@@ -1,0 +1,10 @@
+.THIS {
+}
+.THIS .border{
+	border:1px solid #e1e1e1!important;
+	margin-top:20px;
+}
+
+.THIS article.slds-card.fb-page-header.GKN_FBCustomizeButtonComp {
+    background: rgb(243, 242, 242)!important;
+}

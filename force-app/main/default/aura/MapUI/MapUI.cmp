@@ -1,0 +1,12 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<!--Child.cmp-->
+<aura:component >
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="map" type="map"/>
+    <aura:attribute name="key" type="string"/>
+    <aura:attribute name="value" type="string" default=""/>
+    <aura:attribute name="DefaultValue" type="string" default=""/>
+    
+    <span class="brand-color">{!v.value}</span>
+    
+</aura:component>

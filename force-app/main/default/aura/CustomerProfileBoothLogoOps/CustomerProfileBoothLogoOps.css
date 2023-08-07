@@ -1,0 +1,117 @@
+.THIS .uploadall {
+    background-color: #efefef;
+    padding: 12px 0px;
+    text-align: center;
+}
+
+.THIS .uploadall a {
+    font-weight: 700;
+    color: #007bcb;
+}
+
+.THIS .uploadall-btn {
+    background: #3790c7;
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    padding: 15px 45px;
+    margin-top: 15px;
+    margin-bottom: 25px;
+}
+
+.THIS .modal-header h2 {
+    font-weight: 700 !important;
+    padding-bottom: 0;
+}
+
+.THIS .close {
+    line-height: 0;
+}
+
+.THIS .bodycomapny {
+    padding: 7px 0 0 0;
+    color: #555 !important;
+}
+
+.THIS .msgbackground {
+    background: #f8f2a0;
+    padding: 10px;
+    margin: 10px 0px;
+}
+
+.THIS .radio {
+    position: relative;
+}
+
+.THIS .radio span {
+    position: relative;
+    padding-left: 20px;
+}
+
+.THIS .radio input[type="radio"] {
+    cursor: pointer;
+    position: absolute;
+    top: 6px;
+}
+
+.THIS .radio input[type="radio"]:checked+span {
+    color: #555;
+}
+
+.THIS .inline {
+    display: inline-block;
+    padding: 2px 2px;
+}
+
+.THIS .inline+.inline {
+    margin-left: 10px;
+}
+
+.THIS .inputfile {
+    border: 1px solid #d2d2d2;
+    padding: 7px;
+    margin-top: 8px;
+}
+
+.THIS .f-black {
+    color: #4d4d4d;
+}
+
+.THIS .type {
+    font-weight: 600;
+    color: red;
+    background: #FFF0F2;
+    padding: 0px 5px;
+    margin-right: 5px;
+}
+
+.uploadallbg.THIS {
+    border: 1px solid #b4b4b4;
+}
+
+.CustomLogoTitle.THIS {
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.THIS .customTitle {
+    color: #666;
+}
+
+.THIS .bold-heading {
+    padding-bottom: 0px !important;
+}
+
+.THIS .custmMargnBtm {
+    margin-bottom: 0%;
+    margin: 20px 0px;
+    font-size: 12px;
+}
+
+
+
+.customSpiner.THIS {
+    position: fixed !important;
+
+}

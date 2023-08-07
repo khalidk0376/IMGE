@@ -1,0 +1,22 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId" access="global" >
+    
+    <lightning:layout multipleRows="true">
+        <lightning:layoutItem size="12">
+            <c:LightningDataTable isViewFile="true" whereField="Opportunity__c" whereValue="{!v.recordId}"
+                                  fields="Name,CreatedBy.Name,CreatedDate,LastModifiedBy.Name"
+                                  object="Agreement__c" />
+            
+        </lightning:layoutItem>
+        <lightning:layoutItem size="12" class="slds-p-top_medium">
+            <c:LightningDataTable isViewFile="true" whereField="Opportunity__c" whereValue="{!v.recordId}"
+                                  fields="Name,Document_Status__c,Document_Signed_Date__c,TAT_Calcualted__c,Reason_Declined__c"
+                                  object="Quote_Template_TAT__c" />
+        </lightning:layoutItem>
+        <lightning:layoutItem size="12"  class="slds-p-top_medium">            
+            <c:LightningDataTable isViewFile="true" whereField="Quote__r.SBQQ__Opportunity2__c" whereValue="{!v.recordId}"
+                                  fields="Name,dsfs__Sender__c,dsfs__Subject__c,dsfs__Envelope_Status__c,dsfs__Declined_Reason__c"
+                                  object="dsfs__DocuSign_Status__c" />
+        </lightning:layoutItem>
+    </lightning:layout>
+</aura:component>

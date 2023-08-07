@@ -1,0 +1,10 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction,lightning:actionOverride" access="global" >
+    <aura:attribute name="recordId" type="Id" />       
+    <article class="slds-card">
+        <div class="slds-card__body slds-card__body_inner">To edit the record, please click below:
+            <br/>
+            <input type="Button" class="slds-button slds-button_brand" onclick="{!c.redirect}" value="Edit" />
+	        <ui:outputText class="form-control slds-hide" aura:id="recid" value="{!v.recordId}" />
+        </div>
+    </article>
+</aura:component>

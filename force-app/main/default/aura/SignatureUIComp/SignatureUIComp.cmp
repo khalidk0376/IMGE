@@ -1,0 +1,54 @@
+<aura:component access="global" controller="UploadSignatureController">
+    <ltng:require afterScriptsLoaded="{!c.Init}" />
+    <aura:attribute name="questionId" type="String" default=""/>
+    <aura:attribute name="questionerId" type="String" default=""/>
+    <aura:attribute name="showSign" type="boolean" default="false"/>
+    <aura:attribute name="lstQQuesnnaire" type="FBPreviewWrapper" />
+    <aura:attribute Name="responseAnswer" type="String" />
+    <aura:attribute Name="responseId" type="String" />
+    <aura:attribute name="spinner" type="boolean" default="false"/>
+    <aura:attribute name="checkImage" type="boolean" default="false"/>
+    <aura:attribute name="msgbody" type="String" default=""/>
+    <aura:attribute name="msgtype" type="String" default=""/>
+    
+	
+    <aura:if isTrue="{!v.spinner}">
+        <lightning:spinner size="medium" variant="brand"/>
+    </aura:if>
+    <aura:if isTrue="{!v.msgbody!=''}">
+           
+			<div class="slds-notify_container slds-is-fixed">
+				<div class="{!'slds-notify slds-notify_toast slds-theme_'+v.msgtype}" role="alert">
+				  <span class="slds-assistive-text">{!v.msgtype}</span>
+				  <span class="{!'slds-icon_container slds-icon-utility-'+v.msgtype+' slds-m-right_small slds-no-flex slds-align-top'}" title="Description of icon when needed">
+					<lightning:icon iconName="{!'utility:'+v.msgtype}" size="small" variant="inverse"/>
+				  </span>
+				  <div class="slds-notify__content">
+					<h2 class="slds-text-heading_small" style="color:#fff;font-size:1rem">{!v.msgbody}</h2>
+				  </div>
+				  <button class="slds-button slds-button_icon slds-notify__close slds-button_icon-inverse" title="Close" onclick="{!c.closeToast}">
+					<lightning:icon iconName="utility:close" size="small" variant="inverse"/>
+					<span class="slds-assistive-text">Close</span>
+				  </button>
+				</div>
+			</div>
+		</aura:if>
+    <div >
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon iconName="utility:close" onclick="{!c.hideModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" />
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Signature Pad</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" aura:id="modal-content-id-1" onclick="{!c.checkImage}">
+                    <canvas width="600" height="400" style="border:2px solid #ddd"></canvas>
+                </div>
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick="{!c.erase}">Clear</button>
+                    <button class="slds-button slds-button_brand" onclick="{!c.saveSignatureModal}">Save</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </div>
+</aura:component>

@@ -1,0 +1,174 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<!--
+    ************ Modification Log  ************
+    * Modified by : Girikon(Prashant)[CCEN-688] March 19 2019    
+-->
+
+<aura:component implements="flexipage:availableForAllPageTypes"  controller = "ApproveContractorCtrl">
+    <ltng:require scripts="{!$Resource.CustomerCenterWS11 +'/CustomerCenterWS11/js/jquery-1.7.1.min.js?v=149'}" /> 
+    <aura:attribute name="StandDesignMessages" type="Stand_Design_Message_History__c[]"/>
+    <aura:attribute name="StandDesignEmail" type="Stand_Design_Message_History__c[]"/>
+    <aura:attribute name="childsingleBooth" type="BoothContractorMapping__c[]"/>
+    <aura:attribute name="emailContent" type="object"/>
+    <aura:attribute name="emailContentMap" type="object"/>
+    <aura:attribute name="selTabId" type="String"/>
+    <!-- <aura:attribute name="objEditorMsg" type="object" /> -->
+    <aura:attribute name="EventEditionID" type="String"/>
+    <aura:attribute name="AccountId" type="String" />
+    <aura:attribute name="Cmploaded" type="Boolean" default="false"/> <!-- to Flag the loaded cmp -->
+    <aura:handler name="init" value="{!this}" action="{!c.onLoad}" />
+    <!-- <aura:handler name="change" value="{!v.PopUpClosed}" action="{!c.PopUpClosedChanges}"/> -->
+    <aura:handler name="change" value="{!v.selTabId}" action="{!c.onLoad}"/>
+    <aura:handler name="change" value="{!v.AccountId}" action="{!c.onLoad}"/>
+    <aura:handler event="aura:waiting" action="{!c.waiting}"/> 
+    <aura:handler event="aura:doneWaiting" action="{!c.doneWaiting}"/> 
+    <aura:attribute name="isSpinner" type="Boolean" default="false"/>
+    <aura:attribute name="PopUpClosed" type="Boolean"/>
+    
+    
+    <aura:if isTrue="{!v.isSpinner}">
+        <lightning:spinner class="position" size="large" variant="brand"/>
+    </aura:if> 
+
+    
+    <div class="div-body"> 
+    <div class="slds-scrollable" style="overflow-y: scroll;height: 45vh;">
+    <table class="slds-table slds-table_bordered slds-max-medium-table--stacked-horizontal slds-scrollable" role="grid" cellspacing="0">
+        <thead>
+            <tr>
+                <th class="tabHeader" style="background-color: #ccc !important; color: #000 !important; text-transform: none;"></th>
+                <th class="tabHeader slds-size_3-of-5" style="background-color: #ccc !important; color: #000 !important; text-transform: none;">
+                    Subject
+                </th>
+                <th class="tabHeader slds-size_2-of-5" style="background-color: #ccc !important; color: #000 !important; text-transform: none;">
+                    Sent Date
+                </th>
+                <th class="tabHeader slds-size_2-of-5" style="background-color: #ccc !important; color: #000 !important; text-transform: none;">
+                    Forwarded To
+                </th>
+            </tr>
+        </thead> 
+          <tbody>
+            <aura:iteration items="{!v.StandDesignMessages}" var="StndDsnMsg">
+                <aura:if isTrue="{!StndDsnMsg!=null}">
+                        <tr class="slds-hint-parent">
+                            <td>
+                                <span class="temp" >
+                                        <lightning:buttonIcon onclick="{!c.showModelEmailForward}" value="{!StndDsnMsg.Id}" size="small" iconName="utility:internal_share" variant="bare" alternativeText="Forward" disabled = "{!!StndDsnMsg.Subject__c}"/>
+                                </span>
+                            </td>
+                            <td> 
+                                <div> <a href="" target="" data-id="{!StndDsnMsg.Id}"  onclick = "{!c.showModelEmailContent}">{!StndDsnMsg.Subject__c}</a></div>
+                            </td>
+                            <td>
+                                <ui:outputDateTime value="{!StndDsnMsg.CreatedDate}" />  
+                            </td>
+                            <td>
+                                <aura:if isTrue="{!StndDsnMsg.Is_Forwarded__c}">
+                                    <ui:outputText value="{!StndDsnMsg.ToEmail__c}" />  
+                                </aura:if>
+                            </td>
+                            
+                        </tr>
+                </aura:if>
+            </aura:iteration>
+          </tbody>
+        </table>
+        </div>
+    </div>
+    
+    
+    <div aria-hidden="false" id="modelEmailContent" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+        <div class="slds-modal__container" style=" width: 80% !important;">
+        <div class="div-body p" align="center">
+            <div class = "div-body-head"><b>Email Details</b>
+            <span class="closebtn" onclick="{!c.hideModelEmailContent}">X</span></div>
+        </div>
+        <div class="div-body p" align="center">
+        <div class="slds-scrollable" style="overflow-y: scroll;height: 45vh;"> 
+        <table style="width:95%;" class="slds-table slds-max-medium-table--stacked-horizontal " role="grid" cellspacing="0">
+            <tr>
+                <th class="slds-size_1-of-5">
+                    <strong>From :</strong> 
+                </th>
+                <th class="slds-box slds-size_4-of-5">
+                    <ui:outputText value="{!v.emailContent.From__c}"/>
+                </th>
+            </tr>
+            <tr>
+                <th class="slds-size_1-of-5">
+                    <strong>To :</strong>  
+                </th>
+                <th class="slds-box slds-size_4-of-5">
+                    <ui:outputText value="{!v.emailContent.ToEmail__c}"/>
+                </th>
+            </tr>
+            <tr>
+                <th class="slds-size_1-of-5">
+                    <strong>CC :</strong>
+                </th>
+                <th class="slds-box slds-size_4-of-5">
+                    <ui:outputText value="{!v.emailContent.CCEmail__c}"/>
+                </th>
+            </tr>
+            <tr>
+                <th class="slds-size_1-of-5">
+                    <strong>Subject :</strong> 
+                </th>
+                <th class="slds-box slds-size_4-of-5">
+                    <ui:outputText value="{!v.emailContent.Subject__c}"/>
+                </th>
+            </tr>
+            <tr>
+                <th class="slds-size_1-of-5">
+                    <strong>Content :</strong>
+                </th>
+                <th class=" slds-box slds-cell-wrap slds-size_4-of-5">
+                    <ui:outputRichText value="{!v.emailContent.Content__c}"/>
+                </th>
+            </tr>
+        </table>
+        </div>
+        </div>
+	</div>
+    </div>
+
+    <!-- Added regarding Jira ticket [CCEN-688] -->
+    <div aria-hidden="false" id="modelEmailForward" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+        <div class="slds-modal__container" style=" width: 80% !important;">
+        <div class="div-body p" align="center">
+            <div class = "div-body-head"><b>Forward Email</b>
+            <span class="closebtn" onclick="{!c.hideModelEmailForward}">X</span></div>
+        </div>
+        <div class="div-body p" align="center">
+            <lightning:button variant="brand" label="Send" onclick="{!c.forwardEmail}" class="slds-m-right_x-large slds-m-bottom_small slds-float_right slds-m-top_xxx-small" />
+        <table style="width:95%;" class="slds-table slds-max-medium-table--stacked-horizontal " role="grid" cellspacing="0">
+            <tr>
+                <th class="slds-size_1-of-5">
+                    <strong>To :</strong>  
+                </th>
+                <th class="slds-box slds-size_4-of-5">
+                    <ui:inputEmail class="slds-input" aura:id="emailto"  value="{!v.emailContent.ToEmail__c}" />
+                </th>
+            </tr>
+            <tr>
+                <th class="slds-size_1-of-5">
+                    <strong>Subject :</strong> 
+                </th>
+                <th class="slds-box slds-size_4-of-5">
+                    <lightning:input name="input1" value="{!v.emailContent.Subject__c}" />
+                </th>
+            </tr>
+            <tr>
+                <th class="slds-size_1-of-5">
+                    <strong>Content :</strong>
+                </th>
+                <th class=" slds-box slds-cell-wrap slds-size_4-of-5">
+                        <lightning:inputRichText value="{!v.emailContent.Content__c}"/>
+                </th>
+            </tr>
+        </table>
+        </div>
+    </div>   
+    </div>
+</aura:component>

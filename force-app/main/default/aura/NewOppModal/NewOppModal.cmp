@@ -1,0 +1,124 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component controller="OppActionButtonController" implements="flexipage:availableForAllPageTypes,force:hasRecordId" access="global">
+    <ltng:require scripts="{!$Resource.LtngUtility}" />
+    <aura:attribute name="isContactInactive" type="Boolean" access="public" default="false" />
+    <aura:attribute name="isFromAc" default="false" type="Boolean" access="public" />
+    <aura:attribute name="conId" type="string" access="public" default="false" />
+    <aura:attribute name="accountId" type="String" access="public" />
+    <aura:attribute name="isOpenModal" default="false" type="Boolean" access="public" />
+    <aura:attribute name="oppObj" type="Object" access="private" />
+    <aura:attribute name="defaultRecordType" type="string" access="public" />
+    
+    <aura:attribute name="defaultCurrency" type="String" default="" />
+    
+    <aura:attribute name="spinner" default="false" type="Boolean" access="private" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:if isTrue="{!v.isOpenModal}">
+        <lightning:recordEditForm aura:id="editForm2" objectApiName="Opportunity" onload="{!c.showRequiredFields}" onsubmit="{!c.handleSubmit}" onsuccess="{!c.handleSuccess}" onerror="{!c.handleError}" recordTypeId = "{!v.defaultRecordType}">
+            <lightning:messages />
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_medium">
+                <aura:if isTrue="{!v.spinner}">
+                    <lightning:spinner size="small" variant="brand" />
+                </aura:if>
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button type="button" onclick="{!c.closeModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                            <lightning:icon iconName="utility:close" size="small" variant="bare" />
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Create New Opportunity</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <aura:if isTrue="{!v.isContactInactive}">
+                            <div class="slds-text-color_error slds-text-heading_medium">You Can Not Create Opportunity As This Contact Is In-Active.</div>
+                        </aura:if>
+                        <aura:if isTrue="{!!v.isContactInactive}">
+                            <lightning:layout multipleRows="true">
+                                <lightning:layoutItem size="6" class="slds-p-around_small">
+                                    <lightning:inputField fieldName="EventEdition__c" value="{!v.oppObj.EventEdition__c}" class="customRequired none" aura:id="EventEdition" onchange="{!c.handleEventChange}" />
+                                    <div class="slds-p-top_x-small"></div>
+                                    <lightning:inputField fieldName="Name" value="{!v.oppObj.Name}" />
+                                    <div class="slds-p-top_x-small"></div>
+                                    <aura:if isTrue="{!v.isFromAc}">
+                                        <c:ExtendLookup helpText="Individual you are working with on this opportunity" objectName="contact" label="Opportunity Contact" nameFieldApi="Name" selectedItemId="{!v.oppObj.Opportunity_Contact__c}" isRequired="true" accountId="{!v.accountId}" />
+                                        <div class="slds-p-top_x-small"></div>
+                                        <aura:set attribute="else">
+                                            <c:ExtendLookup helpText="Individual you are working with on this opportunity" objectName="contact" label="Opportunity Contact" nameFieldApi="Name" selectedItemId="{!v.conId}" isRequired="true" accountId="{!v.accountId}" />
+                                            <div class="slds-p-top_x-small"></div>
+                                        </aura:set>
+                                    </aura:if>
+                                    <c:ExtendLookup helpText="Contact for invoicing" objectName="contact" label="Invoice Contact" nameFieldApi="Name" selectedItemId="{!v.oppObj.Billing_Contact__c}" isRequired="false" accountId="{!v.accountId}" isBilling="true" />
+                                    <div class="slds-p-top_x-small"></div>
+                                    <lightning:inputField fieldName="Do_not_activate_Billing__c" value="{!v.oppObj.Do_not_activate_Billing__c}" />
+									<!--modiefied by Vikrant srivastava for ticket BK-20304 -->
+									<lightning:inputField fieldName="DNB_Reason_Category__c" value="{!v.oppObj.DNB_Reason_Category__c}" />
+									 <lightning:inputField fieldName="DNB_Reason_Sub_Category__c" value="{!v.oppObj.DNB_Reason_Sub_Category__c}" />                             <div class="slds-p-top_x-small"></div>
+                                    </lightning:layoutItem>
+                                <lightning:layoutItem size="6" class="slds-p-around_small">
+                                    <lightning:inputField fieldName="AccountId" value="{!v.accountId}" disabled="true" />
+                                    <div class="slds-p-top_x-small"></div>
+                                    <lightning:inputField fieldName="CloseDate" value="{!v.oppObj.CloseDate}" aura:id="CloseDate" onchange="{!c.handleDateChange}"/>
+                                    <div class="slds-p-top_x-small"></div>
+                                    <lightning:inputField fieldName="Revenue_Estimate__c" value="{!v.oppObj.Revenue_Estimate__c}" />
+                                    <div class="slds-p-top_x-small"></div>
+                                    <aura:if isTrue="{!!empty(v.oppObj.EventEdition__c)}">
+                                        <c:Lookup objectName="EventCurrecies__c" queryFields="Event_Edition__c" 
+                                                    queryFieldValues="{!v.oppObj.EventEdition__c}" 
+                                                    selectedItemId="{!v.oppObj.Event_Edition_Currency__c}" 
+                                                    objectLabel="Opportunity Currency" 
+                                                    label="Opportunity Currency"/>
+                                    </aura:if>
+                                    <div class="slds-p-top_x-small"></div>
+                                    <lightning:inputField fieldName="Exhibitor_Paid_By__c" value="{!v.oppObj.Exhibitor_Paid_By__c}" onchange="{!c.handleExhibitorChange}" />
+                                    <div class="slds-p-top_x-small"></div>
+                                    <lightning:inputField fieldName="Agent_s_Opportunity__c" value="{!v.oppObj.Agent_s_Opportunity__c}" aura:id="Agent_s_Opportunity" class="slds-hide" />
+                                    
+                                </lightning:layoutItem>
+                            </lightning:layout>
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title">
+                                    <button type="button" aria-controls="expando-unique-id" aria-expanded="true" class="slds-button slds-section__title-action">
+                                        <span class="slds-truncate" title="Additional Information">Additional Information</span>
+                                    </button>
+                                </h3>
+                                <div aria-hidden="false" class="slds-section__content" id="expando-unique-id">
+                                    <lightning:layout multipleRows="true">
+                                        <lightning:layoutItem size="6" class="slds-p-around_small">
+                                            <!--<lightning:inputField fieldName="Operations_Contact__c" /> -->
+                                            <aura:if isTrue="{!!empty(v.oppDetails.Operations_Contact__c)}">
+                                                <!-- Modified by Palla Kishore for the ticket Bk-20833 -->
+                                                <c:ExtendLookup label="Operations Contact" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppObj.Operations_Contact__c}" accountId="{!v.accountId}" isRequired="false" />
+                                                <aura:set attribute="else">
+                                                    <c:ExtendLookup label="Operations Contact" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppObj.Operations_Contact__c}" accountId="{!v.accountId}" isRequired="false"/>
+                                                </aura:set>
+                                            </aura:if> 
+                                            <div class="slds-p-top_x-small"></div>
+                                            <lightning:inputField fieldName="Is_Barter_Opportunity__c" />
+                                            <div class="slds-p-top_x-small"></div>
+                                            <lightning:inputField fieldName="Customer_Purchase_Order__c" />
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="6" class="slds-p-around_small">
+                                            <!-- <lightning:inputField fieldName="User_Type__c"/>
+                 <div class="slds-p-top_x-small"></div> -->
+                                            <lightning:inputField fieldName="Do_not_Sent_Invoice_Email__c" />
+                                            
+                                             <lightning:inputField fieldName="Type" value="{!v.oppObj.Type}" />                                                                                  
+                                        </lightning:layoutItem>                                        
+                                    </lightning:layout>
+                                </div>
+                            </div>
+                        </aura:if>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning:button type="button" label="Cancel" onclick="{!c.closeModal}" iconName="utility:close" iconPosition="left" variant="destructive" />
+                        <aura:if isTrue="{!!v.isContactInactive}">
+                            <lightning:button label="Save" type="submit" onclick="{!c.validateForm}" iconName="utility:check" iconPosition="left" variant="brand" />
+                        </aura:if>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </lightning:recordEditForm>
+    </aura:if>
+</aura:component>

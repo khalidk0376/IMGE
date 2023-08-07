@@ -1,0 +1,95 @@
+<aura:component controller="UpdateUserTypeModalHandler">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="objInfoForPicklistValues" type="ExpocadBooth__c" default="{sobjectType : 'ExpocadBooth__c'}" description="object info to get picklist"/>
+    <aura:attribute name="MatchProductPicklistOpts" type="string[]" description="picklist options"/>
+    <aura:attribute name="showSaveCancelBtnOnMPNUpdate" type="boolean"/>
+    <aura:attribute name="showErrorClassInMPNUpdate" type="boolean" default="false"/>
+    <aura:attribute name="index" type="string" />
+    <aura:attribute name="singleExpocadRecords" type="sobject" default="{'sobjectType' : 'ExpocadBooth__c',
+                                                                        'Booth_Number__c' : '',
+                                                                        'Account__c': '',
+                                                                        'Opportunity__c': '',
+                                                                        'Booth_Product_Type_EE__c': '',
+                                                                        'Matched_Product_Name__c': '',
+                                                                        'Event_Edition_Name__c': ''
+                                                                        }"/>   
+    <aura:attribute name="MatchPrdtnameEditMode" type="boolean" default="false" />
+    <aura:attribute name="productTypeEditMode" type="boolean" default="false" />
+    
+    <tr>
+        <td><div class="slds-truncate">{!v.index}</div></td>
+        <td>
+            <span class="slds-truncate" title="Name">{!v.singleExpocadRecords.Booth_Number__c}</span>
+        </td>
+        <td>
+            <span class="slds-truncate" title="Account">{!v.singleExpocadRecords.Account__r.Name}</span>
+        </td>
+        <td>
+            <span class="slds-truncate" title="Opportunity">{!v.singleExpocadRecords.Opportunity__r.Name}</span>
+        </td>
+        
+        <td ondblclick="{!c.inlineEditProductType}" class="slds-cell-edit">
+            <span class="slds-grid slds-grid_align-spread">
+                <aura:if isTrue="{!v.productTypeEditMode == false}">
+                    <span class="slds-truncate" title="Booth Product Type">{!v.singleExpocadRecords.Booth_Product_Type_EE__c}</span>
+                    <button onclick="{!c.inlineEditProductType}" class="slds-button slds-button_icon slds-cell-edit__button slds-m-left_x-small" tabindex="0" title="Edit Booth Product Type">
+                        <lightning:icon iconName="utility:edit" size="xx-small" alternativeText="edit"/>
+                    </button>
+                    <!-- Inline Edit Section in else case--> 
+                    <aura:set attribute="else">
+                        <section  tabindex="0" class="slds-popover slds-popover_edit" role="dialog" style="position: absolute; top: 0px">
+                            <div class="slds-popover__body">
+                                <div class="slds-form-element slds-grid slds-wrap">
+                                    <div class="slds-form-element__control slds-grow">
+                                        <ui:inputText class="slds-input"
+                                                      labelClass="slds-form-element__label slds-form-element__label_edit slds-no-flex"
+                                                      aura:id="ProductType"
+                                                      blur="{!c.closeProductType}"
+                                                      change="{!c.onProductTypeChange}"                                                                          
+                                                      value="{!v.singleExpocadRecords.Booth_Product_Type_EE__c}" />
+                                    </div>
+                                </div>
+                            </div>
+                            <span id="form-end" tabindex="0"></span>
+                        </section> 
+                    </aura:set> 
+                </aura:if>
+            </span>
+        </td>
+        
+        <td ondblclick="{!c.inlineEditMatchPrdtName}" class="slds-cell-edit">
+            <span class="slds-grid slds-grid_align-spread">
+                <aura:if isTrue="{!v.MatchPrdtnameEditMode == false}">
+                    <span class="slds-truncate" title="Matched Product Name">{!v.singleExpocadRecords.Matched_Product_Name__c}</span>
+                    <button onclick="{!c.inlineEditMatchPrdtName}" class="slds-button slds-button_icon slds-cell-edit__button slds-m-left_x-small" tabindex="0" title="Edit Match Product Name">
+                        <lightning:icon iconName="utility:edit" size="xx-small" alternativeText="edit"/>
+                    </button>
+                    <!-- Inline Edit Section in else case--> 
+                    <aura:set attribute="else">
+                        <section  tabindex="0" class="slds-popover slds-popover_edit" role="dialog" style="position: absolute; top: 0px">
+                            <div class="slds-popover__body">
+                                <div class="slds-form-element slds-grid slds-wrap">
+                                    <div class="slds-form-element__control slds-grow">
+                                        <ui:inputSelect aura:id="expoMatchPrdt"
+                                                        class="slds-select"
+                                                        blur="{!c.closeMatchPrdtName}"
+                                                        change="{!c.onMatchPrdtNameChange}"
+                                                        value="{!v.singleExpocadRecords.Matched_Product_Name__c}"
+                                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <span id="form-end" tabindex="0"></span>
+                        </section> 
+                    </aura:set> 
+                </aura:if>
+            </span>
+        </td>
+               
+        <td>
+            <span class="slds-truncate" title="Event Edition Name">{!v.singleExpocadRecords.Event_Edition_Name__c}</span>
+        </td>
+        
+    </tr>    
+    
+</aura:component>

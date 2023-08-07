@@ -1,0 +1,7 @@
+.THIS .venueinfo td {padding:2px 0px;}
+.THIS .venueinfo .infohead{ color: black; font-weight: bold;padding-top: 16px;}
+.THIS .closeBtn{color: #ffffff !important;background-color: #666666 !important;}
+.THIS .fLeft{float: left;}
+.THIS .slds-modal__container{height:95vh !important;}
+.THIS .uiOutputText{margin-right: 30px !important;}
+.THIS .slds-button slds-button_brand{margin-left: -70px !important;}

@@ -1,0 +1,24 @@
+<aura:component  implements="flexipage:availableForAllPageTypes,force:hasRecordId" access="global" controller="AccountLtnCtrl">
+    <ltng:require scripts="{!$Resource.LtngUtility}"/>
+    <aura:attribute name="isEditForm" type="Boolean" default="false" />
+    <aura:attribute name="activeSections" type="List" />
+    <aura:handler event="c:NavigateToPage" action="{!c.handleNavigation}"/>
+    <!--     <div class="container">
+        <aura:if isTrue="{!v.isEditForm}"> 
+            <c:AccountDetail_EditView recordId="{!v.recordId}"  isEditForm ="{!v.isEditForm}"/>
+            <aura:set attribute="else">
+                <c:AccountDetail_InfoViewCmp recordId="{!v.recordId}" isEditForm ="{!v.isEditForm}"/>
+            </aura:set>
+        </aura:if>
+    </div> -->
+    <div class="{!v.isEditForm ? 'container' : 'slds-hide'}">
+        
+        <c:AccountDetail_EditView recordId="{!v.recordId}"  isEditForm ="{!v.isEditForm}" activeSections = "{!v.activeSections}"/>
+       
+    </div>
+    <div class="{!!v.isEditForm ? 'container' : 'slds-hide'}">
+        
+            <c:AccountDetail_InfoViewCmp recordId="{!v.recordId}" isEditForm ="{!v.isEditForm}" activeSections = "{!v.activeSections}"/>
+        
+    </div>
+</aura:component>

@@ -1,0 +1,28 @@
+<!--
+ * Created By   :   Girikon(Suraj)
+ * Created On   :   10/01/2019
+ * Description  :   Allow ops admin to generate reports in csv.
+ **-->
+<aura:component implements="forceCommunity:availableForAllPageTypes" access="global" > 
+    <aura:attribute name="eventId" type="String"/>
+    <aura:attribute name="ReportName" type="String" />
+    
+    <lightning:layout multipleRows="true">
+        <lightning:layoutItem size="3" class="slds-p-left_x-small">
+            
+            <lightning:select value="{!v.ReportName}" label="">      
+                <option value="" selected="selected">--Select Report--</option>    
+                <option value="MatchProductType">Match Product Type</option>
+                <option value="LastLogin">Last Login Report</option> 
+                <option value="ShowCategory">Show Category</option>
+            </lightning:select>    
+            
+        </lightning:layoutItem>
+        <lightning:layoutItem size="2" >            
+            <div style="text-align:center; margin-top:20px;" >      
+                <lightning:button variant="brand" label="Generate Report" onclick="{!c.export}"/>            
+            </div>
+        </lightning:layoutItem>
+        
+    </lightning:layout>
+</aura:component>

@@ -1,0 +1,7 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId" access="global" controller="ContactDetailsCtrl">
+	
+    <ltng:require scripts="{!$Resource.LtngUtility}"/>
+    
+    <c:LightningDataTable object="Opportunity" operator="OR" fields="Name,Account.Name,StageName,LastModifiedDate" whereField="Agreement_Contact__c,Billing_Contact__c,Marketing_Contact__c,Operations_Contact__c,Opportunity_Contact__c,Safety_Contact__c" whereValue="{!v.recordId+','+v.recordId+','+v.recordId+','+v.recordId+','+v.recordId+','+v.recordId}" inlineEditable="false"/>
+</aura:component>

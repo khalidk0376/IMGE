@@ -1,0 +1,103 @@
+<!--
+ * Created By   :   Girikon(Sunil)
+ * Created On   :   September 17, 2019
+ * Description  :   This component is used to show Customer Badges section  on Customer Settings Page.
+ **-->
+
+<aura:component implements="flexipage:availableForAllPageTypes" access="global" controller="LtngUtilityCtrl">
+    <aura:attribute name="eventId" type="string" />
+    <aura:attribute name="recordId" type="string" />
+    <aura:attribute name="eventName" type="string" />
+    <aura:handler name="init" value="{!this}" action="{!c.onLoad}" />
+    <aura:attribute name="chkBadgeValueBooth" type="Boolean" default="false" />
+    <aura:attribute name="chkBadgeValueMatched" type="Boolean" default="false" />
+    <aura:attribute name="chkBoothDisabled" type="Boolean" default="false" />
+    <aura:attribute name="chkMatchedDisabled" type="Boolean" default="false" />
+    <aura:attribute name="chkFlagBooth" type="Boolean" default="false" />
+    <aura:attribute name="chkFlagMatch" type="Boolean" default="false" />
+
+    <article class="slds-card slds-p-around_medium">
+        <lightning:layout multipleRows="true">
+            <lightning:layoutItem size="12" class="slds-p-horizontal_medium slds-p-bottom_medium ">
+                <span class="slds-text-heading_medium" style="font-weight: bold;">{!v.eventName}</span>
+                <lightning:breadcrumbs>
+                    <lightning:breadcrumb label="Customer Centre" onclick="{!c.goToCustomerCenter}">
+                    </lightning:breadcrumb>
+                    <lightning:breadcrumb label="Customer Centre Settings" onclick="{!c.goToCustomerCenterSetting}">
+                    </lightning:breadcrumb>
+                    <lightning:breadcrumb label="Badges/Registration">
+                    </lightning:breadcrumb>
+                </lightning:breadcrumbs>
+            </lightning:layoutItem>
+            <lightning:layoutItem size="12" class="slds-p-horizontal_medium">
+                <lightning:tabset>
+                    <lightning:tab label="SETTINGS" id="settings">
+                        <lightning:tabset>
+                            <lightning:tab label="General" id="General">
+                                <c:ops_customerBadgesGeneral></c:ops_customerBadgesGeneral>
+                            </lightning:tab>
+                            <lightning:tab label="Badge Allotment" id="badgesall">
+                                <lightning:tabset>
+                                    <lightning:tab label="By Booth Size" id="t1">
+                                        <div class="slds-col slds-size_6-of-12">
+                                            <lightning:recordEditForm aura:id="eventFormSize" density="Compact"
+                                                class="eventForm" recordId="{!v.recordId}"
+                                                objectApiName="Event_Settings__c" >
+                                                <lightning:inputField disabled="{!v.chkBoothDisabled}"
+                                                    aura:id="checkbox" onchange="{!c.chkBadgesMethodBooth}"
+                                                    fieldName="Allotment_By_Booth_Size__c">
+                                                </lightning:inputField>
+                                                <lightning:button aura:id="btnSave" class="save slds-hide" type="submit"
+                                                    variant="brand" label="Save">
+                                                </lightning:button>
+                                            </lightning:recordEditForm>
+                                        </div>
+                                        <aura:if isTrue="{!v.chkBadgeValueBooth}">
+                                            <c:ops_customerBadgesAllotment whereCallFrom="boothSize">
+                                            </c:ops_customerBadgesAllotment>
+                                        </aura:if>
+                                    </lightning:tab>
+                                    <lightning:tab label="By Matched Product Name" id="t2">
+                                        <div class="slds-col slds-size_6-of-12">
+                                            <lightning:recordEditForm aura:id="eventFormType" density="Compact"
+                                                class="eventForm" recordId="{!v.recordId}"
+                                                objectApiName="Event_Settings__c" onsubmit="{!c.handleSubmit}">
+                                                <lightning:inputField disabled="{!v.chkMatchedDisabled}"
+                                                    aura:id="checkbox1" onchange="{!c.chkBadgesMethodMatched}"
+                                                    fieldName="Allotment_By_Booth_Type__c">
+                                                </lightning:inputField>
+                                                <lightning:button aura:id="btnSave" class="save slds-hide" type="submit"
+                                                    variant="brand" label="Save">
+                                                </lightning:button>
+                                            </lightning:recordEditForm>
+                                        </div>
+                                        <aura:if isTrue="{!v.chkBadgeValueMatched}">
+                                            <c:ops_customerBadgesAllotment whereCallFrom="matchedProduct">
+                                            </c:ops_customerBadgesAllotment>
+                                        </aura:if>
+                                    </lightning:tab>
+                                </lightning:tabset>
+                            </lightning:tab>
+                            <lightning:tab label="Badge Data" id="badgesdata">
+                                <c:ops_customerBadgeData></c:ops_customerBadgeData>
+                            </lightning:tab>
+                            <lightning:tab label="Bulk Import Template" id="bulkImport">
+                                <c:ops_customerBadgeBulkImport></c:ops_customerBadgeBulkImport>
+                            </lightning:tab>
+                        </lightning:tabset>
+                    </lightning:tab>
+                    <lightning:tab label="REPORTS" id="reports">
+                        <lightning:tabset>
+                                <lightning:tab label="Exhibitor Data" id="ExhibitorData">
+                                        <c:CustomerBadgesReportOps eventId="{!v.eventId}"/>
+                                </lightning:tab>
+                                <lightning:tab label="Agent Data" id="AgentData">
+                                        <c:AgentBadgesReportOps eventId="{!v.eventId}"/>
+                                </lightning:tab>
+                        </lightning:tabset>                                    
+                    </lightning:tab>
+                </lightning:tabset>
+            </lightning:layoutItem>
+        </lightning:layout>
+    </article>
+</aura:component>

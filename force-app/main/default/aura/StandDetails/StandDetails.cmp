@@ -1,0 +1,305 @@
+<!--
+    ************ Modification Log  ************
+    * Modified by : Girikon(Ashish)[CCEN-430] Dec 16 2018,    
+-->
+<aura:component implements="flexipage:availableForAllPageTypes" controller="ApproveContractorCtrl">
+    <aura:attribute name="StandDetail" type="Stand_Detail__c[]" />
+    <aura:attribute name="childsingleBooth" type="BoothContractorMapping__c[]"/>
+    <aura:attribute name="AccountId" type="String"/>
+    <aura:attribute name="EventEditionID" type="String"/>
+    <aura:attribute name="BoothID" type="String"/>
+    <aura:attribute name="PopUpClosed" type="Boolean"/>
+    <aura:attribute name="selTabId" type="String" default="tab1" />
+    <aura:attribute name="message" type="string" default=""/>
+    <aura:attribute name="msg" type="string"  default=""/> 
+    <aura:attribute name="msgcolor" type="string"/>
+    <aura:attribute name="Roptions" type="List" />  
+    <aura:attribute name="disDateTime" type="boolean" default="false"/>  
+    <aura:handler name="init" value="{!this}" action="{!c.onLoad}" />
+    <aura:handler name="change" value="{!v.PopUpClosed}" action="{!c.PopUpClosedChanges}"/>
+    <aura:handler name="change" value="{!v.selTabId}" action="{!c.TabChanged}"/>
+    <aura:handler name="change" value="{!v.AccountId}" action="{!c.AccountIdChanges}"/>
+    <aura:handler name="change" value="{!v.childsingleBooth}" action="{!c.childsingleBoothChange}"/>
+    <aura:handler event="aura:waiting" action="{!c.waiting}"/> 
+    <aura:handler event="aura:doneWaiting" action="{!c.doneWaiting}"/>
+    <aura:attribute name="NoRigging" type="boolean" default="true"/>
+    <aura:attribute name="eventSettings" type="object"/>
+    
+
+    
+    <span id="Accspinner" style="display:none"><ui:spinner /></span>
+    <div class="slds-scrollable" style="overflow-y: scroll;height: 45vh;">
+    <div class="slds-float_left" style="width: 70%; padding-left:0;">
+        <table>
+            <tr> 
+                <td>
+                    <table class="slds-table slds-max-medium-table--stacked-horizontal " role="grid" cellspacing="0">
+                        <tbody>
+                            <tr class="slds-hint-parent">  
+                                <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;width: 30%;">
+                                    {!$Label.c.Stand}#:
+                                </td>
+                                <td style="border-top: 0px solid rgb(217, 219, 221);">                                    
+                                    <aura:if isTrue="{!v.childsingleBooth[0].IsManagedbyAgent__c}">
+                                        <b>Agent Pavilion Space (multiple stands)</b> 
+                                        <aura:set attribute="else">
+                                                <ui:outputText value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Booth_Number__c}" /> 
+                                                &nbsp;
+                                                <a id="linkMapIt" target="_blank" class="slds-button slds-button_brand">{!$Label.c.Map_It}</a>
+                                        </aura:set>
+                                    </aura:if>
+                                </td>
+                            </tr>
+                            <tr class="slds-hint-parent"> 
+                                <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                    {!$Label.c.Dimensions}:
+                                </td>
+                                <td style="border-top: 0px solid rgb(217, 219, 221);">                                    
+                                    <aura:if isTrue="{!v.childsingleBooth[0].IsManagedbyAgent__c}">
+                                        <b>Agent Pavilion Space (multiple stands)</b> 
+                                        <aura:set attribute="else">
+                                            <ui:outputText value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Expocad_Booth__r.Dimensions__c}"/>
+                                        </aura:set>
+                                    </aura:if>
+                                </td> 
+                            </tr>
+                            <tr class="slds-hint-parent">
+                                <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                    {!$Label.c.Stand_Height}:
+                                </td>
+                                <td style="border-top: 0px solid rgb(217, 219, 221);" >
+                                    <ui:inputSelect class="inputWidth" aura:id="MaxstandHeight" value="{!v.StandDetail[0].StandHeight}" />&nbsp;
+                                    <ui:inputSelect class="inputWidth"  aura:id="maxstandHeightDecimal"  value="{!v.StandDetail[0].StandHeightDecimal}" />&nbsp;&nbsp;m
+                                </td>
+                            </tr>
+                            <tr class="slds-hint-parent">
+                                <td colspan="2" style="border-top: 0px solid rgb(217, 219, 221);">
+                                    {!$Label.c.BoothInfoLine}
+                                </td>
+                            </tr>
+                            <tr class="slds-hint-parent">
+                            <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                {!$Label.c.Open_Sides}:
+                            </td>
+                            <td>
+                                <lightning:radioGroup aura:id="OpenSide" name="radioButtonGroupOpenSide" value="{!v.StandDetail[0].Open_Side__c}" />
+                            </td>
+                            </tr> 
+                            <tr class="slds-hint-parent">
+                                <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                    {!$Label.c.Do_you_have_Rigging}
+                                </td>
+                                <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                    <label class="radio inline"> 
+                                        <input type="radio" name="isRigging"  id="isRiggingYes"  checked="{!v.StandDetail[0].IsRigging__c==true}" onchange="{!c.handleChange}"/>
+                                        <span style="margin-right: 5px;">{!$Label.c.Yes}</span> 
+                                    </label>
+                                    <label class="radio inline"> 
+                                        <input type="radio" name="isRigging" id="isRiggingNo" checked="{!v.StandDetail[0].IsRigging__c==false}" onchange="{!c.handleChange}"/>
+                                        <span>{!$Label.c.No}</span> 
+                                    </label>
+                                </td>
+                            </tr>
+                            
+                            <tr class="slds-hint-parent">
+                                <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                    {!$Label.c.Rigging_Height}
+                                </td>
+                                <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                    <ui:inputSelect  class="inputWidth" aura:id="MaxRiggingHeight" value="{!v.StandDetail[0].RiggingHeight}" disabled="{!v.NoRigging}"/>&nbsp;
+                                    <ui:inputSelect class="inputWidth"  aura:id="maxRiggingHeighDecimal"  value="{!v.StandDetail[0].RiggingHeightDecimal}" disabled="{!v.NoRigging}"/>&nbsp;&nbsp;m
+                                </td>
+                            </tr>
+                            <tr class="slds-hint-parent">
+                                <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                    {!$Label.c.Are_you_building_a_Double_Decker_Stand}
+                                </td>
+                                <td style="border-top: 0px solid rgb(217, 221, 221);">
+                                    <label class="radio inline"> 
+                                        <input type="radio" name="IsDD" id="IsDDYes" checked="{!v.StandDetail[0].IsDoubleDecker__c==true}" onchange="{!c.handleChange}"/>
+                                        <span style="margin-right: 5px;">{!$Label.c.Yes}</span> 
+                                    </label>
+                                    <label class="radio inline"> 
+                                        <input type="radio" name="IsDD" id="IsDDNo" checked="{!v.StandDetail[0].IsDoubleDecker__c==false}" onchange="{!c.handleChange}"/>
+                                        <span>{!$Label.c.No}</span> 
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr class="slds-hint-parent">
+                                <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                    <aura:unescapedHtml value="{!$Label.c.Do_you_have_heavy_machinery_or_vehicles_on_your_stand}"/>
+                                </td>
+                                <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                    <label class="radio inline"> 
+                                        <input type="radio" name="IsHeavyMachinery" id="IsHeavyMachineryYes" checked="{!v.StandDetail[0].Is_Heavy_Machinery__c==true}" onclick="{!c.handleChange}"/>
+                                        <span style="margin-right: 5px;">{!$Label.c.Yes}</span> 
+                                    </label>
+                                    <label class="radio inline"> 
+                                        <input type="radio" name="IsHeavyMachinery" id="IsHeavyMachineryNo" checked="{!v.StandDetail[0].Is_Heavy_Machinery__c==false}" onclick="{!c.handleChange}"/>
+                                        <span>{!$Label.c.No}</span> 
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr class="slds-hint-parent">
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                        <aura:unescapedHtml value="{!$Label.c.Do_you_have_vehicles_in_your_stand}"/>
+                                    </td>
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                        <label class="radio inline"> 
+                                            <input type="radio" name="IsVehicles" id="IsVehiclesYes" checked="{!v.StandDetail[0].Is_Vehicles__c==true}" onclick="{!c.handleChange}"/>
+                                            <span style="margin-right: 5px;">{!$Label.c.Yes}</span> 
+                                        </label>
+                                        <label class="radio inline"> 
+                                            <input type="radio" name="IsVehicles" id="IsVehiclesNo" checked="{!v.StandDetail[0].Is_Vehicles__c==false}" onclick="{!c.handleChange}"/>
+                                            <span>{!$Label.c.No}</span> 
+                                        </label>
+                                    </td>
+                                </tr>
+                        </tbody>
+                    </table>
+                </td>
+                <td style="vertical-align: top">
+                    <table class="slds-table slds-max-medium-table--stacked-horizontal " style="margin-left:200px" role="grid" cellspacing="0">
+                            <tbody>
+                                <tr class="slds-hint-parent">  
+                                    <td colspan="2" style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;width: 30%;font-size: 15px">
+                                            {!$Label.c.Performance_Bond}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td  style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                        {!$Label.c.Amount}:
+                                        
+                                    </td>
+                                    <td  style="border-top: 0px solid rgb(217, 219, 221);">
+                                        
+                                        <ui:inputtext placeholder="00.00" value="{!v.StandDetail[0].Amount__c}" size="8"/>
+                
+                                    </td> 
+                                </tr>
+                                <tr>
+                                    <td  style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                            {!$Label.c.Received}?
+                                        
+                                    </td>
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                        <label class="radio inline"> 
+                                            <input type="radio" name="isReceived"  id="isReceivedYes" checked="{!v.StandDetail[0].isReceivedYes}" onchange="{!c.handleChange}"/>
+                                            <span style="margin-right: 5px;">{!$Label.c.Yes}</span> 
+                                        </label>
+                                        <label class="radio inline"> 
+                                            <input type="radio" name="isReceived" id="isReceivedNo" checked="{!v.StandDetail[0].isReceivedNo}" onchange="{!c.handleChange}"/>
+                                            <span>{!$Label.c.No}</span> 
+                                        </label>
+                                    </td>
+                                </tr>
+                                <tr class="slds-hint-parent">  
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                            {!$Label.c.Receipt} #:
+                                    </td>
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                        
+                                        <ui:inputtext  value="{!v.StandDetail[0].Receipt__c}" size="8"/>
+                                    </td>
+                                </tr>
+                                <tr class="slds-hint-parent">  
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                           Require Early Access?
+                                    </td>
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+										<label class="radio inline"> 
+                                            <input type="radio" name="requiredEarly"  id="requireEarlyAccessYes" checked="{!v.StandDetail[0].requireEarlyAccessYes}" onchange="{!c.handleChange}"/>
+                                            <span style="margin-right: 5px;">{!$Label.c.Yes}</span> 
+                                        </label>
+                                        <label class="radio inline"> 
+                                            <input type="radio" name="requiredEarly" id="requireEarlyAccessNo" checked="{!v.StandDetail[0].requireEarlyAccessNo}" onchange="{!c.handleChange}"/>
+                                            <span>{!$Label.c.No}</span> 
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <div id="requiredCheck" style="color:red; margin-left: -275px; display:none;">You have indicated you DO NOT require early access, please remove your early access date/time values.</div>
+                                    </td>
+                                    <td>
+                                        <div id="requireEarlyCheck" style="color:red; margin-left: -260px; display:none;">You have indicated you require early access, please provide the early access date/time this is required from.</div>
+                                    </td>
+                                </tr>
+                                <tr class="slds-hint-parent">  
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                       	 Early Access Date/Time:
+                                    </td>
+                                <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                      <ui:inputDateTime aura:id="erlyAccessDateTime" value="{!v.StandDetail[0].Early_Access_Date_Time__c}" displayDatePicker="true" disabled="{!v.disDateTime}" />
+                                    </td>
+                                    <!--<td style="border-top: 0px solid rgb(217, 219, 221);">
+                                    <lightning:input aura:id="erlyAccessDateTime" type="datetime" name="input2" value="{!v.StandDetail[0].Early_Access_Date_Time__c}" disabled="{!v.disDateTime}"/>
+                                    </td>-->
+                                    </tr>
+                                 <tr class="slds-hint-parent">  
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                       	 Early Access Cost:
+                                    </td>
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                        <ui:inputtext  value="{!v.StandDetail[0].Early_Access_Cost__c}" size="8"  />
+                                    </td>
+                                </tr>
+                                <tr class="slds-hint-parent">
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                        {!$Label.c.Rigging_Options}
+                                    </td>
+                                    <td>
+                                        <lightning:radioGroup aura:id="RiggeringOptions" name="radioButtonGroupRiggeringOptions" disabled="{!v.NoRigging}" value="{!v.StandDetail[0].Riggering_Options__c}" />
+                                    </td>
+                                    </tr>
+                                    <tr>
+                                    <td colspan="2">
+                                            <lightning:button value="{!v.AccountId}" variant="brand" label="{!$Label.c.Save}" onclick="{!c.showmodalConfirmSave1}"/>
+                                        
+                                            <span  class="slds-m-left_large" style="{!'color:'+v.msgcolor}">{!v.msg}</span>
+                                        </td>
+                                </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <div style=" float: left; margin-top: 20px;">   
+                    <lightning:button value="{!v.AccountId}" variant="brand" label="{!$Label.c.Save}" onclick="{!c.showmodalConfirmSave}"/>
+                    <span class="slds-m-left_large" style="{!'color:'+v.msgcolor}">{!v.message}</span>
+                </div> 
+        </table>
+    </div>
+    <!-- <div class="slds-float_right" style="width: 20%;padding-left:5;">
+        
+    </div> -->
+    </div>
+     
+    <div aria-hidden="false" id="modalConfirmSave" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container" style=" width: 50% !important;height: 30% !important; max-width: none !important; min-width: 80% !important;min-height: 50% !important;">
+                <div class="div-body">
+                    <div class="div-body-head"><b>{!$Label.c.Save_Stand_Details_Message}</b>
+                        <span class="closebtn" onclick="{!c.hidemodalConfirmSave}">X</span>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <lightning:button variant="brand" label="{!$Label.c.Yes}" onclick="{!c.SaveAndEmail}"/>
+                        <lightning:button variant="brand" label="{!$Label.c.No}" onclick="{!c.hidemodalConfirmSave}"/>
+                    </div>
+                </div>
+            </div>
+        </section>	
+    </div>
+    <div aria-hidden="false" id="modalConfirmSave1" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container" style=" width: 50% !important;height: 30% !important; max-width: none !important; min-width: 80% !important;min-height: 50% !important;">
+                <div class="div-body">
+                    <div class="div-body-head"><b>{!$Label.c.Save_Performance_Bond_Message}</b>
+                        <span class="closebtn" onclick="{!c.hidemodalConfirmSave1}">X</span>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <lightning:button variant="brand" label="{!$Label.c.Yes}" onclick="{!c.SaveAndUpdate}"/>
+                        <lightning:button variant="brand" label="{!$Label.c.No}" onclick="{!c.hidemodalConfirmSave1}"/>
+                    </div>
+                </div>
+            </div>
+        </section>	
+    </div>
+</aura:component>

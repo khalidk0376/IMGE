@@ -1,0 +1,599 @@
+<!--
+    ************ Modification Log  ************
+    * Modified by : Amish/Prashant [CCEN 634 Jan 19 2019]   
+-->
+<aura:component implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes" access="global" controller="MyExhibitorsCtrl" >
+	<aura:handler event="aura:waiting" action="{!c.showSpinner}"/>
+	<aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}"/>
+	<aura:attribute name="Spinner" type="boolean" default="false"/>
+	<aura:attribute name="eventcode" type="String" default=""/>
+	<ltng:require scripts="{!$Resource.CustomerCenterWS11 +'/CustomerCenterWS11/js/jquery-1.7.1.min.js?v=149'}" afterScriptsLoaded="{!c.scriptsLoaded}" />
+	<aura:attribute name="Event_Setting" type="Event_Settings__c"/>
+	<aura:attribute name="message" type="string"/>
+	<aura:handler name="init" value="{!this}" action="{!c.cartOnloadData}"/>
+	<aura:attribute name="boothmap" type="List" />
+	<aura:attribute name="boothAgentMap" type="List" />
+	<aura:attribute name="lstStatus" type="List" />
+	<aura:attribute name="totalAmount" type="decimal" />
+	<aura:attribute name="Exhibitors" type="object[]" />
+	<aura:attribute name="CurrentAgent" type="object" />
+	<aura:attribute name="searchTearm" type="String" default=""/> 
+	<aura:attribute name="mapId" type="string" />
+	<aura:attribute name="hasAgentExh" type="Boolean" default="False"/>
+	<section >
+		<div class="container">
+      
+			<div class="row">
+				<div class="col-sm-12">
+					<lightning:breadcrumbs>
+						<lightning:breadcrumb label="Home" onclick="{!c.goToHome}">
+						</lightning:breadcrumb>
+						<lightning:breadcrumb label="{!v.Event_Setting.My_Exhibitor_Title__c}">
+						</lightning:breadcrumb>
+					</lightning:breadcrumbs>
+					<br />
+					<h1 class="top-h1-heading">{!v.Event_Setting.My_Exhibitor_Title__c}</h1>
+					<p class="text-normal slds-text-longform">
+						<aura:unescapedHtml value="{!v.Event_Setting.Welcome_Text_My_Exhibitor_Portal__c}" />
+					</p>
+					<br />
+				</div>
+			</div>
+		</div> 
+		<div class="clearfix"></div>
+		<div class="container mainsection " style="min-height:100px">
+			<div class="row"> 
+				<div class="col-sm-12 scrollarea" style="margin-bottom:20px ">
+					<!-- <aura:if isTrue="{!v.boothmap.length}"> -->
+						<table class="required-table" cellspacing="0">
+							<thead>
+								<tr>
+									<th>{!$Label.c.Booth}</th>
+									<th>{!$Label.c.Exhibitor}</th>
+									<th></th>
+									<aura:if isTrue="{!!v.Event_Setting.Disable_this_information__c}">
+										<th>{!$Label.c.Services}</th>
+									</aura:if>
+									<aura:if isTrue="{!v.Event_Setting.Is_Stand_Design_Visible__c==true}">
+										<th>{!$Label.c.Stand}&nbsp;{!$Label.c.Design}</th>
+									</aura:if>
+									<aura:if isTrue="{!v.Event_Setting.Is_Stand_Detail_Visible__c==true}">
+										<th>{!$Label.c.Stand}&nbsp;{!$Label.c.Details}</th>
+									</aura:if>
+									<!-- <aura:if isTrue="{!v.Event_Setting.Is_SubContractors_Visible__c==true}">
+										<th>{!$Label.c.Subcontractor}</th>
+									</aura:if>		
+									-->
+									<th>
+										<aura:if isTrue="{!v.Event_Setting.Is_SubContractors_Visible__c==true}">
+											{!$Label.c.Subcontractor}
+										</aura:if>
+									</th>
+									<th>{!$Label.c.Status}</th>
+									<aura:if isTrue="{!v.Event_Setting.Is_Amount_Visible__c==true}">
+										<th>{!$Label.c.Amount}</th>
+									</aura:if>									
+								</tr>
+							</thead>
+							
+								<tbody >
+									<aura:iteration items="{!v.boothmap}" var="bth">
+										<tr>
+											<td class="black-bold">{!bth.Opp_Booth_Mapping__r.Booth_Number__c}</td> <!--{!bth.EAC_Fees__c}{!bth.Paid_Status__c}-->
+											<td>
+												<aura:if isTrue="{!bth.ContractorRequestStatus__c=='Accepted'}">
+													<aura:if isTrue="{!bth.Opp_Booth_Mapping__r.Display_Name__c}">
+                                                        <a href="{!'myexhibitorsboothdetails?eventcode='+v.eventcode+'&amp;mapid='+bth.Id}" class="exhibitor">{!bth.Opp_Booth_Mapping__r.Display_Name__c}</a>
+														<aura:set attribute="else"> 
+															<a href="{!'myexhibitorsboothdetails?eventcode='+v.eventcode+'&amp;mapid='+bth.Id}" class="exhibitor">{!bth.Opp_Booth_Mapping__r.Opportunity__r.Account.Name}</a>
+														</aura:set>
+													</aura:if>													
+													<aura:set attribute="else">
+														<aura:if isTrue="{!bth.Opp_Booth_Mapping__r.Display_Name__c}">
+															<span class="exhibitor">{!bth.Opp_Booth_Mapping__r.Display_Name__c}</span>
+															<aura:set attribute="else"> 
+																<span class="exhibitor">{!bth.Opp_Booth_Mapping__r.Opportunity__r.Account.Name}</span>
+															</aura:set>
+														</aura:if>	 													
+													</aura:set>
+												</aura:if>
+											</td>
+											<td>
+											<aura:if isTrue="{!bth.ContractorRequestStatus__c=='Accepted'}">	
+											<a href="{!'myexhibitorsboothdetails?eventcode='+v.eventcode+'&amp;mapid='+bth.Id}"><div >
+											<button type="button"  class="primary-btn tooltip"  style="{!'margin-right:0px;width:92px;padding-left: 4px;background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i class="fa fa-pencil" style="font-size:14px;margin: 3px 0px;"></i>&nbsp;Manage
+											</button>
+											</div>
+											</a>
+											</aura:if>
+										</td>
+											<aura:if isTrue="{!!v.Event_Setting.Disable_this_information__c}">
+												<td class="color-black">
+													<aura:if isTrue="{!bth.ContractorRequestStatus__c=='Accepted'}">
+														<aura:iteration items="{!bth.CustomerContractorServices__r}" var="ser"  indexVar="index">
+															<aura:if isTrue="{!index}">
+																{!', '+ser.ContractorService__r.Contractor_Service__c}
+																<aura:set attribute="else"> 
+																	{!ser.ContractorService__r.Contractor_Service__c}
+																</aura:set>
+															</aura:if>
+														</aura:iteration>
+													</aura:if>
+												</td>
+											</aura:if>
+										
+											<aura:if isTrue="{!or(or(and(bth.ContractorRequestStatus__c=='Accepted',bth.Booth_Detail_Status1__c=='Submitted'),and(bth.Booth_Design_Status1__c!='No Design',bth.ContractorRequestStatus__c!='Pending')),and(bth.Paid_Status__c=='Paid', bth.EAC_Fees__c==true))}">
+												<aura:if isTrue="{!v.Event_Setting.Is_Stand_Design_Visible__c==true}">
+													<td class="color-black">{!bth.Booth_Design_Status1__c}</td>
+												</aura:if>
+												<aura:if isTrue="{!v.Event_Setting.Is_Stand_Detail_Visible__c==true}">
+													<td class="color-black">{!bth.Booth_Detail_Status1__c}</td>
+												</aura:if>
+												
+												<td class="color-black">
+														<aura:if isTrue="{!v.Event_Setting.Is_SubContractors_Visible__c==true}">
+														<aura:if isTrue="{!bth.BoothContractorMappings__r}">
+															<aura:iteration items="{!bth.BoothContractorMappings__r}" var="ser"  indexVar="index">
+																<aura:if isTrue="{!index}">
+																	<a href="{!'subcontractors?eventcode='+v.eventcode}" class="exhibitor" target="_blank">{!', '+ser.TempContact__r.Name__c}</a>	
+																	<aura:set attribute="else"> 
+																		<a href="{!'subcontractors?eventcode='+v.eventcode}" class="exhibitor" target="_blank">	{!ser.TempContact__r.Name__c}</a>
+																	</aura:set>
+																</aura:if>
+															</aura:iteration>
+															<aura:set attribute="else"> 
+																<button type="button" onclick="{!c.goToNewPage}"   class="primary-btn tooltip"  style="{!'margin-right:6px;padding:5px;background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i class="fa fa-user-plus"></i>&nbsp;Add
+																</button>
+															</aura:set>	
+														</aura:if>
+													</aura:if>
+												</td>
+												
+												<td class="color-black">{!bth.ContractorRequestStatus__c}</td>
+												<aura:if isTrue="{!v.Event_Setting.Is_Amount_Visible__c==true}">
+													<td class="color-black"><ui:outputCurrency value="{!bth.Amount__c}"/></td>
+												</aura:if>
+												
+												<aura:set attribute="else">
+													<aura:if isTrue="{!bth.ContractorRequestStatus__c=='Accepted'}">
+															<aura:if isTrue="{!v.Event_Setting.Is_Stand_Design_Visible__c==true}">
+																<td class="color-black">{!bth.Booth_Design_Status1__c}</td>
+															</aura:if>
+															<aura:if isTrue="{!v.Event_Setting.Is_Stand_Detail_Visible__c==true}">
+																<td class="color-black">{!bth.Booth_Detail_Status1__c}</td>
+															</aura:if>
+															<td class="color-black">
+															<aura:if isTrue="{!v.Event_Setting.Is_SubContractors_Visible__c==true}">
+																
+																	<aura:if isTrue="{!bth.BoothContractorMappings__r}">
+																		<aura:iteration items="{!bth.BoothContractorMappings__r}" var="ser"  indexVar="index">
+																			<aura:if isTrue="{!index}">
+																				<a href="{!'subcontractors?eventcode='+v.eventcode}" class="exhibitor" target="_blank">{!', '+ser.TempContact__r.Name__c}</a>	
+																				<aura:set attribute="else"> 
+																					<a href="{!'subcontractors?eventcode='+v.eventcode}" class="exhibitor" target="_blank">	{!ser.TempContact__r.Name__c}</a>
+																				</aura:set>
+																			</aura:if>
+																		</aura:iteration>
+																		<aura:set attribute="else"> 
+																			<button type="button" onclick="{!c.goToNewPage}"   class="primary-btn tooltip"  style="{!'margin-right:6px;padding:5px;background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i class="fa fa-user-plus"></i>&nbsp;Add
+																				</button>
+																		</aura:set>	
+																	</aura:if>
+																	</aura:if>
+																</td>
+															
+															<td class="color-black">
+																<select data-mid="{!bth.Id}" id="{!bth.Id}" onchange="{!c.updateConStatus}">
+																	<aura:iteration items="{!v.lstStatus}" var="sts">
+																		<aura:if isTrue="{!sts.value==bth.ContractorRequestStatus__c}">
+																			<option selected="true" value="{!sts.value}">{!sts.label}</option>
+																			<aura:set attribute="else">
+																				<aura:if isTrue="{!and(sts.value=='',bth.ContractorRequestStatus__c=='Pending')}">
+																					<option selected="true" value="{!sts.value}">{!sts.label}</option>
+																					<aura:set attribute="else">
+																						<option value="{!sts.value}">{!sts.label}</option>
+																					</aura:set>
+																				</aura:if>
+																			</aura:set>
+																		</aura:if>
+																	</aura:iteration>	
+																</select>
+															</td>
+															<aura:if isTrue="{!v.Event_Setting.Is_Amount_Visible__c==true}">
+																<td class="color-black"><ui:outputCurrency value="{!bth.Amount__c}"/></td>
+															</aura:if>
+															<aura:set attribute="else">
+																<aura:if isTrue="{!v.Event_Setting.Is_Stand_Design_Visible__c==true}">
+																		<td></td>
+																	</aura:if>
+																	<aura:if isTrue="{!v.Event_Setting.Is_Stand_Detail_Visible__c==true}">
+																		<td></td>
+																	</aura:if>
+																	<!-- <aura:if isTrue="{!v.Event_Setting.Is_SubContractors_Visible__c==true}"> -->
+                                                                        <td style="width: 240px; height:60px;">
+                                                                        
+                                                                         <aura:if isTrue="{!bth.ContractorRequestStatus__c=='Pending'}">
+                                                                       
+                                                                            <div class="tool" style="position:relative;">
+                                                                            
+                                                                        <span class="tooltip-content">Accept this Designation to get started</span>
+                                                                                </div>
+                                                                            </aura:if>
+                                                                         </td>
+																	<!-- </aura:if> -->
+																	<td class="color-black">
+																		<select data-mid="{!bth.Id}" id="{!bth.Id}" onchange="{!c.updateConStatus}">
+																			<aura:iteration items="{!v.lstStatus}" var="sts">
+																				<aura:if isTrue="{!sts.value==bth.ContractorRequestStatus__c}">
+																					<option selected="true" value="{!sts.value}">{!sts.label}</option>
+																					<aura:set attribute="else">
+																						<aura:if isTrue="{!and(sts.value=='',bth.ContractorRequestStatus__c=='Pending')}">
+																							<option selected="true" value="{!sts.value}">{!sts.label}</option>
+																							<aura:set attribute="else">
+																								<option value="{!sts.value}">{!sts.label}</option>
+																							</aura:set>
+																						</aura:if>
+																					</aura:set>
+																				</aura:if>
+																			</aura:iteration>	
+																		</select>
+																	</td>
+																	<aura:if isTrue="{!v.Event_Setting.Is_Amount_Visible__c==true}">
+																		<td class="color-black" ><ui:outputCurrency value="{!bth.Amount__c}"/></td>
+																	</aura:if>	
+															</aura:set>
+													</aura:if>
+													
+												</aura:set>
+											</aura:if>
+										</tr>
+									</aura:iteration>
+									<!--<tr>
+										<td></td>
+										<td></td>
+										<aura:if isTrue="{!!v.Event_Setting.Disable_this_information__c}">
+											<td></td>
+										</aura:if>
+										<aura:if isTrue="{!v.Event_Setting.Is_Stand_Design_Visible__c==true}">
+											<td></td>
+										</aura:if>
+										<aura:if isTrue="{!v.Event_Setting.Is_Stand_Detail_Visible__c==true}">
+											<td></td>
+										</aura:if>
+										<aura:if isTrue="{!and(v.Event_Setting.Is_SubContractors_Visible__c==true,v.Event_Setting.Is_Amount_Visible__c==false) }">
+											<td></td>
+										</aura:if>										
+										<aura:if isTrue="{!v.Event_Setting.Is_Amount_Visible__c==true}">
+											<td colspan="2" class="slds-text-align_right"><span class="black-bold">{!$Label.c.Total_Amount_Due} :</span></td>
+											<td><span class="black-bold"><ui:outputCurrency value="{!v.totalAmount}"/></span></td>
+										</aura:if>									
+									</tr>
+									<tr>
+										<td></td>
+										<td></td>
+										<aura:if isTrue="{!!v.Event_Setting.Disable_this_information__c}">
+											<td></td>
+										</aura:if>
+										<aura:if isTrue="{!v.Event_Setting.Is_Stand_Design_Visible__c==true}">
+											<td></td>
+										</aura:if>
+										<aura:if isTrue="{!v.Event_Setting.Is_Stand_Detail_Visible__c==true}">
+											<td></td>
+										</aura:if>
+										<aura:if isTrue="{!and(v.Event_Setting.Is_SubContractors_Visible__c==true,v.Event_Setting.Is_Amount_Visible__c==false) }">
+											<td></td>
+										</aura:if>										
+										<aura:if isTrue="{!v.Event_Setting.Is_Amount_Visible__c==true}">
+											<td></td>
+											<td></td>
+											<td><button type="button" class="primary-btn" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i class="fa fa-credit-card-alt fa-padding-5"></i>Pay Now</button></td>
+										</aura:if>									
+									</tr> -->
+								</tbody>
+							
+						</table>
+					<!-- </aura:if> -->
+				</div>
+			</div>
+		</div>
+		<div class="clearfix"></div>
+
+
+
+		<!--Agent Section For Stand Contaractor -->
+        <aura:if isTrue="{!v.boothAgentMap.length}">
+		<div class="container">
+			<div class="row"> 
+				<div class="col-sm-12 scrollarea" style="margin-bottom: 7rem; float:none;">
+					<div>
+						<br/>
+						<p>
+							<b>{!$Label.c.Agent_pavilion_Space_Stands}:</b>
+							{!$Label.c.Agent_pavilion_Space_Stands_help_text}							
+						</p><br/>
+					</div>
+					<!-- <aura:if isTrue="{!v.boothmap.length}"> -->
+						<table class="required-table" cellspacing="0">
+							<thead>
+								<tr>
+									<th>{!$Label.c.Booth}S</th>	
+									<th>AGENT</th>
+									<th></th>
+									<aura:if isTrue="{!!v.Event_Setting.Disable_this_information__c}">
+										<th>{!$Label.c.Services}</th>
+									</aura:if>
+									<aura:if isTrue="{!v.Event_Setting.Is_Stand_Design_Visible__c==true}">
+										<th>{!$Label.c.Stand}&nbsp;{!$Label.c.Design}</th>
+									</aura:if>
+									<aura:if isTrue="{!v.Event_Setting.Is_Stand_Detail_Visible__c==true}">
+										<th>{!$Label.c.Stand}&nbsp;{!$Label.c.Details}</th>
+									</aura:if>
+									<!-- <aura:if isTrue="{!v.Event_Setting.Is_SubContractors_Visible__c==true}">
+										<th>{!$Label.c.Subcontractor}</th>
+									</aura:if>	-->	
+
+									<aura:if isTrue="{!v.boothAgentMap[0].ContractorRequestStatus__c=='Pending'}"> <!-- Area in case of tool tip only -->
+									<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+									</aura:if>		
+
+									<th>{!$Label.c.Status}</th>
+									<aura:if isTrue="{!v.Event_Setting.Is_Amount_Visible__c==true}">
+										<th>{!$Label.c.Amount}</th>
+									</aura:if>									
+								</tr>
+							</thead>
+							
+								<tbody class="scrollarea">
+									<aura:iteration items="{!v.boothAgentMap}" var="bth">
+										<tr>
+											<td class="black-bold">
+												<button type="button"  value="{!bth.Agent_Contact__r.Account.Id}"  data-name ="{!bth.Agent_Contact__r.Account.Name}" onclick="{!c.showModalViewAll}" class="primary-btn tooltip"  style="{!'margin-right:0px;width:92px;padding-left: 4px;background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}">&nbsp;View All
+												</button>															
+												<!-- <lightning:button value="{!v.bth.Agent_Contact__r.Account.Id}"  onclick="{!c.showModalViewAll}" variant="brand" aura:id="AgentviewAll" class="button" label="View All"  /> -->
+											</td> <!--{!bth.EAC_Fees__c}{!bth.Paid_Status__c}-->
+											<td>
+												<aura:if isTrue="{!bth.ContractorRequestStatus__c=='Accepted'}">													
+													<a href="{!'myexhibitorsboothdetails?eventcode='+v.eventcode+'&amp;mapid='+bth.Id}" class="exhibitor">{!bth.Agent_Contact__r.Account.Name}</a>															
+													<aura:set attribute="else">
+														<span class="exhibitor">{!bth.Agent_Contact__r.Account.Name}</span>																																							
+													</aura:set>
+												</aura:if>
+											</td>
+											<td>
+											<aura:if isTrue="{!bth.ContractorRequestStatus__c=='Accepted'}">	
+												<a href="{!'myexhibitorsboothdetails?eventcode='+v.eventcode+'&amp;mapid='+bth.Id}">
+												<div >
+													<button type="button"  class="primary-btn tooltip"  style="{!'margin-right:0px;width:92px;padding-left: 4px;background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i class="fa fa-pencil" style="font-size:14px;margin: 3px 0px;"></i>&nbsp;Manage
+													</button>
+												</div>
+												</a>
+											</aura:if>
+										</td>
+											<aura:if isTrue="{!!v.Event_Setting.Disable_this_information__c}">
+												<td class="color-black">
+													<aura:if isTrue="{!bth.ContractorRequestStatus__c=='Accepted'}">
+														<aura:iteration items="{!bth.CustomerContractorServices__r}" var="ser"  indexVar="index">
+															<aura:if isTrue="{!index}">
+																{!', '+ser.ContractorService__r.Contractor_Service__c}
+																<aura:set attribute="else"> 
+																	{!ser.ContractorService__r.Contractor_Service__c}
+																</aura:set>
+															</aura:if>
+														</aura:iteration>
+													</aura:if>
+												</td>
+											</aura:if>
+										
+											<aura:if isTrue="{!or(or(and(bth.ContractorRequestStatus__c=='Accepted',bth.Booth_Detail_Status__c=='Submitted'),and(bth.Booth_Design_Status__c!='No Design',bth.ContractorRequestStatus__c!='Pending')),and(bth.Paid_Status__c=='Paid', bth.EAC_Fees__c==true))}">
+												<aura:if isTrue="{!v.Event_Setting.Is_Stand_Design_Visible__c==true}">
+													<td class="color-black">{!bth.Booth_Design_Status__c}</td>
+												</aura:if>
+												<aura:if isTrue="{!v.Event_Setting.Is_Stand_Detail_Visible__c==true}">
+													<td class="color-black">{!bth.Booth_Detail_Status__c}</td>
+												</aura:if>
+
+											<!--	<aura:if isTrue="{!v.Event_Setting.Is_SubContractors_Visible__c==true}">
+													<td class="color-black">
+														<aura:if isTrue="{!bth.BoothContractorMappings__r}">
+															<aura:iteration items="{!bth.BoothContractorMappings__r}" var="ser"  indexVar="index">
+																<aura:if isTrue="{!index}">
+																	<a href="{!'subcontractors?eventcode='+v.eventcode}" class="exhibitor" target="_blank">{!', '+ser.TempContact__r.Name__c}</a>	
+																	<aura:set attribute="else"> 
+																		<a href="{!'subcontractors?eventcode='+v.eventcode}" class="exhibitor" target="_blank">	{!ser.TempContact__r.Name__c}</a>
+																	</aura:set>
+																</aura:if>
+															</aura:iteration>
+															<aura:set attribute="else"> 
+																<button type="button" onclick="{!c.goToNewPage}"   class="primary-btn tooltip"  style="{!'margin-right:6px;padding:5px;background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i class="fa fa-user-plus"></i>&nbsp;Add
+																</button>
+															</aura:set>	
+														</aura:if>
+													</td>
+												</aura:if>  -->
+                                                
+												<td class="color-black">{!bth.ContractorRequestStatus__c}</td>
+												<aura:if isTrue="{!v.Event_Setting.Is_Amount_Visible__c==true}">
+													<td class="color-black"><ui:outputCurrency value="{!bth.Amount__c}"/></td>
+												</aura:if>
+												
+												<aura:set attribute="else">
+													<aura:if isTrue="{!bth.ContractorRequestStatus__c=='Accepted'}">
+															<aura:if isTrue="{!v.Event_Setting.Is_Stand_Design_Visible__c==true}">
+																<td class="color-black">{!bth.Booth_Design_Status1__c}</td>
+															</aura:if>
+															<aura:if isTrue="{!v.Event_Setting.Is_Stand_Detail_Visible__c==true}">
+																<td class="color-black">{!bth.Booth_Detail_Status1__c}</td>
+															</aura:if>
+															<!-- <aura:if isTrue="{!v.Event_Setting.Is_SubContractors_Visible__c==true}">
+																<td class="color-black">
+																	<aura:if isTrue="{!bth.BoothContractorMappings__r}">
+																		<aura:iteration items="{!bth.BoothContractorMappings__r}" var="ser"  indexVar="index">
+																			<aura:if isTrue="{!index}">
+																				<a href="{!'subcontractors?eventcode='+v.eventcode}" class="exhibitor" target="_blank">{!', '+ser.TempContact__r.Name__c}</a>	
+																				<aura:set attribute="else"> 
+																					<a href="{!'subcontractors?eventcode='+v.eventcode}" class="exhibitor" target="_blank">	{!ser.TempContact__r.Name__c}</a>
+																				</aura:set>
+																			</aura:if>
+																		</aura:iteration>
+																		<aura:set attribute="else"> 
+																			<button type="button" onclick="{!c.goToNewPage}"   class="primary-btn tooltip"  style="{!'margin-right:6px;padding:5px;background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i class="fa fa-user-plus"></i>&nbsp;Add
+																				</button>
+																		</aura:set>	
+																	</aura:if>
+																</td>
+															</aura:if> -->
+															<td class="color-black">
+																<select data-mid="{!bth.Id}" id="{!bth.Id}" onchange="{!c.updateConStatus}">
+                                                                    {!bth.ContractorRequestStatus__c} 
+																	<aura:iteration items="{!v.lstStatus}" var="sts">
+																		<aura:if isTrue="{!sts.value==bth.ContractorRequestStatus__c}">
+                                                                         {!bth.ContractorRequestStatus__c}
+																			<option selected="true" value="{!sts.value}">{!sts.label}</option>
+																			
+                                                                            <aura:set attribute="else">
+                                                                                
+																				<aura:if isTrue="{!and(sts.value=='',bth.ContractorRequestStatus__c=='Pending')}">
+                                                                               {!bth.ContractorRequestStatus__c}
+																					<option selected="true" value="{!sts.value}">{!sts.label}</option>
+																					
+                                                                                    <aura:set attribute="else">
+                                                                                     {!bth.ContractorRequestStatus__c}
+																						<option value="{!sts.value}">{!sts.label}</option>
+																					</aura:set>
+																				</aura:if>
+																			</aura:set>
+																		</aura:if>
+																	</aura:iteration>	
+																</select>
+															</td>
+															<aura:if isTrue="{!v.Event_Setting.Is_Amount_Visible__c==true}">
+																<td class="color-black"><ui:outputCurrency value="{!bth.Amount__c}"/></td>
+															</aura:if>
+															<aura:set attribute="else">
+																<aura:if isTrue="{!v.Event_Setting.Is_Stand_Design_Visible__c==true}">
+																		<td></td>
+																	</aura:if>
+																	<aura:if isTrue="{!v.Event_Setting.Is_Stand_Detail_Visible__c==true}">
+																		<td></td>
+																	</aura:if>
+																	<!--<aura:if isTrue="{!v.Event_Setting.Is_SubContractors_Visible__c==true}">	-->						
+																		                                                                    
+																			<aura:if isTrue="{!bth.ContractorRequestStatus__c=='Pending'}">
+																				<td style="width: 240px; height:60px;">            
+																					<div class="tool" style="position:relative;">
+																						<span class="tooltip-content">Accept this Designation to get started</span>
+																					</div>
+																				</td>
+																			</aura:if>
+																		
+																	<!--</aura:if> -->
+                                                                
+																	<td class="color-black">
+                                                                      <aura:if isTrue="{!bth.ContractorRequestStatus__c=='Pending'}"></aura:if>
+																		<select data-mid="{!bth.Id}" id="{!bth.Id}" onchange="{!c.updateConStatus}">
+                                                                            {!bth.ContractorRequestStatus__c}
+																			<aura:iteration items="{!v.lstStatus}" var="sts">
+																				<aura:if isTrue="{!sts.value==bth.ContractorRequestStatus__c}">
+                                                                                  {!bth.ContractorRequestStatus__c} 
+																					<option selected="true" value="{!sts.value}">{!sts.label}</option>
+																					<aura:set attribute="else">
+                                                                                       
+																						<aura:if isTrue="{!and(sts.value=='',bth.ContractorRequestStatus__c=='Pending')}">
+                                                                                              {!bth.ContractorRequestStatus__c}
+																							<option selected="true" value="{!sts.value}">{!sts.label}</option>
+																							<aura:set attribute="else">
+                                                                                             {!bth.ContractorRequestStatus__c}
+																								<option value="{!sts.value}">{!sts.label}</option>
+																							</aura:set>
+																						</aura:if>
+																					</aura:set>
+																				</aura:if>
+																			</aura:iteration>	
+																		</select>
+																	</td>
+																	<aura:if isTrue="{!v.Event_Setting.Is_Amount_Visible__c==true}">
+																		<td class="color-black" ><ui:outputCurrency value="{!bth.Amount__c}"/></td>
+																	</aura:if>	
+															</aura:set>
+													</aura:if>
+													
+												</aura:set>
+											</aura:if>
+										</tr>
+									</aura:iteration>
+									
+								</tbody>
+							
+						</table>
+					
+				</div>
+			</div>
+		</div>
+        </aura:if>
+		<!--Agent Section ends -->
+	</section>
+	<!-- Status change confirmation modal--> 
+	<div id="modalchangestatus" class="modal">
+		<div class="modal-content">
+			<div class="modal-header"> <span onclick="{!c.hidemodalchangestatus}" class="close">&times;</span>
+				<h2>{!$Label.c.Updated_Status}</h2>
+			</div>
+			<div class="modal-body bodycomapny ">
+				<div class="col-sm-12">
+					<p>{!$Label.c.Are_you_sure_you_want_to_change_the_status}</p>		
+				</div>
+				<br></br><br></br>
+				<div class="clearfix"></div>
+				<p class="slds-m-top_large">
+					<button type="button" onclick="{!c.changeStatus}" class="primary-btn" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i class="fa fa-check fa-padding-5"></i>{!$Label.c.Yes}</button>
+                    
+					<button type="button" onclick="{!c.hidemodalchangestatus}" class="primary-btn slds-m-left_medium" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i class="fa fa-close fa-padding-5"></i>{!$Label.c.No}</button>
+				</p>
+			</div> 
+		</div>
+	</div> 
+	<!--loading spinner start... style=Brand Medium (blue dots)-->
+	<aura:if isTrue="{!v.Spinner}">
+	   <div aura:id="spinnerId" class="slds-spinner_container">
+		  <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+			<span class="slds-assistive-text">Loading</span>
+			<div class="slds-spinner__dot-a"></div>
+			<div class="slds-spinner__dot-b"></div>
+		  </div>
+	   </div>
+	</aura:if>
+	<!-- Loading spinner end-->  
+
+	<!--View all Exhibitors-->
+<div id="modalViewAll" class="modal">
+		<div class="modal-content" style="max-width: 40%;">
+			<div class="modal-header"> <span onclick="{!c.hideModalViewAll}" class="close">&times;</span>
+				<h2>{!v.CurrentAgent.Name} , Pavilion Space Exhibitors</h2>
+			</div>
+			<div class="modal-body bodycomapny ">
+					<lightning:input class="optionWidth" aura:id="Mysearch" type="search" onchange="{!c.onfilterExhibitor}" placeholder="Keyword Search" label="Search Keyword" value="{!v.searchTearm}" variant="label-hidden"/>
+					<p class="slds-m-bottom_xx-large slds-align_absolute-center"><br/><br/>
+						<table class="newcomtable  slds-m-top_large">
+								<tr>
+									<th>Exhibitor</th>
+									<th>Stand Number</th>
+								</tr>
+								<aura:iteration items="{!v.Exhibitors}" var="exh">
+									<tr>
+										<td>{!exh.Opportunity__r.Account.Name}</td>
+										<td>{!exh.Booth_Number__c}</td>
+										<!-- <td>Test</td>
+										<td>B60</td> -->
+									</tr>
+								</aura:iteration>
+						</table>
+					</p>		
+					<p class="slds-align_absolute-center">
+						<button type="button" onclick="{!c.hideModalViewAll}" class="primary-btn marginleft" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i class="fa fa-close fa-padding-5"></i>{!$Label.c.Close}</button>&nbsp;&nbsp;
+						<button type="button" onclick="{!c.ExportData}" class="primary-btn marginleft" disabled="{!v.hasAgentExh}" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i class="fa fa-download fa-padding-5"></i>{!$Label.c.Download}</button>
+					</p>
+			</div>
+	</div>
+</div>
+<!--End-->  
+</aura:component>

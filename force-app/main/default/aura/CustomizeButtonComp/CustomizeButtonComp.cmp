@@ -1,0 +1,185 @@
+<aura:component controller="AppSetupController" implements="force:appHostable" access="global">
+	
+	<!--attribute-->
+	<aura:attribute name="template" type="Object" description="Questionnaire__c custom object"/>
+
+	<aura:attribute name="templateList" type="list" default="[]" description="list of Questionnaire__c custom object"/>
+	<aura:attribute name="sectionList" type="list" default="[]" description="list of Question_Group__c custom object"/>
+	<aura:attribute name="allginmentList" type="list" default="[]" description="top-left,top-center,top-right,bottom-left,botton-center,bottom-right"/>
+	<aura:attribute name="float" type="string" default="slds-float_right slds-p-around_small"/>
+
+	<aura:attribute name="selectedTemplate" type="string" default=""/>
+	<!--<aura:attribute name="selectedSection" type="string" default=""/>-->
+	<aura:attribute name="isOpenSectionColorModal" type="boolean" default="false"/>
+	<aura:attribute name="isShowSpinner" type="boolean" default="false"/>
+
+	<!-- button attributes-->
+	<aura:attribute name="isCustomButton" type="boolean" default="false"/>
+	<!--submit button-->
+	<aura:attribute name="buttonTextColor" type="string" default="#FFFFFF"/>
+	<aura:attribute name="buttonBGColor" type="string" default="#2196F3"/>
+	<aura:attribute name="buttonBorderColor" type="string" default="#2196F3"/>
+
+	<!--Next button-->
+	<aura:attribute name="buttonNextTextColor" type="string" default="#FFFFFF"/>
+	<aura:attribute name="buttonNextBGColor" type="string" default="#0b7477"/>
+	<aura:attribute name="buttonNextBorderColor" type="string" default="#0b7477"/>
+
+	<!--Previous button-->
+	<aura:attribute name="buttonPrevTextColor" type="string" default="#FFFFFF"/>
+	<aura:attribute name="buttonPrevBGColor" type="string" default="#bd35bd"/>
+	<aura:attribute name="buttonPrevBorderColor" type="string" default="#bd35bd"/>
+
+	<aura:attribute name="buttonNextLabel" type="string" default="Next Questions"/>
+	<aura:attribute name="buttonPrevLabel" type="string" default="Previous Questions"/>
+	<aura:attribute name="buttonSubmitLabel" type="string" default="Submit Answer"/>
+	<aura:attribute name="buttonAllignment" type="string" default="bottom-right"/>
+	<aura:attribute name="buttonPosition" type="string" default="bottom"/>
+
+	<!-- Event-->
+	<aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+
+	<!-- button design-->
+	<aura:if isTrue="{!v.isOpenSectionColorModal}">
+		<div class="modal-container hideModalCSS" aura:id="datecmodalontainer">
+	        <section role="dialog" id="text-plain-popup" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-modal_large slds-fade-in-open slds-slide-down-cancel">
+	            <div class="slds-modal__container">
+	                <header class="slds-modal__header">
+	                    <lightning:buttonIcon iconName="utility:close" onclick="{!c.hideModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" />
+	                    <h3 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate"><strong>Customise Form Buttons</strong></h3>
+	                </header>
+	                
+	                <div class="slds-modal__content slds-p-around_medium " id="modal-content-id-1" style="height:420px">
+	                    <lightning:layout multipleRows="true" verticalAlign="center">	                    	
+	                        <lightning:layoutItem size="6" padding="around-small">
+	                        	<lightning:combobox aura:id="buttonallign" class="slds-m-top_x-small" name="buttonallign" 
+	                        		label="Select allignment" 
+				                    placeholder="Choose allignment" 
+				                    value="{!v.buttonAllignment}"
+				                    onchange="{!c.alignmentChange}" 
+				                    options="{!v.allginmentList}"/>
+	                        </lightning:layoutItem>
+	                        <lightning:layoutItem size="6" padding="around-small">
+	                        	<aura:if isTrue="{!v.isCustomButton==true}">
+	                        		<lightning:input checked="true" onchange="{!c.checkboxChange}" type="checkbox" label="Do you want to customise buttons color?"/>
+	                        		<aura:set attribute="else">
+	                        			<lightning:input checked="false" onchange="{!c.checkboxChange}" type="checkbox" label="Do you want to customise buttons color?"/>
+	                        		</aura:set>
+	                        	</aura:if>
+	                        </lightning:layoutItem>
+
+	                        <aura:if isTrue="{!v.isCustomButton}">
+		                        <lightning:layoutItem size="3" padding="around-small">
+		                        	<lightning:input type="text" value="{!v.buttonSubmitLabel}" label="Submit Button Label"/>
+		                        </lightning:layoutItem>
+		                        <lightning:layoutItem size="3" padding="around-small">
+		                         	<label class="slds-form-element__label">Submit Button Border Color</label>
+		                         	<c:FBColorPicker colorCode="{!v.buttonBorderColor}" attrToReflect="buttonBorderColor"/>
+		                        </lightning:layoutItem>
+		                        <lightning:layoutItem size="3" padding="around-small">
+		                         	<label class="slds-form-element__label">Submit Button Background Color</label>
+		                         	<c:FBColorPicker colorCode="{!v.buttonBGColor}" attrToReflect="buttonBGColor"/>
+		                        </lightning:layoutItem>
+		                        <lightning:layoutItem size="3" padding="around-small">
+		                         	<label class="slds-form-element__label">Submit Button Text Color</label>
+		                         	<c:FBColorPicker colorCode="{!v.buttonTextColor}" attrToReflect="buttonTextColor"/>
+		                         </lightning:layoutItem>
+
+		                        <lightning:layoutItem size="3" padding="around-small">
+		                         	<lightning:input type="text" value="{!v.buttonNextLabel}" label="Next Button Label"/>
+		                        </lightning:layoutItem>
+		                        <lightning:layoutItem size="3" padding="around-small">
+		                         	<label class="slds-form-element__label">Next Button Border Color</label>
+		                         	<c:FBColorPicker colorCode="{!v.buttonNextBorderColor}" attrToReflect="buttonBorderColor"/>
+		                        </lightning:layoutItem>
+		                        <lightning:layoutItem size="3" padding="around-small">
+		                         	<label class="slds-form-element__label">Next Button Background Color</label>
+		                         	<c:FBColorPicker colorCode="{!v.buttonNextBGColor}" attrToReflect="buttonBGColor"/>
+		                        </lightning:layoutItem>
+		                        <lightning:layoutItem size="3" padding="around-small">
+		                         	<label class="slds-form-element__label">Next Button Text Color</label>
+		                         	<c:FBColorPicker colorCode="{!v.buttonNextTextColor}" attrToReflect="buttonTextColor"/>
+		                        </lightning:layoutItem>
+
+		                        <lightning:layoutItem size="3" padding="around-small">
+		                         	<lightning:input type="text" value="{!v.buttonPrevLabel}" label="Previuos Button Label"/>
+		                        </lightning:layoutItem>
+		                        <lightning:layoutItem size="3" padding="around-small">
+		                         	<label class="slds-form-element__label">Previous Button Border Color</label>
+		                         	<c:FBColorPicker colorCode="{!v.buttonPrevBorderColor}" attrToReflect="buttonBorderColor"/>
+		                        </lightning:layoutItem>
+		                        <lightning:layoutItem size="3" padding="around-small">
+		                         	<label class="slds-form-element__label">Previous Button Background Color</label>
+		                         	<c:FBColorPicker colorCode="{!v.buttonPrevBGColor}" attrToReflect="buttonBGColor"/>
+		                        </lightning:layoutItem>
+		                        <lightning:layoutItem size="3" padding="around-small">
+		                         	<label class="slds-form-element__label">Previous Button Text Color</label>
+		                         	<c:FBColorPicker colorCode="{!v.buttonPrevTextColor}" attrToReflect="buttonTextColor"/>
+		                        </lightning:layoutItem>
+	                     	</aura:if>
+	                     	<aura:if isTrue="{!v.isCustomButton==false}">
+	                     		<lightning:layoutItem size="3" padding="around-small">
+		                        	<lightning:input type="text" value="{!v.buttonSubmitLabel}" label="Submit Button Label"/>
+		                        </lightning:layoutItem>
+	                     		<lightning:layoutItem size="3" padding="around-small">
+		                         	<lightning:input type="text" value="{!v.buttonNextLabel}" label="Next Button Label"/>
+		                        </lightning:layoutItem>
+	                     		<lightning:layoutItem size="3" padding="around-small">
+		                         	<lightning:input type="text" value="{!v.buttonPrevLabel}" label="Previuos Button Label"/>
+		                        </lightning:layoutItem>
+	                     	</aura:if>
+	                    </lightning:layout>
+
+	                    <aura:if isTrue="{!v.isCustomButton}">
+		                    <lightning:card title="Buttons Preview" class="border">
+		                    	<lightning:layout >
+		                    		<lightning:layoutItem size="12">
+		                    			<div class="{!v.float}">
+		                    				<div class="slds-grid slds-wrap">
+			                    				<div class="slds-col slds-p-around_small">
+				                    				<button class="slds-button slds-button_neutral" style="{!'background:'+v.buttonPrevBGColor+';'+'border-color:'+v.buttonPrevBorderColor+';'+'color:'+v.buttonPrevTextColor+';'}">{!v.buttonPrevLabel}</button>
+				                    			</div>
+				                    			<div class="slds-col slds-p-around_small">	                    				
+				                    				<div><button class="slds-button slds-button_neutral" style="{!'background:'+v.buttonNextBGColor+';'+'border-color:'+v.buttonNextBorderColor+';'+'color:'+v.buttonNextTextColor+';'}">{!v.buttonNextLabel}</button></div>
+				                    			</div>
+				                    			<div class="slds-col slds-p-around_small">      				
+				                    				<button class="slds-button slds-button_neutral" style="{!'background:'+v.buttonBGColor+';'+'border-color:'+v.buttonBorderColor+';'+'color:'+v.buttonTextColor+';'}">{!v.buttonSubmitLabel}</button>
+				                    			</div>
+			                    			</div>
+		                    			</div>
+		                    		</lightning:layoutItem>
+		                    	</lightning:layout>
+		                    </lightning:card>
+	                	</aura:if>
+	                	<aura:if isTrue="{!v.isCustomButton==false}">
+	                		<lightning:card title="Buttons Preview" class="border">
+		                    	<lightning:layout >
+		                    		<lightning:layoutItem size="12">
+		                    			<div class="{!v.float}">
+		                    				<div class="slds-grid slds-wrap">
+			                    				<div class="slds-col slds-p-around_small">
+				                    				<button class="slds-button slds-button_neutral">{!v.buttonPrevLabel}</button>
+				                    			</div>
+				                    			<div class="slds-col slds-p-around_small">	                    				
+				                    				<div><button class="slds-button slds-button_neutral">{!v.buttonNextLabel}</button></div>
+				                    			</div>
+				                    			<div class="slds-col slds-p-around_small">      				
+				                    				<button class="slds-button slds-button_brand">{!v.buttonSubmitLabel}</button>
+				                    			</div>
+			                    			</div>
+		                    			</div>
+		                    		</lightning:layoutItem>
+		                    	</lightning:layout>
+		                    </lightning:card>
+	                	</aura:if>
+	                </div>
+	                <footer class="slds-modal__footer">
+	                    <lightning:button label="Cancel" onclick="{!c.hideModal}" />
+	                    <lightning:button variant="brand" label="Save" onclick="{!c.submitFormData}" />
+	                </footer>
+	            </div>
+	        </section>
+	        <div class="slds-backdrop  slds-backdrop_open" id="slds-backdrop"></div>
+	    </div>
+	</aura:if>
+</aura:component>

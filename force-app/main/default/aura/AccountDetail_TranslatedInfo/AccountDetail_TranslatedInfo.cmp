@@ -1,0 +1,246 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component implements="flexipage:availableForAllPageTypes" controller="AccountLtnCtrl">
+    <!-- Attributes -->
+    <aura:attribute name="parentId" type="String" />
+    <aura:attribute name="isEditMode" type="Boolean" default="false" />
+    <aura:attribute name="translatedAddressId" type="String" />
+    <aura:attribute name="transLatedIdExists" type="Boolean" default="false" />
+    <aura:attribute name="disabled" type="Boolean" default="true" />
+    <aura:attribute name="saved" type="Boolean" default="false" />
+    <aura:attribute name="showSpinner" type="Boolean" default="false" />
+    <aura:attribute name="isDisabled" type="Boolean" default="false" />
+    <!-- Attributes -->
+    <!-- Aura Handler -->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:registerEvent name="navigateEvent" type="c:NavigateToPage"/>
+    <!-- Aura Handler -->
+    <div class="container">
+        <aura:if isTrue="{!v.showSpinner}">
+            <lightning:spinner />
+        </aura:if>
+        <aura:if isTrue="{!v.transLatedIdExists}">
+            <aura:if isTrue="{!v.isEditMode}">
+                <lightning:recordEditForm aura:id="editFormUpdate" onload="{!c.handleLoad}" onsubmit="{!c.handleSuccessUpdate}" onsuccess="{!c.handleSuccess}" objectApiName="Account_Translated_FieldSet__c" recordId="{!v.translatedAddressId}">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:layoutItem class="" aura:id="editRecord">
+                                <lightning:inputField fieldName="Translated_Account_Name__c" class="slds-m-top_small" onchange="{!c.onchangeEnableSave}" disabled="{!v.isDisabled}"/>
+                            </lightning:layoutItem>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:layoutItem class="" aura:id="editRecord">
+                                <lightning:inputField fieldName="Translated_Billing_Address_Line_1__c" class="slds-m-top_small" onchange="{!c.onchangeEnableSave}" disabled="{!v.isDisabled}"/>
+                            </lightning:layoutItem>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:layoutItem class="" aura:id="editRecord">
+                                <lightning:inputField fieldName="Translated_Billing_Address_Line_2__c" class="slds-m-top_small" onchange="{!c.onchangeEnableSave}" disabled="{!v.isDisabled}"/>
+                            </lightning:layoutItem>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:layoutItem class="" aura:id="editRecord">
+                                <lightning:inputField fieldName="Translated_Billing_City__c" class="slds-m-top_small" onchange="{!c.onchangeEnableSave}" disabled="{!v.isDisabled}"/>
+                            </lightning:layoutItem>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:layoutItem class="" aura:id="editRecord">
+                                <lightning:inputField fieldName="Translated_Billing_Country__c" class="slds-m-top_small" onchange="{!c.onchangeEnableSave}" disabled="{!v.isDisabled}"/>
+                            </lightning:layoutItem>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:layoutItem class="" aura:id="editRecord">
+                                <lightning:inputField fieldName="Translated_Billing_State_Province__c" class="slds-m-top_small" onchange="{!c.onchangeEnableSave}" disabled="{!v.isDisabled}"/>
+                            </lightning:layoutItem>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:layoutItem class="" aura:id="editRecord">
+                                <lightning:inputField fieldName="Translated_Billing_Zip_Postal_Code__c" class="slds-m-top_small" onchange="{!c.onchangeEnableSave}" disabled="{!v.isDisabled}"/>
+                            </lightning:layoutItem>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:layoutItem aura:id="editRecord" class="slds-hide">
+                                <lightning:inputField fieldName="Account__c" class="slds-m-top_small" value="{!v.parentId}" disabled="true" />
+                            </lightning:layoutItem>
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                <div class="slds-m-top_medium">
+                    <lightning:button disabled="{!v.disabled}" variant="brand" type="submit" name="save" label="Update" />
+                </div>
+                </lightning:recordEditForm>
+
+                <aura:set attribute="else">
+                    <lightning:recordViewForm aura:id="viewForm" recordId="{!v.translatedAddressId}" objectApiName="Account_Translated_FieldSet__c">
+                        <lightning:layout multipleRows="true">
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem class="" aura:id="editRecord">
+                                    <lightning:outputField fieldName="Translated_Account_Name__c" class="slds-m-top_small"/>
+                                    <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}" />
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem class="" aura:id="editRecord">
+                                    <lightning:outputField fieldName="Translated_Billing_Address_Line_1__c" class="slds-m-top_small"/>
+                                    <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}" />
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem class="" aura:id="editRecord">
+                                    <lightning:outputField fieldName="Translated_Billing_Address_Line_2__c" class="slds-m-top_small"/>
+                                    <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}" />
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem class="" aura:id="editRecord">
+                                    <lightning:outputField fieldName="Translated_Billing_City__c" class="slds-m-top_small"/>
+                                    <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}" />
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem class="" aura:id="editRecord">
+                                    <lightning:outputField fieldName="Translated_Billing_Country__c" class="slds-m-top_small"/>
+                                    <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}" />
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem class="" aura:id="editRecord">
+                                    <lightning:outputField fieldName="Translated_Billing_State_Province__c" class="slds-m-top_small"/>
+                                    <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}" />
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem class="" aura:id="editRecord">
+                                    <lightning:outputField fieldName="Translated_Billing_Zip_Postal_Code__c" class="slds-m-top_small" onchange="{!c.onchangeEnableSave}" />
+                                    <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}" />
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem aura:id="editRecord" class="slds-hide">
+                                    <lightning:outputField fieldName="Account__c" class="slds-m-top_small" disabled="true" />
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                        </lightning:layout>
+                    </lightning:recordViewForm>
+                </aura:set>
+
+            </aura:if>
+            <aura:set attribute="else">
+                <aura:if isTrue="{!v.isEditMode}">
+                    <lightning:recordEditForm aura:id="editFormNew" onload="{!c.handleLoad}" onsubmit="{!c.handleSuccessNew}" onsuccess="{!c.handleSuccess}" objectApiName="Account_Translated_FieldSet__c">
+                        <lightning:layout multipleRows="true">
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem class="" aura:id="editRecord">
+                                    <lightning:inputField fieldName="Translated_Account_Name__c" class="slds-m-top_small" onchange="{!c.onchangeEnableSave}" disabled="{!v.isDisabled}"/>
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem class="" aura:id="editRecord">
+                                    <lightning:inputField fieldName="Translated_Billing_Address_Line_1__c" class="slds-m-top_small" onchange="{!c.onchangeEnableSave}" disabled="{!v.isDisabled}"/>
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem class="" aura:id="editRecord">
+                                    <lightning:inputField fieldName="Translated_Billing_Address_Line_2__c" class="slds-m-top_small" onchange="{!c.onchangeEnableSave}" disabled="{!v.isDisabled}"/>
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem class="" aura:id="editRecord">
+                                    <lightning:inputField fieldName="Translated_Billing_City__c" class="slds-m-top_small" onchange="{!c.onchangeEnableSave}" disabled="{!v.isDisabled}"/>
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem class="" aura:id="editRecord">
+                                    <lightning:inputField fieldName="Translated_Billing_Country__c" class="slds-m-top_small" onchange="{!c.onchangeEnableSave}" disabled="{!v.isDisabled}"/>
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem class="" aura:id="editRecord">
+                                    <lightning:inputField fieldName="Translated_Billing_State_Province__c" class="slds-m-top_small" onchange="{!c.onchangeEnableSave}" disabled="{!v.isDisabled}"/>
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem class="" aura:id="editRecord">
+                                    <lightning:inputField fieldName="Translated_Billing_Zip_Postal_Code__c" class="slds-m-top_small" onchange="{!c.onchangeEnableSave}" disabled="{!v.isDisabled}"/>
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem aura:id="editRecord" class="slds-hide">
+                                    <lightning:inputField fieldName="Account__c" class="slds-m-top_small" disabled="true" value="{!v.parentId}"/>
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                        </lightning:layout>
+                    <div class="slds-m-top_medium">
+                        <lightning:button disabled="{!v.disabled}" variant="brand" type="submit" name="save" label="Save" />
+                    </div>
+                    </lightning:recordEditForm>
+                    <aura:set attribute="else">
+                        <lightning:layout multipleRows="true">
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem class="" aura:id="editRecord">
+                                    <span class="slds-form-element__label">Translated Account Name</span>
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-form-element__static"></div>
+                                        <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}" />
+                                    </div>
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem class="" aura:id="editRecord">
+                                    <span class="slds-form-element__label">Translated Billing Address Line 1</span>
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-form-element__static"></div>
+                                        <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}" />
+                                    </div>
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem class="" aura:id="editRecord">
+                                    <span class="slds-form-element__label">Translated Billing Address Line 2</span>
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-form-element__static"></div>
+                                        <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}" />
+                                    </div>
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem class="" aura:id="editRecord">
+                                    <span class="slds-form-element__label">Translated Billing City</span>
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-form-element__static"></div>
+                                        <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}" />
+                                    </div>
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem class="" aura:id="editRecord">
+                                    <span class="slds-form-element__label">Translated Billing Country</span>
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-form-element__static"></div>
+                                        <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}" />
+                                    </div>
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem class="" aura:id="editRecord">
+                                    <span class="slds-form-element__label">Translated Billing State/Province</span>
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-form-element__static"></div>
+                                        <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}" />
+                                    </div>
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:layoutItem aura:id="editRecord">
+                                    <span class="slds-form-element__label">Translated Billing Zip/Postal Code</span>
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-form-element__static"></div>
+                                        <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}" />
+                                    </div>
+                                </lightning:layoutItem>
+                            </lightning:layoutItem>
+                        </lightning:layout>
+                    </aura:set>
+                </aura:if>
+            </aura:set>
+        </aura:if>
+    </div>
+</aura:component>

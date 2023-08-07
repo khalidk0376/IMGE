@@ -1,0 +1,4 @@
+<aura:event type="APPLICATION" description="Event template">
+    <!--OpenFieldMappingEve-->
+    <aura:attribute name="objectMap" type="object"/>
+</aura:event>

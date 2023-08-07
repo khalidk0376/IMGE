@@ -1,0 +1,232 @@
+<aura:component controller="OppActionButtonController" implements="flexipage:availableForAllPageTypes,force:hasRecordId" access="global">
+    <ltng:require scripts="{!$Resource.LtngUtility}"/>    
+    <aura:attribute name="oppObj" type="Object" access="private"/> 
+    <aura:attribute name="renderButton" type="Boolean" default="false"/>
+    <aura:attribute name="renderCancelButton" type="Boolean" default="false"/>
+    <aura:attribute name="isOpenNewContactModal" type="Boolean" access="private"/>
+    <aura:attribute name="isOpenOppCloneModal" type="Boolean" access="private"/>
+    <aura:attribute name="isOpenOppRecallModal" type="Boolean" access="private"/>
+    <!--Rajesh Kumar - 31-03-2020 : BK- BK-3775 -->
+    <aura:attribute name="isOpenSubmitForChangeModal" type="Boolean" access="private"/>
+    <!--Rajesh Kumar - 31-03-2020 : BK- BK-3775 -->
+    <aura:attribute name="isOpenCreateNewQuoteModal" type="Boolean" access="private"/>
+    <aura:attribute name="isResubmitForAccApprovalModal" type="Boolean" access="private"/>
+    <aura:attribute name="isOpenCancelOppModal" type="Boolean" access="private"/>
+    <aura:attribute name="isAmendTeamMember" type="Boolean" access="private"/>
+    <aura:attribute name="spinner" type="Boolean" access="private"/>
+    <!-- added on 04/09/2019 by Mukesh to make action buttons postion dynamic from top-->
+    <aura:attribute name="top" type="Integer" default="80" access="global"/>
+    
+    <aura:attribute name="accessObj" type="Object" access="private"/>
+    <!-- Added By Palla Kishore for the ticket BK-22495 -->
+    <aura:attribute access="public" name="sObjectName" type="String" default="Opportunity"/>
+
+    <aura:attribute name="isEnableProfile" type="Boolean" access="private"/>
+    <aura:attribute name="isOppLineItem" type="Boolean" access="private"/>
+    <aura:attribute name="isCheckProfile" type="Boolean" access="private"/>
+    <aura:attribute name="sscbrasil" type="Boolean" access="private"/>
+    <aura:attribute name="isOpenDocModal" type="Boolean" access="private" default="false"/>
+    <aura:attribute name="isOpenUploadDocument" type="Boolean" access="private" default="false"/>
+    
+    <aura:attribute name="isOpenUpdateUserTypeModal" type="Boolean" access="private"/>
+    <aura:attribute name="enableUpdateUserTypebutton" type="Boolean" access="private" default="false"/>
+    <aura:attribute name="UpdateUserTypeAccess" type="Map" />
+
+    <aura:attribute name="inActive" type="Boolean" default = "false" access="private"/>
+    <aura:attribute name="accId" type="String" access="global"/>
+    
+    <!--<aura:attribute name="" type="Boolean" access="private"/>
+ <aura:attribute name="" type="Boolean" access="private"/>
+ <aura:attribute name="" type="Boolean" access="private"/>
+ <aura:attribute name="" type="Boolean" access="private"/>-->
+    
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler event="c:refreshEvent" action="{!c.refreshButton}" />   
+    <aura:handler name="change" value="{!v.isOpenCancelOppModal}" action="{!c.isCancelOppChange}"/>	
+    
+    <aura:if isTrue="{!v.spinner}">
+        <lightning:spinner variant="brand" size="small"/>
+    </aura:if>
+    <!--style="{!'position:fixed;width:100%;top:'+v.top+'px;height: 50px;border-radius: 0px;left: 0px;z-index:99;'}"-->
+    <div style="height: 42px;left: 0;right: 0;padding-left: 15px;padding-right: 15px;border-radius: 0;transform: translate3d(0px, -13px, 0px);position: fixed;border-top: none;z-index: 99;margin-top: 1px;background-color:#f3f2f2;border-bottom: 1px solid rgb(221, 219, 218);box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.10);">
+        <div class="box">
+            <!--
+     Modified By: Yash Gupta
+     @Description Added functionality for Upload Declaration Document as per ticket GGCKB-50 and GGCKB-51
+    -->
+            <!--<lightning:button onclick="{!c.openUploadDocModal}" variant="brand" label="Upload Declaration Document" iconName="utility:image" iconPosition="left"/>-->
+          <!-- Added By Palla Kishore for the ticket BK-22495 -->
+            <aura:if isTrue="{!(v.oppObj.StageName=='Contract Sent' || (v.oppObj.StageName=='Closed Won' &amp;&amp; v.oppObj.Status__c=='Sales Ops Review - Pending') ) &amp;&amp; (v.isCheckProfile=='System Administrator' || v.isCheckProfile=='Sales' || v.isCheckProfile=='GE System Administrator'  || v.isCheckProfile=='GE BA Administrator')}">    
+                <lightning:button onclick="{!c.openUploadDocument}" variant="brand" label="Upload Document" iconName="utility:image" iconPosition="left"/>
+            </aura:if>
+            
+            <!--Palla Kishore - 22-10-2021 : EMEA-24 -->
+            <aura:if isTrue="{!(v.oppObj.Status__c=='Rejected by Sales Ops Team' &amp;&amp; v.oppObj.Review_by_Sales_Ops_Team__c &amp;&amp; v.oppObj.StageName=='Customize')}">
+                <lightning:button onclick="{!c.reSubmitToSalesOpp}" variant="brand" label="Re-Submit" iconName="utility:image" iconPosition="left"/>
+            </aura:if>
+            
+
+            <aura:if isTrue="{!(v.oppObj.Non_Reseller_Agent__c &amp;&amp; v.oppObj.User_Type__r.Name=='Agent' &amp;&amp; v.oppObj.Billing_Contact__r.Account.BillingCountryCode!='AE' &amp;&amp; v.oppObj.EventEdition__r.Tax_Rule__c=='UAE VAT Refund' &amp;&amp; v.oppObj.StageName=='Closed Won' &amp;&amp; v.oppObj.SBQQ__Ordered__c==false &amp;&amp; v.isOppLineItem==true &amp;&amp; v.isCheckProfile!='SSC Finance-Accounting')}">
+                <lightning:button onclick="{!c.openUploadDocModal}" variant="brand" label="Upload Declaration Document" iconName="utility:image" iconPosition="left"/>
+            </aura:if>
+            
+            <aura:if isTrue="{!(v.oppObj.Non_Reseller_Agent__c &amp;&amp; v.oppObj.Billing_Contact__r.Account.BillingCountryCode!='AE' &amp;&amp; v.oppObj.EventEdition__r.Tax_Rule__c=='UAE VAT Refund' &amp;&amp; v.oppObj.StageName=='Closed Won' &amp;&amp; v.isOppLineItem==true &amp;&amp; v.isCheckProfile=='SSC Finance-Accounting' &amp;&amp; v.oppObj.User_Type__r.Name=='Agent')}">
+                <lightning:button onclick="{!c.openUploadDocModal}" variant="brand" label="Upload Declaration Document" iconName="utility:image" iconPosition="left"/>
+            </aura:if>
+            
+            <aura:if isTrue="{!(v.oppObj.User_Type__r.Name!='Agent' &amp;&amp; v.oppObj.Billing_Contact__r.Account.BillingCountryCode!='AE' &amp;&amp; v.oppObj.EventEdition__r.Tax_Rule__c=='UAE VAT Refund' &amp;&amp; v.oppObj.StageName=='Closed Won' &amp;&amp; v.oppObj.SBQQ__Ordered__c==false &amp;&amp; v.isOppLineItem==true &amp;&amp; v.isCheckProfile!='SSC Finance-Accounting')}">
+                <lightning:button onclick="{!c.openUploadDocModal}" variant="brand" label="Upload Declaration Document" iconName="utility:image" iconPosition="left"/>
+            </aura:if>
+            
+            <aura:if isTrue="{!(v.oppObj.Billing_Contact__r.Account.BillingCountryCode!='AE' &amp;&amp; v.oppObj.EventEdition__r.Tax_Rule__c=='UAE VAT Refund' &amp;&amp; v.oppObj.StageName=='Closed Won' &amp;&amp; v.isOppLineItem==true &amp;&amp; v.isCheckProfile=='SSC Finance-Accounting' &amp;&amp; v.oppObj.User_Type__r.Name!='Agent')}">
+                <lightning:button onclick="{!c.openUploadDocModal}" variant="brand" label="Upload Declaration Document" iconName="utility:image" iconPosition="left"/>
+            </aura:if>
+            
+            <aura:if isTrue="{!v.oppObj.Status__c=='Accounting Rejected'}">
+                <lightning:button onclick="{!c.openResubmitForAccApprovalModal}" variant="brand" label="Resubmit for Accounting Approval"/>
+            </aura:if>
+            <lightning:button onclick="{!c.openNewContactModal}" variant="brand" label="New Contact" iconName="utility:adduser" iconPosition="left"/>
+            
+            <lightning:button onclick="{!c.openOppCloneModal}" variant="brand" label="Opportunity Clone" iconName="utility:copy" iconPosition="left" disabled = "{!v.inActive}" />
+            <!--Rajesh Kumar - 31-03-2020 : BK- BK-3775 -->
+         	<aura:if isTrue="{!not(v.renderButton)}"><!--GECI-623-->
+            <aura:if isTrue="{!(v.oppObj.StageName=='Closed Won'||v.oppObj.StageName=='Closed Booked') &amp;&amp; (v.isCheckProfile=='System Administrator' || v.isCheckProfile=='Sales-Brasil' || v.isCheckProfile=='GE System Administrator'  || v.isCheckProfile=='GE BA Administrator' || v.sscbrasil == 'SSC-Brazil')}">				
+                <lightning:button onclick="{!c.openSubmitForChangeModal}" variant="brand" label="Submit for Change" iconName="utility:approval" iconPosition="left"/>
+            </aura:if>
+            </aura:if>
+            <!--Rajesh Kumar - 31-03-2020 : BK- BK-3775 -->
+           <aura:if isTrue="{!v.oppObj.StageName!='Closed Won'&amp;&amp;v.oppObj.StageName!='Closed Booked'&amp;&amp;v.oppObj.StageName!='Closed Lost'}">
+                <lightning:button onclick="{!c.openNewQuoteModal}" variant="brand" label="Create New Quote" iconName="utility:quote" iconPosition="left"/>
+            </aura:if>
+            <aura:if isTrue="{!v.oppObj.StageName=='Closed Won'&amp;&amp;empty(v.oppObj.Master_Opportunity__c)&amp;&amp;v.oppObj.SBQQ__Contracted__c==true&amp;&amp;v.isAmendTeamMember==true}">
+                <lightning:button onclick="{!c.openAmendContractLink}" variant="brand" label="Amend Contract"/>
+            </aura:if>
+            <!-- Modified by Palla Kishore for the ticket BK-22337 And Commented(Due to Production Cancel BK-22337)-->
+          <!--  <aura:if isTrue="{!v.oppObj.StageName =='Closed Won' &amp;&amp; (v.oppObj.Status__c == 'Pending Accounting Approval'|| v.oppObj.Status__c == 'Sales Ops Review - Pending' || (v.oppObj.Amount != Null &amp;&amp; v.oppObj.Amount == 0 &amp;&amp; v.oppObj.Parent_Opportunity__c != Null &amp;&amp; v.oppObj.User_Type__r.Name == 'Agent Owned Exhibitor' &amp;&amp; v.oppObj.Status__c == 'Awaiting Payment'))}"> -->
+                <aura:if isTrue="{!v.oppObj.StageName =='Closed Won' &amp;&amp; (v.oppObj.Status__c == 'Pending Accounting Approval'|| v.oppObj.Status__c == 'Sales Ops Review - Pending')}">
+                    <lightning:button onclick="{!c.openOppRecallModal}" variant="brand" label="Recall Opportunity" iconName="action:recall" iconPosition="left"/>
+                </aura:if>
+            <!--Modified by Palla Kishore for the ticket :: BK-21782 -->
+            <aura:if isTrue="{!(v.oppObj.StageName=='Contract Sent'||v.oppObj.Status__c=='Accounting Rejected' || v.oppObj.Status__c=='Rejected by Sales Ops Team')&amp;&amp;v.oppObj.Manual_Contract__c==true}">
+                <lightning:button onclick="{!c.openAttachAggrementLink}" variant="brand" label="Attach Agreement"/>
+            </aura:if>
+            <aura:if isTrue="{!( v.oppObj.StageName =='Closed Won' &amp;&amp; v.UpdateUserTypeAccess.UserTypeButton == true)}">
+                <lightning:button onclick="{!c.openUserTypeUpdateModal}" variant="brand" label="Update User Type" iconName="utility:approval" iconPosition="left"/>     
+            </aura:if>    
+            <!--<aura:if isTrue="{!v.oppObj.StageName!='Closed Lost'}">
+     <lightning:button onclick="{!c.sendFloorPlanInfo}" variant="brand" label="Send Floor Plan Info"/>
+    </aura:if>-->
+            <!--v.oppObj.Amount!=null&amp;&amp;v.oppObj.Amount==0&amp;&amp;-->
+            
+            <aura:if isTrue="{!v.oppObj.Amount!=null&amp;&amp;v.oppObj.Amount==0&amp;&amp;!empty(v.oppObj.Parent_Opportunity__c)&amp;&amp;v.oppObj.StageName!='Closed Won'&amp;&amp;v.oppObj.StageName!='Closed Booked'&amp;&amp;v.oppObj.StageName!='Closed Lost'}">
+                <lightning:button onclick="{!c.closeWonToZeroAmount}" variant="destructive" label="Close Won Related Opportunity"/>
+            </aura:if>
+            
+            <!--<aura:if isTrue="{!v.oppObj.StageName !='Closed Booked' &amp;&amp; v.oppObj.StageName!='Closed Won'&amp;&amp;v.oppObj.StageName!='Closed Lost'}">
+     <lightning:button onclick="{!c.openCancelOppModal}" variant="destructive" label="Cancel Opportunity" iconName="utility:close" iconPosition="left"/>
+    </aura:if>-->
+            
+            <!-- opp cancle btn 1-->
+             <aura:if isTrue="{!not(v.renderCancelButton)}"><!--GECI-623-->
+                <aura:if isTrue="{!(v.oppObj.StageName=='Closed Booked' || v.oppObj.StageName=='Closed Won') &amp;&amp; v.isEnableProfile==false &amp;&amp; v.oppObj.Amount==0 &amp;&amp; !empty(v.oppObj.Parent_Opportunity__c)}">
+                    <lightning:button onclick="{!c.openCancelOppModal}" variant="destructive" label="Cancel Opportunity" iconName="utility:close" iconPosition="left"/>
+                </aura:if>
+            
+            <!-- opp cancle btn 2-->
+            <aura:if isTrue="{!(v.oppObj.StageName=='Closed Booked' || v.oppObj.StageName=='Closed Won')&amp;&amp;v.isEnableProfile==true}">
+                <lightning:button onclick="{!c.openCancelOppModal}" variant="destructive" label="Cancel Opportunity" iconName="utility:close" iconPosition="left"/><!-- show modal to only allowed profiles user-->
+            </aura:if>
+            
+            <!-- opp cancle btn 3-->
+           <aura:if isTrue="{!( v.oppObj.StageName !='Closed Booked' &amp;&amp; v.oppObj.StageName!='Closed Won'&amp;&amp;v.oppObj.StageName!='Closed Lost' ) &amp;&amp; ( ( v.oppObj.StageName !='Closed Booked' &amp;&amp; v.oppObj.StageName!='Closed Won'&amp;&amp;v.oppObj.StageName!='Closed Lost' &amp;&amp; v.oppObj.Parent_Opportunity__c==Null ) || ( v.oppObj.StageName !='Closed Booked' &amp;&amp; v.oppObj.StageName!='Closed Won'&amp;&amp;v.oppObj.StageName!='Closed Lost' &amp;&amp; v.oppObj.Amount==0 &amp;&amp; v.oppObj.Parent_Opportunity__c!=0 ) || ( v.oppObj.StageName !='Closed Booked' &amp;&amp; v.oppObj.StageName!='Closed Won'&amp;&amp;v.oppObj.StageName!='Closed Lost' &amp;&amp; v.oppObj.Amount>0 &amp;&amp; v.oppObj.Parent_Opportunity__c!=0 &amp;&amp; v.isEnableProfile==true ) )}">
+             <lightning:button onclick="{!c.openCancelOppModal}" variant="destructive" label="Cancel Opportunity" iconName="utility:close" iconPosition="left"/><!-- show modal to only allowed profiles user-->
+           </aura:if>
+        </aura:if>
+        </div>
+        
+    </div>
+    
+    <aura:if isTrue="{!v.isOpenNewContactModal}">
+        <c:NewContactModal isOpenModal="{!v.isOpenNewContactModal}" accountId="{!v.oppObj.AccountId}"/>
+    </aura:if>
+    
+    <aura:if isTrue="{!v.isOpenCreateNewQuoteModal}">      
+        <c:NewQuoteModal isOpenModal="{!v.isOpenCreateNewQuoteModal}" 
+                         oppId="{!v.recordId}" 
+                         repId="{!v.oppObj.OwnerId}"
+                         billingContId="{!v.oppObj.Billing_Contact__c}"
+                         accountId="{!v.oppObj.AccountId}"
+                         primaryContId="{!v.oppObj.Opportunity_Contact__c}"/> 
+    </aura:if>
+    
+    <aura:if isTrue="{!v.isOpenOppRecallModal}">
+        <c:OppRecallModal isOpenModal="{!v.isOpenOppRecallModal}"  oppObj="{!v.oppObj}"/>
+    </aura:if>
+    
+    <aura:if isTrue="{!v.isOpenUpdateUserTypeModal}">       
+        <c:UpdateUserTypeModal UpdateUserTypeAccess="{!v.UpdateUserTypeAccess}"  isOpenModal="{!v.isOpenUpdateUserTypeModal}" oppId="{!v.recordId}" oppObj="{!v.oppObj}" accountId="{!v.oppObj.AccountId}"/>
+    </aura:if>  
+    <aura:if isTrue="{!v.isOpenOppCloneModal}">
+        <c:OppCloneModal isOpenModal="{!v.isOpenOppCloneModal}"  oppObj="{!v.oppObj}"/>
+    </aura:if>
+    <!--Rajesh Kumar - 31-03-2020 : BK- BK-3775 -->
+    <aura:if isTrue="{!v.isOpenSubmitForChangeModal}">
+        <c:SubmitForChangeModal isOpenModal="{!v.isOpenSubmitForChangeModal}" oppObj="{!v.oppObj}"/>
+    </aura:if>
+    <!--Rajesh Kumar - 31-03-2020 : BK- BK-3775 -->
+    <aura:if isTrue="{!v.isOpenCancelOppModal}">
+        <c:CancelOpportunity recordId="{!v.recordId}" oppObj="{!v.oppObj}" isOpenModal="{!v.isOpenCancelOppModal}"/>
+    </aura:if> 
+    
+    <aura:if isTrue="{!v.isOpenDocModal}">
+        <c:UploadDeclarationDocumentPopup isOpenDocuModal="{!v.isOpenDocModal}" recordId="{!v.recordId}" acName = "{!v.oppObj.Name}"/>
+    </aura:if>
+    <!-- Added By Palla Kishore for the ticket BK-22495 -->
+        <aura:if isTrue="{!v.isOpenUploadDocument}">
+        <c:MultipleFileUploader isOpenDocuModal="{!v.isOpenUploadDocument}"  sObjectName ="{!v.sObjectName}" sObjectId ="{!v.recordId}" acName = "{!v.oppObj.Name}"/>
+    </aura:if>  
+    
+    <aura:if isTrue="{!v.isResubmitForAccApprovalModal}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">			
+            <aura:if isTrue="{!v.spinner}">
+                <lightning:spinner variant="brand" size="small"/>
+            </aura:if>
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button onclick="{!c.closeModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                        <lightning:icon iconName="utility:close" size="small" variant="bare"/>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Resubmit for Approval: {!v.oppObj.Name}</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    
+                    <aura:if isTrue="{!empty(v.oppObj.Billing_Contact__c)}">
+                        <div class="slds-text-heading_medium slds-text-color_error">Billing Contact Is Blank</div>
+                    </aura:if>
+                    
+                    <aura:if isTrue="{!v.oppObj.Billing_Contact__r.Address_Verified__c==false}">
+                        <div class="slds-text-heading_medium slds-text-color_error">Billing Contact Address not Validated</div>
+                    </aura:if>
+                    
+                    <aura:if isTrue="{!and(v.oppObj.Billing_Contact__r.Address_Verified__c==true,!empty(v.oppObj.Billing_Contact__c))}">
+                        <div class="slds-text-heading_medium">Do you want to submit the Opportunity for approval by SSC?</div>
+                    </aura:if>
+                </div>
+                <footer class="slds-modal__footer">
+                    <aura:if isTrue="{!v.oppObj.Billing_Contact__r.Address_Verified__c==true}">
+                        <lightning:button label="Yes" onclick="{!c.reSubmitOpp}" iconName="utility:check" iconPosition="left" variant="brand"/>
+                    </aura:if>
+                    <aura:if isTrue="{!v.oppObj.Billing_Contact__r.Address_Verified__c==true}">
+                        <lightning:button label="No" onclick="{!c.closeModal}" iconName="utility:close" iconPosition="left"/>
+                    </aura:if>
+                    <aura:if isTrue="{!and(v.oppObj.Billing_Contact__r.Address_Verified__c==false,empty(v.oppObj.Billing_Contact__c))}">
+                        <lightning:button label="Cancel" onclick="{!c.closeModal}" iconName="utility:close" iconPosition="left" variant="destructive"/>
+                    </aura:if>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+</aura:component>

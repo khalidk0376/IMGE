@@ -1,0 +1,26 @@
+.THIS #astericOption{
+	color: red;
+    font-size: 15px;
+}
+.THIS .qa-allow-box {
+    clear: both;
+}
+
+.THIS .qf-weight .slds-form-element__control,
+.THIS .qf-weight .slds-form-element {
+
+    float: left;
+}
+
+.THIS .qf-weight .slds-input {
+
+    margin-top: -6px;
+}
+
+.THIS .qf-weight {
+    padding-bottom: 26px;
+}
+
+.THIS .qf-remove-label label {
+    display: none;
+}

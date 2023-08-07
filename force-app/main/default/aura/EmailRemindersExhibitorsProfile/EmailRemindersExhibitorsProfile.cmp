@@ -1,0 +1,111 @@
+<aura:component controller="EmailRemindersCtrl" implements="flexipage:availableForAllPageTypes" access="global" >
+<aura:attribute name="eventId" type="string"/> 
+<aura:attribute name="emailContent" type="object"/>
+<aura:attribute name="objEditor" type="object" />
+<aura:attribute name="isSpinner" type="Boolean" default="false"/> 
+
+<aura:handler name="init" value="{!this}" action="{!c.onLoad}" />
+<aura:handler event="aura:waiting" action="{!c.waiting}"/> 
+<aura:handler event="aura:doneWaiting" action="{!c.doneWaiting}"/>   
+
+
+
+<aura:if isTrue="{!v.isSpinner}">
+    <lightning:spinner class="position" size="large" variant="brand"/>
+</aura:if>
+
+<div class="slds-grid slds-gutters">
+    <div class="slds-col slds-m-top_xx-large" style="margin-top: 1%;">
+        <span> <p>To send a reminder to the group of exhibitors that match the description, click the send button. To edit the email template that will be sent ,click the "Edit Template"</p></span>
+        <table class="slds-table slds-max-medium-table--stacked-horizontal slds-m-top_large slds-m-left_medium" role="grid" cellspacing="0" style="margin-top: 3%;">
+            <thead>
+                <th class="slds-size_1-of-5">
+                    <b>Exhibitors without Profiles</b>
+                </th>
+                <th class="slds-size_2-of-3">
+                    <lightning:button onclick="{!c.showModelEmailTemplateEditor}" value="exhNoPro" variant="brand" aura:id="exhNoPro" class="button" label="Edit Template"/>
+                    <lightning:button onclick="{!c.showConfirm}" variant="brand" class="button bg" label="Send"  />
+                </th>
+            </thead>
+        </table>
+    </div>
+</div>  
+
+<!--Model template-->
+<div aria-hidden="false" id="modelEmailTemplateEditor" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+    <div class="slds-modal__container" style=" width: 50% !important;">
+            <div class="div-body" align="center">
+                <div class="div-body-head"><b>Email Template Editor</b>
+                    <span class="closebtn" onclick="{!c.hideModelEmailTemplateEditor}">X</span>
+                </div>
+                <div>
+                    <!--
+                    <div class="slds-grid slds-gutters slds-m-top_small">
+                        <div class="slds-col slds-size_1-of-7">
+                            <span><strong>CC:</strong></span>
+                        </div>
+                        <div class="slds-col slds-size_6-of-7">
+                            <span><ui:inputEmail class="slds-input" aura:id="emailcc"  value="{!v.ccEmail}" /></span>
+                        </div>
+                    </div> -->
+                    <div class="editor">
+                            <!-- <aura:if isTrue="{!v.objEditor}">
+                                    <textarea name="editor" id="editor" ></textarea> 
+                                <aura:set attribute="else"> -->                                    
+                                        <lightning:inputRichText class="txtareawidth"  aura:id="contentEditor" value="{!v.emailContent.Content__c}"/> 
+                                <!-- </aura:set> -->
+                            <!-- </aura:if> -->
+                    </div>
+                   <div style="margin-top: 20px;">
+                        <lightning:button variant="brand" label="Save" onclick="{!c.updateTemplate}" /> 
+                        <lightning:button variant="brand" label="cancel" onclick="{!c.hideModelEmailTemplateEditor}"/>
+                    </div> 
+                </div>
+                
+            </div> 
+    </div>	 
+</div>
+<!--Model END-->
+<!--Model Confirm-->
+<div aria-hidden="false" id="modelConfirmmail" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+        <div class="slds-modal__container" style=" width: 50% !important;">
+                <div class="div-body" style=" width: 100% !important;" align="center">
+                    <div class="div-body-head"><b>Confirm send</b>
+                        <!-- <span class="closebtn" onclick="{!c.hideModelEmailTemplateEditor}">X</span> -->
+                    </div>
+                    <div>
+                        <div >
+                           <p>Are you Sure you wish to send this mail?</p>
+                        </div>
+                        
+                       <div style="margin-top: 20px;">
+                            <lightning:button variant="brand" label="Yes" onclick="{!c.mailExhNoPro}" /> 
+                            <lightning:button variant="brand" label="cancel" onclick="{!c.hideModelEmailTemplateEditor}"/>
+                        </div>
+                    </div>
+                </div> 
+        </div>	 
+    </div>
+<!--Model END-->
+<!--Model Sent-->
+<div aria-hidden="false" id="modelSent" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+    <div class="slds-modal__container" style=" width: 50% !important;">
+        <div class="div-body" style=" width: 100% !important;" align="center">
+            <!--<div class="div-body-head"><b>Confirm send</b>
+                <span class="closebtn" onclick="{!c.hideModelEmailTemplateEditor}">X</span> 
+            </div>-->
+            <div>
+                <div>
+                    <p><b>Message Sent Successfully</b></p>
+                </div>                        
+                <div style="margin-top: 20px;">
+                    <!-- <lightning:button variant="brand" label="Save" onclick="{!c.updateTemplate}" />  -->
+                    <lightning:button variant="brand" label="Close window" onclick="{!c.hideModelEmailTemplateEditor}"/>
+                </div> 
+            </div>
+        </div> 
+    </div>	 
+</div>
+<!--Model END-->
+
+</aura:component>

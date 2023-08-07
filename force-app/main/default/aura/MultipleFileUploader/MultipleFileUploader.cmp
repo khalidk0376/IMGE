@@ -1,0 +1,69 @@
+<!--/////////////////////////////////////////////////////////////
+Created By : Palla Kishore
+Created on : 20-08-2022
+Name       : MultipleFileUploader
+Description - A Generic Component used to upload multiple Files on any sObject Record.
+Required Input Attributes - sObjectName, sObjectId, showUploadFile
+
+//////////////////////////////////////////////////////////////////-->
+
+<aura:component controller="MultipleFileUploaderController" implements="force:hasRecordId,flexipage:availableForAllPageTypes" access="global" >
+    
+    <!--Functional Public Attributes-->
+    <aura:attribute access="public" name="showUploadFile" type="boolean" default="false"/>
+    <aura:attribute access="public" name="accept" type="List" default="['.jpg', '.jpeg', '.docx', '.pdf', '.ppt', '.pptx', '.xls', '.xlsx', '.gif','.png', '.csv']"/>
+    <aura:attribute access="public" name="multiple" type="Boolean" default="true"/>
+    <aura:attribute access="public" name="disabled" type="Boolean" default="false"/>
+    <aura:attribute access="public" name="uploadedFiles" type="List" default=""/>
+    <aura:attribute access="public" name="sObjectAttachedFiles" type="List" default="[]"/>
+    <aura:attribute access="public" name="sObjectName" type="String" default=""/>
+    <aura:attribute access="public" name="sObjectId" type="String" default=""/>
+    <aura:attribute  name="accountName" type="String" default=""/>
+     <aura:attribute name="recordId" type="String" default=""/>
+    <aura:attribute name="isOpenDocuModal" default="false" type="Boolean" access="public" />
+    <aura:attribute name="acName" type="string" />
+    <!-- Used for navigation purpose -->
+    <lightning:navigation aura:id="navService"/>
+    <aura:handler name="init" value="{!this}" action="{!c.getExistingFiles}"/>
+    <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1"  class="slds-modal slds-fade-in-open">
+        <div class="slds-modal__container"> 
+            <button onclick="{!c.closeDocuModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                    <lightning:icon iconName="utility:close" size="small" variant="bare" />
+                    <span class="slds-assistive-text">Close</span>
+                </button>
+            <header class="slds-modal__header">
+                <div class="modal-header slds-modal__header slds-size_1-of-1">
+                <h4 class="slds-text-heading--medium">Upload Files</h4>
+            </div>
+            </header>
+            <!-- Quick Action Modal Header -->
+            
+            <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+    
+            <lightning:fileUpload name="fileUploader"
+                                  multiple="{!v.multiple}"
+                                  accept="{!v.accept}"
+                                  disabled="{!v.disabled}"
+                                  recordId="{!v.sObjectId}"
+                                  onuploadfinished="{!c.handleUploadFinished}"/>
+            
+            <!-- Responsive Layout to show File Cards on the Modal -->
+            <lightning:layout multipleRows="true">
+                <aura:iteration items="{!v.sObjectAttachedFiles}" var="file">
+                    <lightning:layoutItem padding="around-small">
+                        <lightning:fileCard fileId="{!file.Id}" description="{!file.Title}"/>
+                    </lightning:layoutItem>
+                </aura:iteration>
+            </lightning:layout>
+            </div>
+            <!-- Quick Action Modal Footer -->
+            <div class="modal-footer slds-modal__footer">
+                <!-- Save Button to update Items -->
+                <lightning:button label="Save" variant="brand" onclick="{!c.handleSaveClick}"/>
+                
+                <!-- Cancel Button to Close Modal -->
+                <lightning:button label="Cancel" variant="destructive" onclick="{!c.handleCancelUpload}"/>
+            </div>
+        </div>
+    </section>
+</aura:component>

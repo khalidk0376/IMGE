@@ -1,0 +1,12 @@
+.THIS .deleteLoc{
+    border: none;
+}
+.THIS .slds-checkbox_add-button .slds-checkbox_faux, .THIS .slds-checkbox_add-button .slds-checkbox--faux, .THIS .slds-checkbox--add-button .slds-checkbox_faux, .THIS .slds-checkbox--add-button .slds-checkbox--faux{
+     transform: scale(0.7);
+}
+.THIS .qf-search-indicator{
+    min-height:310px;
+}
+.THIS .slds-modal__container{
+    top: 10px;
+}

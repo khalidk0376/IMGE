@@ -1,0 +1,52 @@
+<aura:component implements="flexipage:availableForAllPageTypes" controller="ApproveContractorCtrl">
+    <aura:attribute name="StandDesign" type="Stand_Design__c[]"/>
+    <aura:attribute name="AccountId" type="String"/>
+    <aura:attribute name="BoothID" type="String"/>
+    <aura:attribute name="Baseurl" type="String" />
+    <aura:attribute name="sfdcBaseurl" type="String" />
+    <aura:attribute name="NoAttachment" type="Boolean" default="true"/>
+    <aura:attribute name="PopUpClosed" type="Boolean"/>
+    <aura:handler name="init" value="{!this}" action="{!c.onLoad}" />
+    <aura:handler name="change" value="{!v.PopUpClosed}" action="{!c.PopUpClosedChanges}"/>
+    <aura:handler name="change" value="{!v.AccountId}" action="{!c.AccountIdChanges}"/>
+    <aura:handler event="aura:waiting" action="{!c.waiting}"/> 
+    <aura:handler event="aura:doneWaiting" action="{!c.doneWaiting}"/>
+    
+    <span id="Accspinner" style="display:none"><ui:spinner /></span>
+    
+    <table class="slds-table slds-table_bordered slds-max-medium-table--stacked-horizontal " role="grid" cellspacing="0">
+        <thead>
+            <tr>
+                <th class="tabHeader" style="background-color: #ccc !important; color: #000 !important; text-transform: none;">
+                    {!$Label.c.FILE}
+                </th>
+                <th class="tabHeader" style="background-color: #ccc !important; color: #000 !important; text-transform: none;">
+                    {!$Label.c.Category}
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <aura:iteration items="{!v.StandDesign}" var="StndDsn">
+                <aura:if isTrue="{!and(StndDsn.Booth_Design_Status__c !='Contractor Resubmit (Incomplete)', StndDsn.Booth_Design_Status__c !='Cancelled',StndDsn!=null)}">    
+                    <aura:iteration items="{!StndDsn.Attachments}" var="Attchmnt">
+                <tr class="slds-hint-parent">  
+                    
+                    <td> 
+                            <a href="" target="" data-id="{!Attchmnt.Id}"  onclick = "{!c.download}" >{!Attchmnt.Name}</a>
+                    </td>
+                    <td>
+                        <ui:outputText value="{!StndDsn.Stand_Type__c}" />
+                    </td>
+                </tr>
+            </aura:iteration>
+            </aura:if>
+            </aura:iteration>
+        </tbody>
+    </table>
+    <!--<div style=" float: left; margin-top: 20px;font-weight:bold">
+        <lightning:button value="{!v.AccountId}"
+                          variant="brand" 
+                          label="{!$Label.c.Submit_designs_to_Venue}" 
+                          onclick="{!c.handleClick}"/>
+    </div>-->
+</aura:component>

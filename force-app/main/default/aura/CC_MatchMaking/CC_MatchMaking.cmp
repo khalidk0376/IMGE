@@ -1,0 +1,93 @@
+<!--
+  Created By	 : Girikon(Rajeev)[BK-2188]
+  Created On	 : 22/8/2019
+  @description : This Component is used for Live Health Connect tab in exhibitor profile at Customer Profile and Ops Admin.
+  Modification log : 
+  Modified By	: Girikon(Rajeev [BK-2188 Sep 2 2019], Girikon(Prashant [STL-117 Oct 24 2019])
+-->
+
+<aura:component controller="MatchMakingCtrl"  implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes" access="global">
+    <aura:handler name="init" value="{!this}" action="{!c.loadMatchValues}" />
+    <aura:handler event="aura:waiting" action="{!c.showSpinner}" />
+    <aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}" />
+    <aura:attribute name="mtchMaKngAns" type="List" default="[
+                                                        {'label': 'Yes', 'value': 'Yes'},
+                                                        {'label': 'No', 'value': 'No'}
+                                                        ]"/>
+    <aura:attribute name="supplyDist" type="String" default=""/>
+    <aura:attribute name="supplyngEndUser" type="String" default=""/>
+    <aura:attribute name="Distributor" type="String" default=""/>
+	  <aura:attribute name="eventId" type="String"/>
+	  <aura:attribute name="exhAccountID" type="String"/> 
+    <aura:attribute name="eventCode" type="String"/>
+    <aura:attribute name="Spinner" type="boolean" default="false" />
+    <aura:attribute name="msgtype" type="String" default=""/>
+    <aura:attribute name="msgbody" type="String" default=""/>
+    <aura:attribute name="isReadOnly" type="boolean" default="false" />
+    <section >
+     <!-- {!v.Spinner}  true  false WrapEESCMValuesANDCheckbox -->
+    <aura:if isTrue="{!v.Spinner}">
+        <lightning:spinner alternativeText="Loading" size="medium" />
+    </aura:if>
+    <aura:if isTrue="{!v.msgbody!=''}">
+           
+			<div class="slds-notify_container slds-is-fixed">
+				<div class="{!'slds-notify slds-notify_toast slds-theme_'+v.msgtype}" role="alert">
+				  <span class="slds-assistive-text">{!v.msgtype}</span>
+				  <span class="{!'slds-icon_container slds-icon-utility-'+v.msgtype+' slds-m-right_small slds-no-flex slds-align-top'}" title="Description of icon when needed">
+					<lightning:icon iconName="{!'utility:'+v.msgtype}" size="small" variant="inverse"/>
+				  </span>
+				  <div class="slds-notify__content">
+					<h2 class="slds-text-heading_small" style="color:#fff;font-size:1rem">{!v.msgbody}</h2>
+				  </div>
+				  <button class="slds-button slds-button_icon slds-notify__close slds-button_icon-inverse" title="Close" onclick="{!c.closeToast}">
+					<lightning:icon iconName="utility:close" size="small" variant="inverse"/>
+					<span class="slds-assistive-text">Close</span>
+				  </button>
+				</div>
+			</div>
+	</aura:if>
+    <br></br>
+    
+    <!--<aura:if isTrue="">BK2188-->
+            <div class="Match Section">
+                <p style="text-align : left">{!$Label.c.Intro_Text_MatchMaking}</p> 
+                <br></br>
+                <p style="text-align : left; margin-left: 10px; ">1. Are You a Manufacturer supplying to Distributors?</p>
+               	<lightning:radioGroup name="supplyDist"
+                          aura:id="supplyDist"            
+                          label=""
+                          options="{!v.mtchMaKngAns}"
+                          value="{!v.supplyDist}"
+                          type="radio"
+                          disabled= "{!v.isReadOnly}"
+                           />
+                 <br></br>
+                <p style="text-align : left; margin-left: 10px;">2. Are You a Manufacturer supplying to End Users?</p>
+                 <lightning:radioGroup name="supplyngEndUser"
+                          aura:id="supplyngEndUser"
+                          label=""
+                          options="{!v.mtchMaKngAns}"
+                          value="{! v.supplyngEndUser}"
+                          type="radio"
+                          disabled= "{!v.isReadOnly}"
+                           />
+                <br></br>
+                <p style="text-align : left; margin-left: 10px;">3. Are You a Distributor?</p>
+                 <lightning:radioGroup name="Distributor"
+                          aura:id="Distributor"
+                          label=""
+                          options="{!v.mtchMaKngAns}"
+                          value="{! v.Distributor}"
+                          type="radio"
+                          disabled= "{!v.isReadOnly}"
+                           />
+            </div>
+        <br></br>
+        <div class="Match Buttons">
+        <button style="margin-left: 10px;" class="slds-button slds-button_brand" onclick="{!c.saveDetails}" disabled= "{!v.isReadOnly}">Save</button>
+        <button style="margin-left: 10px;" class="slds-button slds-button_brand" onclick="{!c.removeDetails}" disabled= "{!v.isReadOnly}">Cancel</button>
+        </div>
+       <!--</aura:if>-->
+    </section>
+</aura:component>

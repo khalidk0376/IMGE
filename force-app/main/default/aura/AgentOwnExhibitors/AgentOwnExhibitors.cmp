@@ -1,0 +1,1264 @@
+<!--
+    ************ Modification Log  ************
+    * Modified by : Girikon(Sunil [CCEN-555 Dec 18 2018, CCEN-482 Jan 1 2019, CCEN-601 Feb 18 2019],Divaker[CCEN-745, April 01 2019])   
+                    [Aishwarya BK-4345 May 14 2020]
+  -->
+<aura:component
+  implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes"
+  access="global"
+  controller="AgentOwnExhibitorsCtrl"
+>
+  <aura:handler event="aura:waiting" action="{!c.showSpinner}" />
+  <aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}" />
+  <aura:attribute name="Spinner" type="boolean" default="true" />
+  <aura:attribute name="eventcode" type="String" default="" />
+  <ltng:require
+    scripts="{!$Resource.CustomerCenterWS11 +'/CustomerCenterWS11/js/jquery-1.7.1.min.js?v=149'}"
+    afterScriptsLoaded="{!c.scriptsLoaded}"
+  />
+  <aura:attribute name="eventSetting" type="Event_Settings__c" />
+  <aura:attribute name="message" type="string" />
+  <aura:handler name="init" value="{!this}" action="{!c.myAction}" />
+  <aura:attribute name="exhibitors" type="list" />
+  <aura:attribute name="AllExhibitors" type="list" />
+  <!-- All Customer recived from Database Query -->
+  <aura:attribute name="accountContacts" type="object" />
+  <aura:attribute name="booth" type="string" />
+  <aura:attribute name="expocadbooth" type="object" />
+  <aura:attribute name="eventContactMap" type="string" />
+  <aura:attribute name="dimension" type="string" />
+  <aura:attribute name="activityType" type="string" default="" />
+  <aura:attribute name="userType" type="string" default="All" />
+  <aura:attribute name="searchText" type="string" default="" />
+  <aura:attribute name="standtype" type="string" />
+  <aura:attribute name="onLoadStandType" type="boolean" default="true" />
+  <aura:attribute name="isMailSent" type="boolean" />
+  <aura:attribute name="emailSentDate" type="date" />
+  <aura:attribute name="contactId" type="string" />
+  <aura:attribute name="showclearFilter" type="boolean" default="true" />
+  <aura:attribute name="newExhibitors" type="boolean" default="false" />
+  <aura:attribute name="missingBadges" type="boolean" default="false" />
+  <aura:attribute name="missingForms" type="boolean" default="false" />
+  <aura:attribute name="indContract" type="boolean" default="false" />
+  <aura:attribute name="newExhTotal" type="Integer" default="0" />
+  <aura:attribute name="requiredForms" type="string[]" />
+  <aura:attribute name="reportNotFound" type="string" default="false" />
+  <aura:attribute name="totalSelected" type="string" />
+  <aura:attribute name="paidBy" type="string" />
+  <aura:attribute name="subAgents" type="object[]" />
+  <aura:attribute name="isSubAgentSelected" type="boolean" default="false" />
+  <aura:attribute name="clearFilter" type="boolean" default="true" />
+
+  <aura:attribute name="quickViewAccountId" type="String" />
+  <aura:attribute name="quickViewAccountName" type="String" />
+  <aura:attribute name="quickViewExhibitorPaidBy" type="String"/>
+
+  <aura:attribute
+    name="showExhibitorQuickView"
+    type="Boolean"
+    default="false"
+  />
+  <aura:attribute name="modalInModal" type="Boolean" default="false" />
+  <aura:attribute
+    name="sortingMap"
+    type="Map"
+    default="{'1':'asc','2':'asc','3':'asc','4':'asc','5':'asc','6':'asc'}"
+  />
+
+  <!-- Agent attribute-->
+  <aura:attribute name="subAgentSelected" type="string" default="" />
+  <div>
+    <section>
+      <div class="container">
+        <div class="row">
+          <!-- <div class="col-sm-12"> -->
+            <!--<div class="wca-breadcrumbs">
+               <ul class="breadcrumb">
+                <li
+                  ><a href="{!'home?eventcode='+v.eventcode}" target="_parent"
+                    >{!$Label.c.Home_Button}</a
+                  ><i
+                    class="fa fa-angle-right wca-icon-padding fa-padding"
+                    aria-hidden="true"
+                  ></i
+                ></li>
+                <li>{!v.eventSetting.Agent_Own_Exhibitor_Title__c}</li>
+              </ul>
+            </div> -->
+            <lightning:breadcrumbs>
+                <lightning:breadcrumb label="Home" onclick="{!c.goToHome}">
+                </lightning:breadcrumb>
+                <lightning:breadcrumb label="{!v.eventSetting.Agent_Own_Exhibitor_Title__c}">
+                </lightning:breadcrumb>
+              </lightning:breadcrumbs>
+              <br />
+            <h1 class="top-h1-heading"
+              >{!v.eventSetting.Agent_Own_Exhibitor_Title__c}
+              <aura:if
+                isTrue="{!and(!v.subAgentSelected,v.subAgents.length>0)}"
+              >
+                <button
+                  onclick="{!c.showModalSelectSubAgent}"
+                  class="slds-button slds-button_brand slds-m-left_large "
+                  type="button"
+                  ><i
+                    class="fa fa-group slds-m-right_xx-small"
+                    aria-hidden="true"
+                  ></i
+                  ><b>{!$Label.c.Manage_Sub_agent_exhibitors}</b></button
+                >
+              </aura:if>
+            </h1>
+            <aura:if isTrue="{!v.subAgentSelected}">
+              <span
+                class="{!v.subAgentSelected?'slds-m-bottom_small selectedsubagent selectedsubagentbg':'slds-m-bottom_small selectedsubagent'}"
+              >
+                &nbsp;&nbsp; {!$Label.c.Viewing_exhibitors_for_sub_agent}:
+                <b>{!v.subAgentSelected.name} </b>
+                <button
+                  onclick="{!c.returnToExhibitor}"
+                  class="slds-button slds-button_brand slds-m-left_large slds-m-right_xx-small"
+                  type="button"
+                  ><i
+                    class="fa fa-reply slds-m-right_xx-small"
+                    aria-hidden="true"
+                  ></i
+                  ><b>{!$Label.c.Return_to_My_Exhibitors}</b></button
+                >
+                <button
+                  onclick="{!c.showModalSelectSubAgent}"
+                  class="slds-button slds-button_brand slds-m-left_large "
+                  type="button"
+                  ><i
+                    class="fa fa-group slds-m-right_xx-small"
+                    aria-hidden="true"
+                  ></i
+                  ><b>{!$Label.c.Manage_Sub_agent_exhibitors}</b></button
+                >
+              </span>
+            </aura:if>
+            <aura:if isTrue="{!v.newExhTotal>0}">
+              <div class="msg">
+                <div class="msgiconleft">
+                  <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+                </div>
+                <b
+                  >{!$Label.c.Attention}!
+                  {!v.newExhTotal}&nbsp;{!$Label.c.Exhibitors}&nbsp;</b
+                >{!$Label.c.New_Exhibitors_Message} &nbsp;<a
+                  onclick="{!c.showmodalSendEmail}"
+                  ><b>{!$Label.c.View_Edit_the_Welcome_Email}</b></a
+                >
+                |
+                <a onclick="{!c.filterNew}"
+                  ><b
+                    >{!$Label.c.Filter_Exhibitor_List_by}&nbsp;{!$Label.c.New}&nbsp;{!$Label.c.Exhibitors}</b
+                  ></a
+                >
+                <div onclick="{!c.closeTopMsg}" class="msgiconright">
+                  <i class="fa fa-times" aria-hidden="true"></i>
+                </div>
+              </div>
+            </aura:if>
+            <p class="text-normal slds-text-longform" >
+              <aura:unescapedHtml
+                value="{!v.eventSetting.Welcome_Text_Agent_Own_Exhibitors__c}"
+              />
+            </p>
+            <br />
+          <!-- </div> -->
+        </div>
+      </div>
+      <div class="clearfix"></div>
+      <div class="container mainsection">
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="slds-grid slds-wrap  slds-m-bottom_x-small">
+              <div class="slds-col slds-size_3-of-12">
+                <button
+                  onclick="{!c.showmodalSendEmail}"
+                  class="slds-m-bottom_x-small slds-p-around_x-small"
+                  style="{!'width:100%;text-align:left;background: '+v.eventSetting.Button_colors__c+';color: '+v.eventSetting.Button_Text_Color__c+''}"
+                  type="button"
+                  ><i
+                    class="fa fa-edit slds-m-right_xx-small"
+                    aria-hidden="true"
+                  ></i
+                  >{!$Label.c.View_Edit_the_Welcome_Email}</button
+                >
+
+                <button
+                  id="btnsendmail"
+                  onclick="{!c.showModalConfirm}"
+                  class="slds-m-bottom_x-small slds-p-around_x-small"
+                  style="{!'width:100%;text-align:left;background: '+v.eventSetting.Button_colors__c+';color: '+v.eventSetting.Button_Text_Color__c+''}"
+                  type="button"
+                  ><i class="fa fa-paper-plane slds-m-right_xx-small" aria-hidden="true" ></i>
+                  <!-- {!$Label.c.Send_Welcome_Email}   -->
+                  {!$Label.c.Send_Welcome_Email_to_selected_exhibitors}
+                  </button
+                >
+              </div>
+              <div class="slds-col slds-size_9-of-12 ">
+                  <div class="slds-box boxbgcolor slds-m-left_x-small">
+                      <div class="slds-grid slds-wrap">
+                          <div class="slds-col slds-size_4-of-12">
+                              <div class="slds-grid slds-wrap">
+                                  <div class="slds-size_4-of-12 slds-m-top_xx-small">
+                                      <!-- Insert Filter By Label Here -->
+                                      <b class="font13">
+                                          <i class="fa fa-filter" aria-hidden="true"></i>{!$Label.c.Filter_Exhibitor_List_by}
+                                      </b>
+                                  </div>
+                                  <div class="slds-size_8-of-12">
+                                      <div class="slds-grid slds-wrap">
+                                          <div class="slds-size_12-of-12 slds-m-right_medium">
+                                              <!-- Insert Filter By Activity dropdown -->
+                                              <ui:inputSelect
+                                                  class="search-style-1 new-comp slds-select"
+                                                  aura:id="activity"
+                                                  value="{!v.activityType}"
+                                                  change="{!c.activityTypeChange}"
+                                              />
+                                          </div>
+                                          <div class="slds-size_12-of-12 slds-p-top_medium font13 large-device">
+                                              <!-- Insert New Exhibitors checkbox -->
+                                              <input id="chkNewExh"
+                                                  onchange="{!c.isNewExhChange}"
+                                                  class="slds-p-top_small"
+                                                  checked="{!v.newExhibitors}"
+                                                  type="checkbox"  />                                              
+                                                  &nbsp;{!$Label.c.New}&nbsp;{!$Label.c.Exhibitors}
+                                              <div class="tooltip">
+                                                  <i class="fa fa-question-circle slds-m-bottom_xx-small"
+                                                      style="color:grey;"
+                                                      onclick="{!c.showModalNewExhibitors}">
+                                                  </i>
+                                              </div>
+                                          </div>
+                                          <div class="slds-size_12-of-12 slds-p-top_medium font13 medium-device">                                            
+                                            <input
+                                                id="chkNewExh"
+                                                onchange="{!c.isNewExhChange}"
+                                                class="chkbx slds-p-top_small"
+                                                checked="{!v.newExhibitors}"
+                                                type="checkbox"
+                                            />
+
+                                            {!$Label.c.New}
+                                            <div class="tooltip">
+                                                <i class="fa fa-question-circle slds-m-bottom_xx-small"
+                                                    style="color:grey;"
+                                                    onclick="{!c.showModalNewExhibitors}">
+                                                </i>
+                                            </div>
+                                            <br/>{!$Label.c.Exhibitors}
+                                        </div>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="slds-col slds-size_6-of-12">
+                              <div class="slds-grid slds-wrap">
+                                  <div class="slds-col slds-size_6-of-12">
+                                      <!-- Insert Customer Type dropdown -->
+                                      <ui:inputSelect
+                                          class="search-style-1 new-comp reduced-width slds-select"
+                                          aura:id="userTypes"
+                                          value="{!v.userType}"
+                                          change="{!c.userTypeChange}"
+                                      />
+                                      <div class="tooltip" style="margin-left: 3px;">
+                                          <i  class="fa fa-question-circle slds-m-top_x-small"
+                                              style="color:grey; display: contents;"
+                                              onclick="{!c.showModalCustomerType}">
+                                          </i>
+                                      </div>
+                                  </div>
+                                  <!-- <div class="slds-col slds-size_1-of-12">
+                                      <i  class="fa fa-question-circle slds-m-top_x-small"
+                                          style="color:grey;"
+                                          onclick="{!c.showModalCustomerType}">
+                                      </i>
+                                  </div> -->
+                                  <div class="slds-col slds-size_6-of-12">
+                                      <!-- Insert Stand Type dropdown -->
+                                      <ui:inputSelect
+                                          class="search-style-1 new-comp slds-select"
+                                          aura:id="standtype"
+                                          value="{!v.standtype}"
+                                          change="{!c.standtypeChange}"
+                                      />
+                                  </div>
+                                  <div class="slds-col slds-size_12-of-12 slds-p-top_small">
+                                      <!-- Insert Type exhibitor name keyword -->
+                                      <lightning:input
+                                          name="inline-search-input"
+                                          placeholder="Keyword - Type Exhibitor Name"
+                                          value="{!v.searchText}"
+                                          class="exhsearch"
+                                          variant="label-hidden"
+                                          onchange="{!c.searchAOE}"
+                                      />
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="slds-col slds-size_2-of-12">
+                              <div class="slds-grid slds-wrap">
+                                  <div class="slds-size_12-of-12 slds-align_absolute-center">
+                                      <!-- Insert reports button -->
+                                      <button onclick="{!c.showmodaldownloadreports}"
+                                              class="font13 reportCss"
+                                              type="button">
+                                              <i class="fa fa-file-excel-o  " aria-hidden="true"></i>
+                                              {!$Label.c.Reports}
+                                      </button>
+                                  </div>
+                                  <div class="slds-size_12-of-12 slds-align_absolute-center slds-p-top_small">
+                                      <!-- Insert clear filter button -->
+                                      <lightning:button
+                                          variant="base"
+                                          label="x Clear filter"
+                                          disabled="{!v.showclearFilter}"
+                                          title="Clear filter"
+                                          onclick="{!c.clearFilter}"
+                                      />
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+            </div>
+          </div>
+        <div class="col-sm-12" style="overflow-x: auto;">
+          <table id="exhTable" class="required-table" cellspacing="0">
+            <thead>
+              <tr>
+                <th style="width:3.25rem;" class="slds-text-align--right">
+                  <input
+                    class="chkMaster"
+                    type="checkbox"
+                    onchange="{!c.selectAll}"
+                  />
+                </th>
+                <th class="cursor" data-index="1" onclick="{!c.sortTable}"
+                  >{!$Label.c.Exhibitor}&nbsp;{!$Label.c.Name}</th
+                >
+                <th class="cursor" data-index="2" onclick="{!c.sortTable}"
+                  >{!$Label.c.Stand}#</th
+                >
+                <th class="cursor" data-index="3" onclick="{!c.sortTable}"
+                  >{!$Label.c.Dimensions}
+                </th>
+                <th class="cursor" data-index="4" onclick="{!c.sortTable}"
+                  >{!$Label.c.Stand}&nbsp;{!$Label.c.Type}</th
+                >
+                <th
+                  class="cursor"
+                  data-index="5"
+                  onclick="{!c.sortTableUnconventional}"
+                  >{!$Label.c.Customer}&nbsp;{!$Label.c.Type}</th
+                >
+                <th
+                  class="cursor"
+                  data-index="6"
+                  onclick="{!c.sortTable}"
+                  style="width: 155px;white-space: pre-line;"
+                  ><aura:unescapedHtml value="{!$Label.c.AccountInfo_Email_Last_Sent}"
+                /></th>
+                <th class="cursor" data-index="7"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <aura:iteration items="{!v.exhibitors}" var="exb">
+                <tr>
+                  <td
+                    scope="row"
+                    class="slds-text-align--right"
+                    style="width:3.25rem;"
+                  >
+                    <!-- <aura:if isTrue="{!exb.paidBy!='Individual Contract'}"> -->
+                      <input
+                        id="{!exb.operationsContact}"
+                        class="chkChild"
+                        type="checkbox"
+                        onchange="{!c.checkboxSelect}"
+                      />
+                    <!-- </aura:if> -->
+                  </td>
+                  <td>
+                    <!--added Regarding ticket CCEN-745-->
+                    <aura:if isTrue="{!!exb.isMailSent}">
+                      <span class="new">{!$Label.c.New}</span>
+                    </aura:if>
+                    {!exb.accountName}
+                  </td>
+                  <td>{!exb.boothNumber}</td>
+                  <td>{!exb.dimensions}</td>
+                  <td>{!exb.boothType}</td>
+                  <aura:if isTrue="{!exb.userType == 'Exhibitor'}">
+                    <td>{!$Label.c.Individual_Contract}</td>
+                    <aura:set attribute="else">
+                      <aura:if
+                        isTrue="{!exb.userType == 'Agent Owned Exhibitor'}"
+                      >
+                        <td>{!$Label.c.Exhibitor}</td>
+                        <aura:set attribute="else">
+                          <td>{!exb.userType}</td>
+                        </aura:set>
+                      </aura:if>
+                    </aura:set>
+                  </aura:if>
+                  <td>
+                    <!--<ui:outputDate
+                      format="MM/DD/YYYY"
+                      value="{!exb.emailSentDate}"
+                    />-->
+                    <aura:if isTrue="{!exb.welcomeEmailStatus == 'Pending'}">
+                      <p></p>
+                    </aura:if>
+                    <aura:if isTrue="{!exb.welcomeEmailStatus == 'Sent'}">
+                        <ui:outputDate
+                        format="MM/DD/YYYY"
+                        value="{!exb.emailSentDate}"
+                        />
+                    </aura:if>
+                    <aura:if isTrue="{!exb.welcomeEmailStatus == 'Email Processing'}">
+                      <p style="font-style: italic;">{!exb.welcomeEmailStatus}</p>
+                    </aura:if> 
+                  </td>
+                  <td>
+                    <!-- <a
+                      data-cid="{!exb.operationsContact}"
+                      data-aid="{!exb.accountId}"
+                      data-mail="{!exb.isMailSent}"
+                      data-mdate="{!exb.emailSentDate}"
+                      data-bid="{!exb.id}"
+                      data-bno="{!exb.boothNumber}"
+                      data-paidBy="{!exb.paidBy}"
+                      data-uType="{!exb.userType}"
+                      >Quick {!$Label.c.View}</a
+                    > -->
+                    <!-- <a data-cid="{!exb.operationsContact}"  data-aid="{!exb.accountId}" data-mail="{!exb.isMailSent}" data-mdate="{!exb.emailSentDate}"  data-bid="{!exb.id}" data-bno="{!exb.boothNumber}" data-paidBy="{!exb.paidBy}" data-uType="{!exb.userType}"  onclick="{!c.showmodalViewExhibitor}">Quick {!$Label.c.View}</a> -->
+                    <a
+                      data-aid="{!exb.accountId}"
+                      data-aname="{!exb.accountName}"
+                      data-exhibitor-paidby="{!exb.paidBy}"
+                      onclick="{!c.showExhibitorQuickView}"
+                      >{!$Label.c.Quick_View}</a
+                    >
+                    &nbsp;|&nbsp;
+                     <aura:if
+                      isTrue="{!or(or(and(exb.parentPaidBy == 'Exhibitor Paid by Agent', exb.userType == 'Co-Exhibitor') , exb.paidBy == 'Exhibitor Paid by Agent'),or(and(exb.parentPaidBy == 'SubAgent Paid By Subagent', exb.userType == 'Co-Exhibitor'), exb.paidBy == 'SubAgent Paid By Subagent'))}"
+                    >
+                    <!--<aura:if isTrue="{!or(and(exb.parentPaidBy == 'Exhibitor Paid by Agent', exb.userType == 'Co-Exhibitor') , exb.paidBy == 'Exhibitor Paid by Agent')}" >-->
+                      <!-- <a href="{!'/AgentOwnedExhibitorDetails?eventcode='+v.eventcode+'&amp;accid='+exb.accountId}">{!$Label.c.Manage}</a> -->
+                      <a href="{!'agentownexhibitordetails?eventcode='+v.eventcode+'&amp;accid='+exb.accountId}">{!$Label.c.Manage}</a>
+                      <aura:set attribute="else">
+                        <span class="slds-text-color_weak"
+                          >{!$Label.c.Manage}</span
+                        >
+                        <span class="tooltip"
+                          ><i
+                            class="fa fa-question-circle"
+                            style="color:grey;"
+                            onclick="{!c.showExhibitorDisableTooltip}"
+                          ></i
+                        ></span>
+                      </aura:set>
+                    </aura:if>
+                  </td>
+                </tr>
+              </aura:iteration>
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+      <div class="clearfix"></div>
+    </section>
+
+    <!-- Exhibitor details -->
+    <div id="modalViewExhibitor" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span onclick="{!c.hidemodalViewExhibitor}" class="close"
+            >&times;</span
+          >
+          <h2
+            >{!$Label.c.Account_Summary} -
+            {!v.accountContacts.Account.Name}&nbsp;{!v.booth.boothNumber}</h2
+          >
+        </div>
+        <div class="modal-body bodycomapny ">
+          <div class="slds-grid slds-gutters">
+            <div class="slds-col">
+              <aura:if isTrue="{!v.accountContacts.Opportunity_Contact__c}">
+                <div class="slds-m-top_medium">
+                  <b>{!$Label.c.Primary_Contact}</b>
+                  <p>{!v.accountContacts.Opportunity_Contact__r.Name}</p>
+                  <p
+                    >{!$Label.c.Phone}:
+                    {!v.accountContacts.Opportunity_Contact__r.Phone}</p
+                  >
+                  <p
+                    >{!$Label.c.Email}:
+                    <a
+                      href="{!'mailto:'+v.accountContacts.Opportunity_Contact__r.Email}"
+                      >{!v.accountContacts.Opportunity_Contact__r.Email}</a
+                    ></p
+                  >
+                </div>
+              </aura:if>
+              <aura:if isTrue="{!v.accountContacts.Billing_Contact__c}">
+                <div class="slds-m-top_medium">
+                  <b>{!$Label.c.Billing_Contact}</b>
+                  <p>{!v.accountContacts.Billing_Contact__r.Name}</p>
+                  <p
+                    >{!$Label.c.Phone}:
+                    {!v.accountContacts.Billing_Contact__r.Phone}</p
+                  >
+                  <p
+                    >{!$Label.c.Email}:
+                    <a
+                      href="{!'mailto:'+v.accountContacts.Billing_Contact__r.Email}"
+                      >{!v.accountContacts.Billing_Contact__r.Email}</a
+                    ></p
+                  >
+                </div>
+              </aura:if>
+              <aura:if isTrue="{!v.accountContacts.Operations_Contact__c}">
+                <div class="slds-m-top_medium">
+                  <b>{!$Label.c.Operations_Contact} </b>
+                  <p>{!v.accountContacts.Operations_Contact__r.Name}</p>
+                  <p
+                    >{!$Label.c.Phone}:
+                    {!v.accountContacts.Operations_Contact__r.Phone}</p
+                  >
+                  <p
+                    >{!$Label.c.Email}:
+                    <a
+                      href="{!'mailto:'+v.accountContacts.Operations_Contact__r.Email}"
+                      >{!v.accountContacts.Operations_Contact__r.Email}</a
+                    ></p
+                  >
+                </div>
+              </aura:if>
+            </div>
+            <div class="slds-col">
+              <div class="slds-m-top_medium">
+                <b>{!$Label.c.Stand}&nbsp;{!$Label.c.Information}</b>
+                <p>{!$Label.c.Stand}#: {!v.expocadbooth.boothNumber}</p>
+                <p>{!$Label.c.Dimensions} : {!v.expocadbooth.dimensions}</p>
+                <!-- <p>Pavilion: {!v.expocadbooth.pavilion}</p> -->
+                <p>{!$Label.c.Badge_Allotment}: {!v.expocadbooth.badges}</p>
+                <p
+                  class="{!v.expocadbooth.badgesCompleted == '0' ? 'error' : ''}"
+                  >{!$Label.c.Badges_Completed}:
+                  {!v.expocadbooth.badgesCompleted}</p
+                >
+              </div>
+              <!-- <aura:if isTrue="{!v.requiredForms.length}"> -->
+              <div class="slds-m-top_medium">
+                <b>{!$Label.c.Required_Forms}&nbsp;{!$Label.c.Status}</b>
+                <aura:iteration items="{!v.requiredForms}" var="form">
+                  <p class="{!form.Is_Filled_Up__c? '' : 'error'}"
+                    >{!form.Form_Permission__r.Event_Edition_Form__r.Name}:
+                    {!form.Is_Filled_Up__c? 'Completed' : 'Incomplete'}</p
+                  >
+                </aura:iteration>
+              </div>
+              <!-- </aura:if> -->
+              <aura:if isTrue="{!v.paidBy!='Individual Contract'}">
+                <div class="slds-m-top_medium">
+                  <b>{!$Label.c.Welcome}&nbsp;{!$Label.c.Email}</b>
+                  <aura:if isTrue="{!v.isMailSent}">
+                    <p
+                      >{!$Label.c.Sent}:
+                      <ui:outputDate
+                        format="MM/DD/YYYY"
+                        value="{!v.emailSentDate}"
+                      />
+                      &nbsp;
+                      <button
+                        onclick="{!c.showModalConfirmResend}"
+                        class="slds-m-top_x-small"
+                        style="{!'padding:0px 8px;background: '+v.eventSetting.Button_colors__c+';color: '+v.eventSetting.Button_Text_Color__c+''}"
+                        type="button"
+                        >{!$Label.c.Resend}</button
+                      ></p
+                    >
+                    <aura:set attribute="else">
+                      <p
+                        ><button
+                          onclick="{!c.showModalConfirmResend}"
+                          class="slds-m-top_x-small"
+                          style="{!'padding:0px 8px;background: '+v.eventSetting.Button_colors__c+';color: '+v.eventSetting.Button_Text_Color__c+''}"
+                          type="button"
+                          >{!$Label.c.Send}</button
+                        ></p
+                      >
+                    </aura:set>
+                  </aura:if>
+                </div>
+              </aura:if>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--end-->
+    <!-- Edit welcome email template-->
+    <div id="modalSendEmail" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span onclick="{!c.hidemodalSendEmail}" class="close">&times;</span>
+          <h2
+            >{!$Label.c.Welcome}&nbsp;{!$Label.c.Email}&nbsp;{!$Label.c.Template}</h2
+          >
+        </div>
+
+        <div
+          class="modal-body bodycomapny "
+          style="height: 68vh;padding-right:5px;overflow-y: auto;overflow-x: hidden"
+        >
+          <p class="slds-m-vertical_x-small">
+            {!$Label.c.Welcome_Email_Title}
+          </p>
+          <div>
+            <button
+              onclick="{!c.showmodalpreviewemail}"
+              class="slds-m-bottom_x-small slds-p-around_x-small"
+              style="{!'background: '+v.eventSetting.Button_colors__c+';color: '+v.eventSetting.Button_Text_Color__c+''}"
+              type="button"
+              ><i class="fa fa-eye slds-m-right_xx-small" aria-hidden="true"></i
+              >{!$Label.c.Preview_Email}</button
+            >
+            <button
+              onclick="{!c.updateEmailTemplate}"
+              class="slds-m-bottom_x-small slds-m-left_x-small slds-p-around_x-small"
+              style="{!'background: '+v.eventSetting.Button_colors__c+';color: '+v.eventSetting.Button_Text_Color__c+''}"
+              type="button"
+              ><i
+                class="fa fa-check-square-o slds-m-right_xx-small"
+                aria-hidden="true"
+              ></i
+              >{!$Label.c.Save}</button
+            >
+            <button
+              onclick="{!c.hidemodalSendEmail}"
+              class="slds-m-bottom_x-small slds-m-left_x-small slds-p-around_x-small"
+              style="{!'background: gray;color: white'}"
+              type="button"
+              ><i
+                class="fa fa-times slds-m-right_xx-small"
+                aria-hidden="true"
+              ></i
+              >{!$Label.c.Close_Window}</button
+            >
+          </div>
+          <!-- <ui:inputRichText class="slds-text-longform" value="jgj"/> -->
+          <br />
+          <span class="black-bold">{!$Label.c.Content_area}&nbsp;1:</span>
+          ({!$Label.c.Leaving_this_blank_will_hide_this_section_from_the_email})
+          <lightning:inputRichText
+            value="{!v.eventContactMap.Agent_Email_Body_Content_1__c}"
+          />
+          <span class="slds-m-around_large middletext"
+            >{!$Label.c.Exhibitor_Login_Information}
+          </span>
+          <span class="black-bold">{!$Label.c.Content_area}&nbsp;2:</span>
+          ({!$Label.c.Leaving_this_blank_will_hide_this_section_from_the_email})
+          <lightning:inputRichText
+            value="{!v.eventContactMap.Agent_Email_Body_Content_2__c}"
+          />
+        </div>
+      </div>
+    </div>
+    <!--end-->
+
+    <!-- Download reports-->
+    <div id="modaldownloadreports" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span onclick="{!c.hidemodaldownloadreports}" class="close"
+            >&times;</span
+          >
+          <h2>{!$Label.c.Download_Exhibitor_Reports}</h2>
+        </div>
+        <div
+          class="modal-body bodycomapny "
+          style="max-height: 68vh;padding-right:5px;overflow-y: auto;overflow-x: hidden"
+        >
+          <aura:if isTrue="{!v.reportNotFound}">
+            <div class="msg">
+              <div class="msgiconleft">
+                <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+              </div>
+              <b>{!$Label.c.No_record_found}</b>
+              <div onclick="{!c.closemsg}" class="msgiconright">
+                <i class="fa fa-times" aria-hidden="true"></i>
+              </div>
+            </div>
+          </aura:if>          
+            <!-- <li
+              ><a onclick="{!c.exportExhMissingBadges}"
+                ><i class="fa fa-download" aria-hidden="true"></i
+                >{!$Label.c.Exhibitors_missing_Badges}</a
+              ></li
+            >
+            <li
+              ><a onclick="{!c.exportBadgesInfo}"
+                ><i class="fa fa-download" aria-hidden="true"></i>
+                {!$Label.c.Exhibitors_Badge_Information}</a
+              ></li
+            >
+            <li
+              ><a onclick="{!c.exportExhMissingForms}"
+                ><i class="fa fa-download" aria-hidden="true"></i
+                >{!$Label.c.Exhibitors_missing_Required_Forms}</a
+              ></li
+            >
+            <li
+              ><a onclick="{!c.exportExhMissingManuals}"
+                ><i class="fa fa-download" aria-hidden="true"></i
+                >{!$Label.c.Exhibitors_that_have_not_read_required_manuals}</a
+              ></li
+            >
+            <li><a onclick="{!c.exportAllExh}"
+                ><i class="fa fa-download" aria-hidden="true"></i
+                >{!$Label.c.Full_Exhibitor_List}</a
+              ></li> -->
+            <!-- New Reports -->
+          <ul>  
+              <li>
+                <a data-id="ExhibitorActivitySummary" onclick="{!c.downloadReports}"> <i class="fa fa-download" aria-hidden="true"></i>Exhibitor Activity Summary</a>	
+              </li>
+              <li>
+                <a data-id="ExhibitorsMissingForms" onclick="{!c.downloadReports}"> <i class="fa fa-download" aria-hidden="true"></i>{!$Label.c.Exhibitors_missing_Required_Forms}</a>
+              </li>
+              <li>
+                <a data-id="ExhibitorsMissingManuals" onclick="{!c.downloadReports}"> <i class="fa fa-download" aria-hidden="true"></i>{!$Label.c.Exhibitors_that_have_not_read_required_manuals}</a>
+              </li>
+              <li>
+                <a data-id="ExhibitorsBadgeInformation" onclick="{!c.downloadReports}"> <i class="fa fa-download" aria-hidden="true"></i>{!$Label.c.Exhibitors_Badge_Information}</a>
+              </li>
+              <li>
+                <a data-id="ExhibitorsMissingBadges" onclick="{!c.downloadReports}"> <i class="fa fa-download" aria-hidden="true"></i>{!$Label.c.Exhibitors_missing_Badges}</a>
+              </li>
+              <li>
+                <a data-id="ExhibitorLastlogin" onclick="{!c.downloadReports}"> <i class="fa fa-download" aria-hidden="true"></i>{!$Label.c.Exhibitor_Last_login}</a> 
+              </li>
+              <li>
+                <a data-id="ExhibitorsMissingExhibitorProfile" onclick="{!c.downloadReports}"> <i class="fa fa-download" aria-hidden="true"></i>{!$Label.c.Exhibitors_missing_Exhibitor_profile}</a>
+              </li>
+              <li>
+                <a data-id="ExhibitorsMissingContractor" onclick="{!c.downloadReports}"> <i class="fa fa-download" aria-hidden="true"></i>{!$Label.c.Missing_Stand_Contractor_Space_Only}</a>
+              </li>
+              <li>
+                <a data-id="ExhibitorsStandContractorInformation" onclick="{!c.downloadReports}"> <i class="fa fa-download" aria-hidden="true"></i>Stand Contractor (Space Only)</a>
+              </li>
+              <li>
+                <a data-id="ExhibitorsProfilesInformation" onclick="{!c.downloadReports}"> <i class="fa fa-download" aria-hidden="true"></i>{!$Label.c.Exhibitor_Profile}</a>
+              </li>
+              <li>
+                <a data-id="AllExhibitors" onclick="{!c.downloadReports}"> <i class="fa fa-download" aria-hidden="true"></i>{!$Label.c.Full_Exhibitor_List}</a>
+              </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <!--end-->
+    <!-- Download reports-->
+    <div id="modalpreviewemail" class="modal">
+      <div class="modal-content" style="max-width:90%;">
+        <div class="modal-header">
+          <span onclick="{!c.hidemodalpreviewemail}" class="close"
+            >&times;</span
+          >
+          <h2>{!$Label.c.Preview_Email}</h2>
+        </div>
+        <div
+          class="modal-body bodycomapny "
+          style="max-height: 68vh;padding-right:5px;overflow-y: auto;overflow-x: hidden"
+        >
+          <p>
+            <!-- <img src="{!'/CustomerCenter/servlet/servlet.FileDownload?file='+v.eventSetting.Welcome_Email_Banner__c}" max-width="100%" />
+						<b>Dear ,</b> -->
+            <!-- <aura:unescapedHtml value="{!v.emailTemplate.HtmlValue}" /> -->
+            <div>
+              <table align="center" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="text-align:center;">
+                    <img
+                      src="{!'/CustomerCenter/servlet/servlet.FileDownload?file='+v.eventSetting.Welcome_Email_Banner__c}"
+                    />
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <table
+              align="center"
+              style="width:550px;margin:0 auto;"
+              border="0"
+              cellspacing="0"
+              cellpadding="0"
+            >
+              <tr><td>&nbsp;</td></tr>
+              <tr>
+                <td
+                  style="font-family: Century Gothic, CenturyGothic,AppleGothic, Arial, sans-serif; color: #666666; font-size: 13px; line-height: 20px;"
+                >
+                  <p style="margin-bottom: 15px;">
+                    <!-- <apex:outputText value="{!v.eventContactMap.Agent_Email_Body_Content_1__c}" escape="false"/> -->
+                    <aura:unescapedHtml
+                      value="{!v.eventContactMap.Agent_Email_Body_Content_1__c}"
+                    />
+                  </p>
+                </td>
+              </tr>
+              <tr><td>&nbsp;</td></tr>
+              <tr>
+                <td
+                  style="font-family: Century Gothic, CenturyGothic,AppleGothic, Arial, sans-serif; color: #444444;"
+                >
+                  <p
+                    style="margin-bottom: 8px; font-size: 13px; line-height: 22px;"
+                  >
+                    <strong>Customer Centre Details:</strong>
+                  </p>
+                  <table
+                    style="background-color: #ededed;"
+                    bg-color="#ededed"
+                    class="cc-details"
+                    align="center"
+                    width="100%"
+                    border="0"
+                    cellspacing="0"
+                    cellpadding="0"
+                  >
+                    <tr>
+                      <td>
+                        <table
+                          align="center"
+                          width="520"
+                          border="0"
+                          cellspacing="0"
+                          cellpadding="0"
+                        >
+                          <tr><td style="font-size: 2px;"></td></tr>
+                          <tr>
+                            <td style="padding:10px;">
+                              <p
+                                style="font-family: Century Gothic, CenturyGothic,AppleGothic, Arial, sans-serif;color: #000000; font-size: 13px; line-height: 22px; color: #666666;margin:0;"
+                                ><strong>Company Name:</strong> Preview Email
+                              </p>
+                              <p
+                                style="font-family: Century Gothic, CenturyGothic,AppleGothic, Arial, sans-serif;color: #000000; font-size: 13px; line-height: 22px; color: #666666;margin:0;"
+                                ><strong>Stand Number(s):</strong> #D56
+                              </p>
+                              <p
+                                style="font-family: Century Gothic, CenturyGothic,AppleGothic, Arial, sans-serif;color: #000000; font-size: 13px; line-height: 22px; color: #666666;margin:0;"
+                                ><strong>Username:</strong> test@test.com.abc
+                              </p>
+                              <p
+                                style="font-family: Century Gothic, CenturyGothic,AppleGothic, Arial, sans-serif;color: #000000; font-size: 13px; line-height: 22px; color: #666666;margin:0;"
+                                ><strong>URL: </strong>
+                                <a>https://www.testurl.com </a></p
+                              >
+                            </td>
+                          </tr>
+                          <tr><td style="font-size: 2px;"></td></tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr><td>&nbsp;</td></tr>
+              <tr>
+                <td
+                  style="font-family: Century Gothic, CenturyGothic,AppleGothic, Arial, sans-serif;"
+                >
+                  <p
+                    style="margin-bottom: 8px; font-size: 13px; line-height: 22px; color: #444444;"
+                  >
+                    <strong>Customer Centre Login Instructions:</strong>
+                  </p>
+                  <table
+                    style="background-color: #ededed;"
+                    bg-color="#ededed"
+                    class="cc-details"
+                    align="center"
+                    width="100%"
+                    border="0"
+                    cellspacing="0"
+                    cellpadding="0"
+                  >
+                    <tr>
+                      <td>
+                        <table
+                          align="left"
+                          width="520"
+                          border="0"
+                          cellspacing="0"
+                          cellpadding="0"
+                        >
+                          <tr><td style="font-size: 2px;"></td></tr>
+                          <tr>
+                            <td style="padding:10px;">
+                              <ol
+                                style="font-family: Century Gothic, CenturyGothic,AppleGothic, Arial, sans-serif; color: #666666; font-size: 13px;padding:0;margin:0;"
+                              >
+                                <li style="line-height: 20px;"
+                                  >1. Click on the URL above.</li
+                                >
+                                <li style="line-height: 20px;"
+                                  >2. Enter a new password of your choice.</li
+                                >
+                                <li style="line-height: 20px;"
+                                  >3. After creating your new password, you will
+                                  be redirected to Customer Centre login
+                                  page.</li
+                                >
+                                <li style="line-height: 20px;"
+                                  >4. Enter your Username (mentioned above) and
+                                  the new password and click "Sign in".</li
+                                >
+                              </ol>
+                            </td>
+                          </tr>
+                          <tr><td style="font-size: 2px;"></td></tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr><td>&nbsp;</td></tr>
+              <tr>
+                <td
+                  style="font-family: Century Gothic, CenturyGothic,AppleGothic, Arial, sans-serif; color: #666666; font-size: 13px; line-height: 20px;"
+                >
+                  <p style="margin-bottom: 15px;">
+                    <aura:unescapedHtml
+                      value="{!v.eventContactMap.Agent_Email_Body_Content_2__c}"
+                    />
+                  </p>
+                </td>
+              </tr>
+              <tr><td>&nbsp;</td></tr>
+            </table>
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--end-->
+    <!-- Edit welcome email template-->
+    <div id="modalConfirm" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span onclick="{!c.hideModalConfirm}" class="close">&times;</span>
+          <h2>{!$Label.c.Confirm}</h2>
+        </div>
+        <div
+          class="modal-body bodycomapny "
+          style="max-height: 68vh;padding-right:5px;overflow-y: auto;overflow-x: hidden"
+        >
+          <p class="slds-m-vertical_x-small">
+            Are you sure wish to send the Welcome email to the selected
+            ({!v.totalSelected}) customers? For&nbsp;<span class="new">{!$Label.c.New}</span>&nbsp;exhibitors,Please allow up to 30-60 minutes for the email to be processed.
+          </p>
+          <br></br>
+          <p class="slds-m-top_small">
+            <button
+              type="button"
+              onclick="{!c.sendEmailtoAllExhibitors}"
+              class="primary-btn"
+              style="{!'background: '+v.eventSetting.Button_colors__c+';color: '+v.eventSetting.Button_Text_Color__c+''}"
+              ><i class="fa fa-check-square-o fa-padding-5"></i
+              >{!$Label.c.Yes}</button
+            >
+            <button
+              type="button"
+              onclick="{!c.hideModalConfirm}"
+              class="primary-btn slds-m-left_x-small"
+              style="{!'background: '+v.eventSetting.Button_colors__c+';color: '+v.eventSetting.Button_Text_Color__c+''}"
+              ><i class="fa fa-close fa-padding-5"></i
+              >{!$Label.c.Cancel}</button
+            >
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--end-->
+    <!--loading spinner start... style=Brand Medium (blue dots)-->
+    <aura:if isTrue="{!v.Spinner}">
+      <div
+        aura:id="spinnerId"
+        class="slds-spinner_container"
+        style="position: fixed !important;"
+      >
+        <div
+          class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative"
+          role="alert"
+        >
+          <span class="slds-assistive-text">Loading</span>
+          <div class="slds-spinner__dot-a"></div>
+          <div class="slds-spinner__dot-b"></div>
+        </div>
+      </div>
+    </aura:if>
+    <!-- Loading spinner end-->
+
+    <!-- Select sub-agent Model-->
+    <div id="modalSelectSubAgent" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span onclick="{!c.hideModalSelectSubAgent}" class="close"
+            >&times;</span
+          >
+          <h2>{!$Label.c.Select}&nbsp;{!$Label.c.Sub_Agent}</h2>
+        </div>
+        <div
+          class="modal-body bodycomapny "
+          style="max-height: 68vh;padding-right:5px;overflow-y: auto;overflow-x: hidden"
+        >
+          <p class="slds-m-vertical_x-small">
+            {!$Label.c.Select_Sub_Agent_Help_Text}
+          </p>
+          <div class="slds-grid slds-wrap slds-m-vertical_large">
+            <aura:iteration items="{!v.subAgents}" var="subAgn">
+              <div class="slds-col">
+                <span class="subagent"
+                  ><input
+                    type="radio"
+                    data-name="{!subAgn.accountName}"
+                    class="subAgentRadio"
+                    name="subAgent"
+                    id="{!subAgn.id}"
+                    onclick="{!c.selectSubAgent}"
+                  />{!subAgn.accountName}</span
+                >
+              </div>
+            </aura:iteration>
+          </div>
+          <p class="slds-m-top_small">
+            <button
+              disabled="{!!v.isSubAgentSelected}"
+              type="button"
+              onclick="{!c.showmodalConfirmSubAgent}"
+              class="primary-btn"
+              style="{!'background: '+v.eventSetting.Button_colors__c+';color: '+v.eventSetting.Button_Text_Color__c+''}"
+              ><i class="fa fa-check fa-padding-5"></i
+              >{!$Label.c.Select}</button
+            >
+            <button
+              type="button"
+              onclick="{!c.hideModalSelectSubAgent}"
+              class="primary-btn slds-m-left_x-small"
+              style="{!'background: '+v.eventSetting.Button_colors__c+';color: '+v.eventSetting.Button_Text_Color__c+''}"
+              ><i class="fa fa-close fa-padding-5"></i
+              >{!$Label.c.Cancel}</button
+            >
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--ENd-->
+
+    <!--Confirm Sub Agent select Model-->
+    <div id="modalConfirmSubAgent" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span onclick="{!c.hideModalConfirmSubAgent}" class="close"
+            >&times;</span
+          >
+          <h2>{!$Label.c.Confirm_sub_agent_select}</h2>
+        </div>
+        <div
+          class="modal-body bodycomapny "
+          style="max-height: 68vh;padding-right:5px;overflow-y: auto;overflow-x: hidden"
+        >
+          <p class="slds-m-vertical_x-small">
+            {!$Label.c.Confirm_sub_agent_select_Help_Text}
+          </p>
+          <br></br>
+          <div align="center">
+            <p class="slds-m-vertical_x-small">
+              {!$Label.c.Are_you_sure_you_wish_continue}? </p
+            ><br />
+            <p class="slds-m-top_small">
+              <button
+                type="button"
+                onclick="{!c.setSubAgent}"
+                class="primary-btn"
+                style="{!'background: '+v.eventSetting.Button_colors__c+';color: '+v.eventSetting.Button_Text_Color__c+''}"
+                ><i class="fa fa-check fa-padding-5"></i
+                >{!$Label.c.Yes_select_sub_agent}</button
+              >
+              <button
+                type="button"
+                onclick="{!c.hideModalConfirmSubAgent}"
+                class="primary-btn slds-m-left_x-small"
+                style="{!'background: '+v.eventSetting.Button_colors__c+';color: '+v.eventSetting.Button_Text_Color__c+''}"
+                ><i class="fa fa-close fa-padding-5"></i
+                >{!$Label.c.Cancel}</button
+              >
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!--modal for New Exhibitors helptext-->
+    <div id="modalNewExhibitors" class="modal">
+      <div class="modal-content">
+        <span onclick="{!c.hideModalNewExhibitors}" class="close">&times;</span>
+
+        <div
+          class="modal-body bodycompany "
+          style="max-height: 68vh;padding-right:5px;overflow-y: auto;overflow-x: hidden"
+        >
+          <div class="slds-grid slds-wrap">
+            <div class="slds-col slds-size_1-of-9 slds-m-right_small">
+              <div class="tooltip">
+                <i class="fa fa-question-circle" style="font-size: large;"></i>
+              </div>
+            </div>
+            <div class="slds-col slds-size_7-of-8">
+              <b>{!$Label.c.New_Exhibitors}&nbsp;</b>
+              <span class="new">{!$Label.c.New}</span>
+              {!$Label.c.New_Exhibitor_Message}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalCustomerType" class="modal">
+      <div class="modal-content">
+        <span onclick="{!c.hideModalCustomerType}" class="close">&times;</span>
+
+        <div
+          class="modal-body bodycompany "
+          style="max-height: 68vh;padding-right:5px;overflow-y: auto;overflow-x: hidden"
+        >
+          <div class="slds-grid slds-wrap">
+            <div class="slds-col slds-size_1-of-9 slds-m-right_small">
+              <div class="tooltip">
+                <i class="fa fa-question-circle" style="font-size: large;"></i>
+              </div>
+            </div>
+            <div class="slds-col slds-size_7-of-8">
+              <b>{!$Label.c.Exhibitor}:&nbsp;</b>
+              {!$Label.c.Agent_Own_Exhibitor_Message}
+              <br />
+              <br />
+
+              <b>{!$Label.c.Co_Exhibitor}:&nbsp;</b>
+              {!$Label.c.Co_Exhibitor_Message}
+              <br />
+              <br />
+
+              <b>{!$Label.c.Individual_Contract}:&nbsp;</b>
+              {!$Label.c.Individual_Contract_Message}
+              <br />
+              <br />
+
+              <i>{!$Label.c.Exhibitor_Caution_Message}</i>
+              <br />
+              <br />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--END-->
+
+  <!-- Modal for Exhibitor QuickView Start -->
+  <aura:if isTrue="{!v.showExhibitorQuickView}">
+    <section
+      role="dialog"
+      tabindex="-1"
+      aria-labelledby="exhibitor-quickview-header"
+      aria-modal="true"
+      aria-describedby="quickview-body"
+      class="slds-modal slds-fade-in-open slds-modal--large customModal"
+      Style ="outline: 0;"
+    >
+      <div class="slds-modal__container">
+        <!-- modal body start -->
+        <div
+          class="slds-modal__content slds-p-around_medium"
+          id="quickview-body"
+        >
+          <span onclick="{!c.hideExhibitorQuickView}" class="close"
+            >&times;</span
+          >
+          <div class="slds-text-heading_medium headingText">
+            {!$Label.c.Exhibitor}&nbsp;{!$Label.c.Quick_View} -
+            {!v.quickViewAccountName}
+          </div>
+          <div class="slds-m-bottom_small hl"></div>
+          <div
+            class="modal-body bodycompany "
+            style="max-height: 68vh;padding-right:5px;overflow-y: auto;overflow-x: hidden"
+          >
+            <c:agentOwnedExhibitorAccountInfo
+              accountId="{!v.quickViewAccountId}"
+              eventCode="{!v.eventcode}"
+              modalViewMode="true"
+              onmodalinmodal="{!c.handleModalInModal}"
+            />
+          </div>
+          <div class="goToExhibitorDetails slds-m-top_medium">
+            <button
+              class="slds-button slds-button_destructive full-width-button"
+              onclick="{!c.navigateToExhibitor}"
+              >{!$Label.c.View + ' ' + $Label.c.Exhibitor_Details}</button
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+    <aura:if isTrue="{!!v.modalInModal}">
+      <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+  </aura:if>
+  <!-- Modal for Exhibitor QuickView End -->
+
+  <!-- Modal for Manage disable Start -->
+  <div id="modalManageDisable" class="modal">
+    <div class="modal-content">
+      <span onclick="{!c.hideExhibitorDisableTooltip}" class="close"
+        >&times;</span
+      >
+
+      <div
+        class="modal-body bodycompany "
+        style="max-height: 68vh;padding-right:5px;overflow-y: auto;overflow-x: hidden"
+      >
+        <div class="slds-grid slds-wrap">
+          <div class="slds-col slds-size_1-of-9 slds-m-right_small">
+            <div class="tooltip">
+              <i class="fa fa-question-circle" style="font-size: large;"></i>
+            </div>
+          </div>
+          <div class="slds-col slds-size_7-of-8">
+            <b>{!$Label.c.Manage_Exhibitor_Reason}</b>
+            <br />
+            <br />
+
+            {!$Label.c.Manage_Exhibitor_Reason_Explanation}
+            <br />
+            <br />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Modal for Manage disable End -->
+</aura:component>

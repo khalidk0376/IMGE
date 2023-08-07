@@ -1,0 +1,85 @@
+<!--
+    ************ Modification Log  ************
+    * Modified by :[Aishwarya BK-12603 15 Jan 2021]
+-->
+<aura:component controller="AgentOwnedExhibitorUtils" access="global" implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes">
+    <!--input Parameters -->
+    <aura:attribute name="eventcode" type="String" default=""/>
+    <aura:attribute name="AOEAccountID" type="String" default=""/>
+    <aura:attribute name="accountId18" type="id" /> <!--BK-12603-->
+    
+    <!--Ui Attributes -->
+    <aura:attribute name="eventId" type="String"/>
+    <aura:attribute name="selTabId" type="String" default="tab1" />
+    <aura:attribute name="eventSetting" type="Event_Settings__c"/>
+    <aura:attribute name="accDetails" type="Account"/>
+    <aura:attribute name="isReadOnly" type="Boolean" default="true"/>
+    
+    <!--Aura handlers -->
+    <aura:handler name="init" value="{!this}" action="{!c.onLoad}"/>
+    
+
+    <div class="container">
+        <div class="row header">
+            <div class="col-sm-12">
+                <!-- <div class="wca-breadcrumbs">
+                    <ul class="breadcrumb">
+                        <li><a href="{!'home?eventcode='+v.eventcode}" target="_parent">{!$Label.c.Home_Button}</a><i class="fa fa-angle-right wca-icon-padding fa-padding" aria-hidden="true"></i></li>
+                        
+                        <li><a href="{!'AgentOwnExhibitors?eventcode='+v.eventcode}" target="_parent">{!$Label.c.My_Exhibitors}</a><i class="fa fa-angle-right wca-icon-padding fa-padding" aria-hidden="true"></i></li>
+                        
+                        <li>{!v.accDetails.Name}</li>
+                    </ul>
+                </div> -->
+                <lightning:breadcrumbs>
+                    <lightning:breadcrumb label="Home" onclick="{!c.goToHome}"/>                    
+                    <lightning:breadcrumb label="{!v.eventSetting.Agent_Own_Exhibitor_Title__c}" onclick="{!c.goToMyAOE}"/>
+                    <lightning:breadcrumb label="{!v.accDetails.Name}"/>                    
+                  </lightning:breadcrumbs>
+                  <br />
+                <div class="accDetails">
+                    <!-- <h1 class="top-h1-heading">{!$Label.c.My_Exhibitors} <i class="fa fa-angle-right wca-icon-padding fa-padding" aria-hidden="true"></i> {!v.accDetails.Name} </h1>   -->
+                    <h1 class="top-h1-heading">{!v.accDetails.Name} </h1>  
+                </div>
+                <div><br/>
+                    <lightning:formattedRichText value="{!v.eventSetting.Welcome_Text_Agent_Exhibitor_Details__c}" />
+                </div><br/>
+            </div>
+        </div>
+    </div>
+    <div class="clearfix"></div><br/>
+    <div class="container">
+        <lightning:tabset class="mainTabSet" selectedTabId="{!v.selTabId}" >
+            <lightning:tab label="Account Summary" id="tab1">
+                <aura:if isTrue="{!v.selTabId == 'tab1'}">
+                    <c:agentOwnedExhibitorAccountInfo accountId="{!v.AOEAccountID}" eventCode="{!v.eventcode}" modalViewMode="false"/>
+                </aura:if>
+            </lightning:tab>
+            <lightning:tab label="Forms" id="tab2">
+                <aura:if isTrue="{!v.selTabId == 'tab2'}">
+                    <c:aoeForms eventCode="{!v.eventcode}" accountId="{!v.AOEAccountID}" isReadOnly="{!v.isReadOnly}"/>
+                </aura:if>
+            </lightning:tab>
+            <lightning:tab label="Manuals" id="tab3">
+                <aura:if isTrue="{!v.selTabId == 'tab3'}">
+                    <c:aoeManuals accountId="{!v.AOEAccountID}" eventCode="{!v.eventcode}" isReadOnly="{!v.isReadOnly}"/>
+                </aura:if>
+            </lightning:tab>
+            <lightning:tab label="Badges" id="tab4"> 
+                <aura:if isTrue="{!v.selTabId == 'tab4'}">
+                    <c:CommunityExhibitorBadge accountId = "{!v.AOEAccountID}" eventId = "{!v.eventId}" eventCode = "{!v.eventcode}" accountId18 = "{!v.accountId18}" isReadOnly="{!v.isReadOnly}" isAgentManged="true"/>
+                </aura:if>
+            </lightning:tab>
+            <lightning:tab label="Exhibitor Profile" id="tab5"> 
+                <aura:if isTrue="{!v.selTabId == 'tab5'}">
+                    <c:CC_CustomerProfile eventId = "{!v.eventId}"  exhAccountID = "{!v.AOEAccountID}" eventCode = "{!v.eventcode}" isAgentManged="true" isReadOnly="{!v.isReadOnly}" showAgentLastModified = "true"/>
+                </aura:if>
+            </lightning:tab>
+            <lightning:tab label="Stand Contractor" id="tab6"> 
+                <aura:if isTrue="{!v.selTabId == 'tab6'}">
+                    <c:AOE_StandContractor eventcode = "{!v.eventcode}"  AOEAccountID = "{!v.AOEAccountID}" Event_Setting="{!v.eventSetting}" isReadOnly="{!v.isReadOnly}"/>
+                </aura:if>
+            </lightning:tab>
+        </lightning:tabset> 
+    </div>    
+</aura:component>

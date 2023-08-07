@@ -1,0 +1,18 @@
+<!-- Created By		: Girikon(Garima[STL-39]) 
+Created On		: August 28 2019
+@description 	: This Aura component is used to show PDF when customer cliks on the uploaded attachment.
+
+Modification log :
+Modified By		: Girikon()  -->
+
+<aura:component
+    implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction"
+    access="global">
+    <ltng:require styles="{!$Resource.hideDeleteAttachment}"/>
+    <!--aura doInit handler-->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="selectedDocumentId" type="string" />
+    <div style="width: 50%; margin: 0 auto; text-align: left">
+    <lightning:fileCard fileId="{!v.selectedDocumentId}" /> 
+  </div>
+</aura:component>

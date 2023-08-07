@@ -1,0 +1,300 @@
+<aura:component implements="flexipage:availableForAllPageTypes" controller="AccountContactsCtr">
+    <aura:attribute name="AccountId" type="string"/> <!--AccountId and EventId are received from Skuid_Page-->
+    <aura:attribute name="EventId" type="string"/>
+    <aura:attribute name="uType" type="string"/>
+    <aura:attribute name="isForReset" type="boolean" default="false"/>
+    <aura:attribute name="OppWrapper" type="object"/>
+    <aura:handler name="init" value="{!this}" action="{!c.OnloadData}" />
+    <aura:attribute name="isOpen" type="boolean" default="false"/>
+    <!--create a panel to show Contacts-->
+
+    <table cellspacing="0" cellpadding="0">
+        <thead>
+            <tr>
+                <div class="slds-m-left_large slds-border_bottom slds-text-heading_medium slds-p-top_large">
+                    <th class="tabHeader">Contact List:</th>
+                </div>
+            </tr>
+        </thead>
+        <tbody class="slds-border_bottom">
+            <aura:if isTrue="{!v.OppWrapper.sOppConName}">
+                <tr>
+                    <span id="Accspinner" style="display:none"><ui:spinner /></span>
+                    <div class="slds-m-left_large">
+                        <br></br><b>Primary Contact:</b><br></br>
+                        <aura:if isTrue="{!v.OppWrapper.sOppConName}">
+                            {!v.OppWrapper.sOppConName}<br></br>
+                        </aura:if>
+                        <aura:if isTrue="{!v.OppWrapper.sOppConPhone}">
+                            Phone:&nbsp;{!v.OppWrapper.sOppConPhone}<br></br>
+                        </aura:if>
+                        <aura:if isTrue="{!v.OppWrapper.sOppConEmail}">
+                            Email:&nbsp;<a>{!v.OppWrapper.sOppConEmail}&emsp;</a>
+                        </aura:if>
+                        <aura:if isTrue="{!and(v.OppWrapper.sOppConEmail,!v.OppWrapper.bOppConAUser)}">
+                            <lightning:button variant="Brand" label="Invite to Customer Centre" iconName="utility:email" value="{!v.OppWrapper.sOppConId}" onclick="{! c.handleClick}" /> 
+                            <aura:set attribute="else">
+                                <aura:if isTrue="{!and(v.OppWrapper.sOppConEmail,v.OppWrapper.bOppConAUser)}">
+                                    <lightning:button variant="Brand" label="Resend Welcome Email" iconName="utility:email" value="{!v.OppWrapper.sOppConId}" onclick="{! c.handleClick}" />
+                                    <lightning:button variant="Brand" label="Reset Password" iconName="utility:email" value="{!v.OppWrapper.sOppConId}" onclick="{! c.resetPassword}" />
+                                </aura:if>   
+                            </aura:set>
+                        </aura:if>
+                        <br></br><aura:if isTrue="{!and(v.OppWrapper.sOppConEmail,v.OppWrapper.bOppConAUser)}">
+                            <div class="slds-m-top_large">
+                                <b>CC Username</b>:&nbsp;{!v.OppWrapper.bOppConUserName}
+                                <aura:if isTrue = "{!and(v.OppWrapper.allowLogInOppConUser,v.OppWrapper.allowLogInUser)}">
+                                	&nbsp;<lightning:button variant="Brand" label="Login As customer" iconName="utility:user" value="{!v.OppWrapper.bOpportunityConUserID}" onclick="{! c.loginAsUser}" /> 
+                                </aura:if>
+                            </div>
+                        </aura:if>
+                    </div> 
+                </tr> 
+            </aura:if> 
+            <aura:if isTrue="{!v.OppWrapper.sBillConName}">
+                <tr>
+                    <div class="slds-m-left_large ">
+                        <br></br><b>Billing Contact:</b><br></br>
+                        <aura:if isTrue="{!v.OppWrapper.sBillConName}">
+                            {!v.OppWrapper.sBillConName}<br></br>
+                        </aura:if>
+                        <aura:if isTrue="{!v.OppWrapper.sBillConPhone}">
+                            Phone:&nbsp;{!v.OppWrapper.sBillConPhone}<br></br>
+                        </aura:if>
+                        <aura:if isTrue="{!v.OppWrapper.sBillConEmail}">
+                            Email:&nbsp;<a>{!v.OppWrapper.sBillConEmail}&emsp;</a>
+                        </aura:if>
+                        <aura:if isTrue="{!and(v.OppWrapper.sBillConEmail,!v.OppWrapper.isBillConAUser)}">
+                            <lightning:button variant="Brand" label="Invite to Customer Centre" iconName="utility:email" value="{!v.OppWrapper.sBillConId}" onclick="{! c.handleClick}" />
+                            <aura:set attribute="else">
+                                <aura:if isTrue="{!and(v.OppWrapper.sBillConEmail,v.OppWrapper.isBillConAUser)}">
+                                    <lightning:button variant="Brand" label="Resend Welcome Email" iconName="utility:email" value="{!v.OppWrapper.sBillConId}" onclick="{! c.handleClick}" />
+                                    <lightning:button variant="Brand" label="Reset Password" iconName="utility:email" value="{!v.OppWrapper.sBillConId}" onclick="{! c.resetPassword}" />
+                                </aura:if>
+                            </aura:set>
+                        </aura:if> 
+                        <br></br><aura:if isTrue="{!and(v.OppWrapper.sBillConEmail,v.OppWrapper.isBillConAUser)}">
+                            <div class="slds-m-top_large">
+                                <b>CC Username</b>:&nbsp;{!v.OppWrapper.bBillingConUserName}
+                                <aura:if isTrue = "{!and(v.OppWrapper.allowLogInBillConUser,v.OppWrapper.allowLogInUser)}">
+                                	&nbsp;<lightning:button variant="Brand" label="Login As customer" iconName="utility:user" value="{!v.OppWrapper.bBillConUserID}" onclick="{! c.loginAsUser}" /> 
+                                </aura:if>
+                            </div>  
+                        </aura:if>
+                    </div>
+                </tr>
+            </aura:if>
+            <aura:if isTrue="{!v.OppWrapper.sOpprationConName}">
+                <tr>
+                    <div class="slds-m-left_large">
+                        <br></br><b>Operations Contact:</b><br></br>
+                        <aura:if isTrue="{!v.OppWrapper.sOpprationConName}">
+                            {!v.OppWrapper.sOpprationConName} <br></br>
+                        </aura:if>
+                        <aura:if isTrue="{!v.OppWrapper.sOpprationConPhone}">
+                            Phone:&nbsp;{!v.OppWrapper.sOpprationConPhone} <br></br>
+                        </aura:if>
+                        <aura:if isTrue="{!v.OppWrapper.sOpprationConEmail}">
+                            Email:&nbsp;<a>{!v.OppWrapper.sOpprationConEmail}&emsp;</a>
+                        </aura:if>
+                        <aura:if isTrue="{!and(v.OppWrapper.sOpprationConEmail,!v.OppWrapper.bOpprationConAUser)}">
+                            <lightning:button variant="Brand" label="Invite to Customer Centre" iconName="utility:email" value="{!v.OppWrapper.sOpprationConId}" onclick="{! c.handleClick}" />
+                            <aura:set attribute="else">
+                                <aura:if isTrue="{!and(v.OppWrapper.sOpprationConEmail,v.OppWrapper.bOpprationConAUser)}">
+                                    <lightning:button variant="Brand" label="Resend Welcome Email" iconName="utility:email" value="{!v.OppWrapper.sOpprationConId}" onclick="{! c.handleClick}" />
+                                    <lightning:button variant="Brand" label="Reset Password" iconName="utility:email" value="{!v.OppWrapper.sOpprationConId}" onclick="{!c.resetPassword}" />
+                                </aura:if> 
+                            </aura:set>
+                        </aura:if>
+                        <br></br><aura:if isTrue="{!and(v.OppWrapper.sOpprationConEmail,v.OppWrapper.bOpprationConAUser)}">
+                            <div class="slds-m-top_large">
+                                <b>CC Username</b>:&nbsp;{!v.OppWrapper.bOperationConUserName}
+                        		<aura:if isTrue = "{!and(v.OppWrapper.allowLogInUser1,v.OppWrapper.allowLogInUser)}">
+                                	&nbsp;<lightning:button variant="Brand" label="Login As customer" iconName="utility:user" value="{!v.OppWrapper.bOppConUserID}" onclick="{! c.loginAsUser}" /> 
+                                </aura:if>
+                            </div>    
+                      </aura:if>
+                    </div>
+                </tr>
+            </aura:if>
+            <aura:if isTrue="{!v.OppWrapper.sOppration2ConName}"> 
+             <tr>
+                <div class="slds-m-left_large">
+                    <br></br><b>Operations Contact 2:</b><br></br>
+                    <aura:if isTrue="{!v.OppWrapper.sOppration2ConName}">
+                        {!v.OppWrapper.sOppration2ConName} <br></br>
+                    </aura:if>
+                    <aura:if isTrue="{!v.OppWrapper.sOppration2ConPhone}">
+                        Phone:&nbsp;{!v.OppWrapper.sOppration2ConPhone} <br></br>
+                    </aura:if>
+                    <aura:if isTrue="{!v.OppWrapper.sOppration2ConEmail}">
+                        Email:&nbsp;<a>{!v.OppWrapper.sOppration2ConEmail}&emsp;</a>
+                    </aura:if>
+                    <aura:if isTrue="{!and(v.OppWrapper.sOppration2ConEmail,!v.OppWrapper.bOppration2ConAUser)}">
+                        <lightning:button variant="Brand" label="Invite to Customer Centre" iconName="utility:email" value="{!v.OppWrapper.sOppration2ConId}" onclick="{! c.handleClick}" />
+                        <aura:set attribute="else">
+                            <aura:if isTrue="{!and(v.OppWrapper.sOppration2ConEmail,v.OppWrapper.bOppration2ConAUser)}">
+                                <lightning:button variant="Brand" label="Resend Welcome Email" iconName="utility:email" value="{!v.OppWrapper.sOppration2ConId}" onclick="{! c.handleClick}" />
+                                <lightning:button variant="Brand" label="Reset Password" iconName="utility:email" value="{!v.OppWrapper.sOppration2ConId}" onclick="{! c.resetPassword}" />
+                            </aura:if>   
+                        </aura:set>
+                    </aura:if>
+                    <br></br><aura:if isTrue="{!and(v.OppWrapper.sOppration2ConEmail,v.OppWrapper.bOppration2ConAUser)}">
+                        <div class="slds-m-top_large">
+                            <b>CC Username</b>:&nbsp;{!v.OppWrapper.bOperation2ConUserName}
+                            <aura:if isTrue = "{!and(v.OppWrapper.allowLogInUser2,v.OppWrapper.allowLogInUser)}">
+                                &nbsp;<lightning:button variant="Brand" label="Login As customer" iconName="utility:user" value="{!v.OppWrapper.bOppCon2UserID}" onclick="{! c.loginAsUser}" /> 
+                            </aura:if>
+                        </div>    
+                  </aura:if>
+                </div>
+            </tr>
+            </aura:if>
+            <aura:if isTrue="{!v.OppWrapper.sOppration3ConName}">
+                <tr>
+                    <div class="slds-m-left_large">
+                        <br></br><b>Operations Contact 3:</b><br></br>
+                        <aura:if isTrue="{!v.OppWrapper.sOppration3ConName}">
+                            {!v.OppWrapper.sOppration3ConName} <br></br>
+                        </aura:if>
+                        <aura:if isTrue="{!v.OppWrapper.sOppration3ConPhone}">
+                            Phone:&nbsp;{!v.OppWrapper.sOppration3ConPhone} <br></br>
+                        </aura:if>
+                        <aura:if isTrue="{!v.OppWrapper.sOppration3ConEmail}">
+                            Email:&nbsp;<a>{!v.OppWrapper.sOppration3ConEmail}&emsp;</a>
+                        </aura:if>
+                        <aura:if isTrue="{!and(v.OppWrapper.sOppration3ConEmail,!v.OppWrapper.bOppration3ConAUser)}">
+                            <lightning:button variant="Brand" label="Invite to Customer Centre" iconName="utility:email" value="{!v.OppWrapper.sOppration3ConId}" onclick="{! c.handleClick}" />
+                            <aura:set attribute="else">
+                                <aura:if isTrue="{!and(v.OppWrapper.sOppration3ConEmail,v.OppWrapper.bOppration3ConAUser)}">
+                                    <lightning:button variant="Brand" label="Resend Welcome Email" iconName="utility:email" value="{!v.OppWrapper.sOppration3ConId}" onclick="{! c.handleClick}" />
+                                </aura:if>   
+                            </aura:set>
+                        </aura:if>
+                        <br></br><aura:if isTrue="{!and(v.OppWrapper.sOppration3ConEmail,v.OppWrapper.bOppration3ConAUser)}">
+                            <div class="slds-m-top_large">
+                                <b>CC Username</b>:&nbsp;{!v.OppWrapper.bOperation3ConUserName}
+                                <aura:if isTrue = "{!and(v.OppWrapper.allowLogInUser3,v.OppWrapper.allowLogInUser)}">
+                                &nbsp;<lightning:button variant="Brand" label="Login As customer" iconName="utility:user" value="{!v.OppWrapper.bOppCon3UserID}" onclick="{! c.loginAsUser}" /> 
+                                </aura:if>
+                            </div>    
+                      </aura:if>
+                    </div>
+                </tr>
+            </aura:if>  
+            <aura:if isTrue="{!v.OppWrapper.sOppration4ConName}">
+                <tr>
+                    <div class="slds-m-left_large">
+                        <br></br><b>Operations Contact 4:</b><br></br>
+                        <aura:if isTrue="{!v.OppWrapper.sOppration4ConName}">
+                            {!v.OppWrapper.sOppration4ConName} <br></br>
+                        </aura:if>
+                        <aura:if isTrue="{!v.OppWrapper.sOppration4ConPhone}">
+                            Phone:&nbsp;{!v.OppWrapper.sOppration4ConPhone} <br></br>
+                        </aura:if>
+                        <aura:if isTrue="{!v.OppWrapper.sOppration4ConEmail}">
+                            Email:&nbsp;<a>{!v.OppWrapper.sOppration4ConEmail}&emsp;</a>
+                        </aura:if>
+                        <aura:if isTrue="{!and(v.OppWrapper.sOppration4ConEmail,!v.OppWrapper.bOppration4ConAUser)}">
+                            <lightning:button variant="Brand" label="Invite to Customer Centre" iconName="utility:email" value="{!v.OppWrapper.sOppration4ConId}" onclick="{! c.handleClick}" />
+                            <aura:set attribute="else">
+                                <aura:if isTrue="{!and(v.OppWrapper.sOppration4ConEmail,v.OppWrapper.bOppration4ConAUser)}">
+                                    <lightning:button variant="Brand" label="Resend Welcome Email" iconName="utility:email" value="{!v.OppWrapper.sOppration4ConId}" onclick="{! c.handleClick}" />
+                                </aura:if>   
+                            </aura:set>
+                        </aura:if>
+                        <br></br><aura:if isTrue="{!and(v.OppWrapper.sOppration4ConEmail,v.OppWrapper.bOppration4ConAUser)}">
+                            <div class="slds-m-top_large">
+                                <b>CC Username</b>:&nbsp;{!v.OppWrapper.bOperation4ConUserName}
+                                <aura:if isTrue = "{!and(v.OppWrapper.allowLogInUser3,v.OppWrapper.allowLogInUser)}">
+                                &nbsp;<lightning:button variant="Brand" label="Login As customer" iconName="utility:user" value="{!v.OppWrapper.bOppCon4UserID}" onclick="{! c.loginAsUser}" /> 
+                                </aura:if>
+                            </div>    
+                      </aura:if>
+                    </div>
+                </tr>
+            </aura:if>
+            <aura:if isTrue="{!v.OppWrapper.sOppration5ConName}">
+                    <tr>
+                        <div class="slds-m-left_large">
+                            <br></br><b>Operations Contact 5:</b><br></br>
+                            <aura:if isTrue="{!v.OppWrapper.sOppration5ConName}">
+                                {!v.OppWrapper.sOppration5ConName} <br></br>
+                            </aura:if>
+                            <aura:if isTrue="{!v.OppWrapper.sOppration5ConPhone}">
+                                Phone:&nbsp;{!v.OppWrapper.sOppration5ConPhone} <br></br>
+                            </aura:if>
+                            <aura:if isTrue="{!v.OppWrapper.sOppration5ConEmail}">
+                                Email:&nbsp;<a>{!v.OppWrapper.sOppration5ConEmail}&emsp;</a>
+                            </aura:if>
+                            <aura:if isTrue="{!and(v.OppWrapper.sOppration5ConEmail,!v.OppWrapper.bOppration5ConAUser)}">
+                                <lightning:button variant="Brand" label="Invite to Customer Centre" iconName="utility:email" value="{!v.OppWrapper.sOppration5ConId}" onclick="{! c.handleClick}" />
+                                <aura:set attribute="else">
+                                    <aura:if isTrue="{!and(v.OppWrapper.sOppration5ConEmail,v.OppWrapper.bOppration5ConAUser)}">
+                                        <lightning:button variant="Brand" label="Resend Welcome Email" iconName="utility:email" value="{!v.OppWrapper.sOppration5ConId}" onclick="{! c.handleClick}" />
+                                    </aura:if>   
+                                </aura:set>
+                            </aura:if>
+                            <br></br><aura:if isTrue="{!and(v.OppWrapper.sOppration5ConEmail,v.OppWrapper.bOppration5ConAUser)}">
+                                <div class="slds-m-top_large">
+                                    <b>CC Username</b>:&nbsp;{!v.OppWrapper.bOperation5ConUserName}
+                                    <aura:if isTrue = "{!and(v.OppWrapper.allowLogInUser5,v.OppWrapper.allowLogInUser)}">
+                                    &nbsp;<lightning:button variant="Brand" label="Login As customer" iconName="utility:user" value="{!v.OppWrapper.bOppCon5UserID}" onclick="{! c.loginAsUser}" /> 
+                                </aura:if>
+                            </div>    
+                          </aura:if>
+                        </div>
+                    </tr>
+                </aura:if>
+            <br></br>
+        </tbody>
+    </table>
+    <div>
+        <!--
+            {!v.OppWrapper.bOppConAgnOwnEx}
+        -->       
+        <aura:if isTrue="{!v.OppWrapper.bOppConAgnOwnEx}">
+            <b>Note:-</b> sending an email to an Agent owned exhibitor on behalf of the agent will use the version of the Welcome Email last updated by the agent within their portal.
+        </aura:if> 
+        
+    </div>
+    <!--Use "slds-m-around- -xx-large" class to add standard Large padding to the component--> 
+  <div class="slds-m-around--xx-large">
+  <!--Use aura:if tag to display Model Box, on the bese of conditions. [isOpen boolean attribute] -->   
+    <aura:if isTrue="{!v.isOpen}">
+      
+   <!--###### MODAL BOX Start From Here ######--> 
+      <div role="dialog" tabindex="-1" aria-labelledby="header99" class="slds-modal slds-fade-in-open ">
+        <div class="slds-modal__container">
+          <!-- ###### MODAL BOX HEADER Part Start From Here ######-->
+          <div class="slds-modal__header">
+            <button class="slds-button slds-modal__close slds-button--icon-inverse" title="Close" onclick="{!c.closeModel}">
+            X
+            <span class="slds-assistive-text">Close</span>
+            </button>
+            <h2 id="header99" class="slds-text-heading--medium">Confirmation</h2>
+          </div>
+          <!--###### MODAL BOX BODY Part Start From Here ######-->
+          <div class="slds-modal__content slds-p-around--medium">
+            <p>
+                  <aura:if isTrue="{!v.isForReset}">
+                    <b>Reset Password Email Sent Successfully.</b>
+                        <aura:set attribute="else">
+                           <b>Welcome Email Sent Successfully.</b> 
+                        </aura:set>
+                  </aura:if>
+                
+            </p>
+          </div>
+          <!--###### MODAL BOX FOOTER Part Start From Here ######-->
+          <div class="slds-modal__footer">
+            <button class="slds-button slds-button--brand" onclick="{!c.closeModel}">Close</button>
+          </div>
+        </div>
+      </div>
+      <div class="slds-backdrop slds-backdrop--open"></div>
+      <!--###### MODAL BOX Part END Here ######-->
+    
+    </aura:if>
+    </div>
+</aura:component>

@@ -1,0 +1,52 @@
+<!--
+ * Created By   :   Girikon(Sunil)
+ * Created On   :   September 17, 2019
+ * Description  :   This component is used to show Exhibitor profile section  on Customer Settings Page.
+ * Modofication Log : Himanshu - [BK - 2849] 
+ **-->
+
+<aura:component implements="flexipage:availableForAllPageTypes" access="global" controller="LtngUtilityCtrl">
+    <aura:attribute name="eventId" type="string"/> 
+    <aura:attribute name="eventName" type="string"/> 
+    <aura:handler name="init" value="{!this}" action="{!c.onLoad}" />
+    <article class="slds-card slds-p-around_medium">
+        <lightning:layout multipleRows="true">
+            <lightning:layoutItem size="12" class="slds-p-horizontal_medium slds-p-bottom_medium ">
+                <span class="slds-text-heading_medium" style="font-weight: bold;">{!v.eventName}</span>
+                <lightning:breadcrumbs>
+                    <lightning:breadcrumb label="Customer Centre" onclick="{!c.goToCustomerCenter}">
+                    </lightning:breadcrumb>
+                    <lightning:breadcrumb label="Customer Centre Settings" onclick="{!c.goToCustomerCenterSetting}">
+                    </lightning:breadcrumb>
+                    <lightning:breadcrumb label="Exhibitor Profile">
+                    </lightning:breadcrumb>
+                </lightning:breadcrumbs>
+            </lightning:layoutItem>
+            <lightning:layoutItem size="12" class="slds-p-horizontal_medium">
+                <lightning:tabset >
+                    <lightning:tab label="SETTINGS" id="settings">
+                        <lightning:tabset >
+                            <lightning:tab label="General" id="General">
+                                <c:ops_formExhibitor></c:ops_formExhibitor>
+                            </lightning:tab>
+                            <lightning:tab label="Default &amp; Upgrade Items" id="items">
+                                    <c:ops_eventPackages></c:ops_eventPackages>
+                            </lightning:tab>
+                            <lightning:tab label="Product categories" id="procat">
+                                <c:ops_productCategories eventId="{!v.eventId}"></c:ops_productCategories>
+                            </lightning:tab>
+                        </lightning:tabset>
+                    </lightning:tab>
+                    <!--BK-2849-->
+                    <lightning:tab label="REPORTS" id="reports">                          
+                        <c:ExportExhibitorProfile eventId="{!v.eventId}"></c:ExportExhibitorProfile> 
+                    </lightning:tab>
+                    <!--BK-2849-->
+                    <lightning:tab label="EMAILS" id="emails">
+                            <c:EmailRemindersExhibitorsProfile eventId="{!v.eventId}"></c:EmailRemindersExhibitorsProfile>
+                    </lightning:tab>
+                </lightning:tabset>
+            </lightning:layoutItem>
+        </lightning:layout>
+    </article>
+</aura:component>

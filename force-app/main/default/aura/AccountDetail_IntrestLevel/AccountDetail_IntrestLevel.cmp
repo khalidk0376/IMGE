@@ -1,0 +1,27 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component implements="flexipage:availableForAllPageTypes" controller="AccountLtnCtrl">
+    <!-- attributes -->
+    <aura:attribute name="recordId" type="String" />
+    <aura:attribute name="data" type="Object" />
+    <aura:attribute name="columns" type="List" />
+    <aura:attribute name="offSetValue" type="Integer" default="0" />
+    <aura:attribute name="disablePrev" type="boolean" default="true" />
+    <aura:attribute name="disableNxt" type="boolean" default="true" />
+    <aura:attribute name="showSpinner" type="boolean" default="true" />
+    <!-- handlers-->
+    <aura:handler name="init" value="{!this}" action="{!c.loadData}" />
+    <!-- <aura:if isTrue="{!v.showSpinner}">
+        <lightning:spinner size="small" variant="brand" />
+    </aura:if> -->
+    <lightning:layout multipleRows="true" horizontalAlign="center">
+        <lightning:layoutItem padding="around-small" size="12">
+            <div class="heightStyle">
+                <lightning:datatable keyField="id" data="{! v.data }" columns="{! v.columns }" hideCheckboxColumn="true" />
+            </div>
+        </lightning:layoutItem>
+        <lightning:layoutItem padding="around-small" flexibility="auto">
+            <lightning:button label="Previous" iconName="utility:left" iconPosition="left" onclick="{!c.handlePrev}" disabled="{!v.disablePrev}" />
+            <lightning:button label="Next" iconName="utility:right" iconPosition="right" onclick="{!c.handleNext}" disabled="{!v.disableNxt}" />
+        </lightning:layoutItem>
+    </lightning:layout>
+</aura:component>

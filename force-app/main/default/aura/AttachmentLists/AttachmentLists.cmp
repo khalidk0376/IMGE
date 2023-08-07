@@ -1,0 +1,133 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId" access="global" controller = "FileUploadController_class">
+    <aura:handler event="force:refreshView" action="{!c.reloaddataAtt}" />
+    <aura:handler event="force:navigateToSObject" action="{!c.navigateToRecord}"/>
+    <aura:attribute name="Attachments" type="Attachment[]" />
+    <aura:attribute name="PageNumber" type="integer" default="1"/>
+    <aura:attribute name="TotalPages" type="integer" default="0"/>
+    <aura:attribute name="TotalRecords" type="integer" default="0"/>
+    <aura:attribute name="RecordStart" type="integer" default="0"/>
+    <aura:attribute name="AttachmentId" type="Id"/>
+    <aura:attribute name="RecordEnd" type="integer" default="0"/>
+    <aura:attribute name="EditRecordmodal" type="boolean" default="false" />
+    <aura:attribute name="EditForm" type="Attachment" 
+                    default="{'sobjectType':'Attachment',
+                             'ParentId' : '',
+                             'Name' : '',
+                             'Body' : '',
+                             'IsPrivate' : ''
+                             }"></aura:attribute>
+    
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <!--<aura:registerEvent name="DeleteRowEvt" type="c:DeleteRowEvt"/> -->
+    
+    <div class="slds-float_right">
+        <ui:inputSelect aura:id="pageSize" label="Display Records Per Page: " change="{!c.onSelectChange}">
+            <ui:inputSelectOption text="10" label="10" value="true"/>
+            <ui:inputSelectOption text="15" label="15"/>
+            <ui:inputSelectOption text="20" label="20"/>
+        </ui:inputSelect>
+        <br/>
+    </div>
+    <table class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout">
+        <thead>
+            <tr class="slds-text-heading_label">
+                <!-- <th scope="col"><div class="slds-truncate" title="ID">ID</div></th> -->
+                <th scope="col"><div class="slds-truncate" title="ViewFile">View File</div></th>
+                <th scope="col"><div class="slds-truncate" title="Delete">Delete</div></th>
+                <th scope="col"><div class="slds-truncate" title="Name">File Name</div></th>
+                <th scope="col"><div class="slds-truncate" title="ContentType">Content Type</div></th>
+                <th scope="col"><div class="slds-truncate" title="Private">Private</div></th>
+                <th scope="col"><div class="slds-truncate" title="CreatedById">Created By Id</div></th>
+                <th scope="col"><div class="slds-truncate" title="CreatedDate">Created Date</div></th>
+                 <th scope="col"><div class="slds-truncate" title="Action">Action</div></th>     
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Use the Apex model and controller to fetch server side data -->
+            <aura:iteration items="{!v.Attachments}" var="attachment" indexVar="index">
+                <tr>
+                    <td> 
+                        <a href="{!'/servlet/servlet.FileDownload?file='+attachment.Id}" target="_blank" styleClass="btn"><lightning:icon iconName="doctype:image" alternativeText="Doc image"/></a>
+                        <input type="hidden" value="{!attachment.Id}" class="attachmentView" />
+                    </td>
+                    <td>
+                        <input type="hidden" value="{!attachment.Id}" class="attachmentId" />
+                        <lightning:button iconName="utility:delete" variant="destructive" label="Delete" title="Destructive action" onclick="{! c.deleteAttachment }"/>
+                    </td>
+                    <td><div class="slds-truncate" title="{!attachment.Name}">{!attachment.Name}</div></td>
+                    <td><div class="slds-truncate" title="{!attachment.ContentType}">{!attachment.ContentType}</div></td>
+                    <td><div class="slds-truncate" title="{!attachment.Private}">
+                        
+                        <!--{!attachment.IsPrivate} -->
+                        <ui:outputCheckbox aura:id="output" value="{!attachment.IsPrivate}"/>
+                        </div></td>
+                    <td><a href="{!'/_ui/core/userprofile/UserProfilePage?u='+attachment.CreatedById}" target = "_blank" ><div class="slds-truncate" title="{!attachment.CreatedById}">{!attachment.CreatedBy.Name}</div> </a></td>
+                    <td><div class="slds-truncate" title="{!attachment.CreatedDate}"> <lightning:formattedDateTime aura:id="dt" value="{!attachment.CreatedDate}"
+                                                                                                                   month="short"
+                                                                                                                   day="numeric"
+                                                                                                                   year="numeric"
+                                                                                                                   hour="2-digit"
+                                                                                                                   minute="2-digit"
+                                                                                                                   second="2-digit"
+                                                                                                                   hour12="true"
+                                                                                                                   timeZone="{!$Locale.timezone}"/></div></td>
+                    
+                    
+                    <td >
+                        <lightning:buttonMenu  aura:id="menu" iconName="utility:down" alternativeText="Show menu" onselect="{!c.handleSelect}">  
+                            <lightning:menuItem  value="{!'Edit_'+index}" label="Edit" onactive = "{!c.editRecord}"/>   
+                        </lightning:buttonMenu>
+                    </td>
+                </tr>
+            </aura:iteration>
+        </tbody>
+    </table>
+    <aura:if isTrue="{!v.Attachments.length > 0}">
+        <div class="slds-clearfix">
+            <div class="slds-page-header" role="banner">
+                <div class="slds-float_right">            
+                    <lightning:button disabled="{!v.PageNumber == 1}" variant="brand" aura:id="prevPage" label="Prev" onclick="{!c.handlePrev}" />            
+                    <lightning:button disabled="{!v.PageNumber == v.TotalPages}" aura:id="nextPage" variant="brand" label="Next" onclick="{!c.handleNext}"/>
+                </div>
+                <p class="slds-page-header__title">{!v.RecordStart}-{!v.RecordEnd} of {!v.TotalRecords} | Page {!v.PageNumber} of {!v.TotalPages}</p>
+            </div>
+        </div>
+        <aura:set attribute="else">
+            <center><p style = "margin-top:2%;"><b>No Attachment</b></p></center>
+        </aura:set>
+    </aura:if>
+    <!-- Edit Attachment model    -->
+    <aura:If isTrue="{!v.EditRecordmodal}">
+        <div class="demo-only" style="height: 640px;">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Edit Attachment</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <div class="Create Attachment">
+                            <lightning:card iconName="action:new_note" title="Edit Attachment">
+                                <div class="slds-p-horizontal--small">
+                                    <lightning:outputField fieldName="ParentId" value = "!v.EditForm.ParentId"/>
+                                    <!--<lightning:input aura:id="AttField" type="String" label="File Name" value="{!v.EditForm.Name}" disabled="true"/> -->
+                                    <!--<lightning:outputField aura:id="AttField" type="String" label="Content Type" value="{!v.EditForm.Body}"/> -->
+                                    <ui:inputCheckbox aura:id="checkbox" label="Private" value="{!v.EditForm.IsPrivate}"/>
+                                </div>
+                            </lightning:card>
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_destructive" onclick = "{!c.cancelEditRecord}">Cancel</button>
+                        <button class="slds-button slds-button_brand" onclick = "{!c.SaveEditrecord}">Save</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </aura:If>
+</aura:component>

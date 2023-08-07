@@ -1,0 +1,31 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId" controller="AccountLtnCtrl">
+    <!-- attributes -->
+    <aura:attribute name="recordId" type="String" />
+    <aura:attribute name="data" type="Object" />
+    <aura:attribute name="columns" type="List" />
+    <aura:attribute name="PageNumber" type="integer" default="1" />
+    <aura:attribute name="TotalPages" type="integer" default="0" />
+    <aura:attribute name="TotalRecords" type="integer" default="0" />
+    <aura:attribute name="RecordStart" type="integer" default="0" />
+    <aura:attribute name="RecordEnd" type="integer" default="0" />
+    <aura:attribute name="showSpinner" type="boolean" default="true" />
+    <!-- handlers-->
+    <aura:handler name="init" value="{!this}" action="{!c.loadData}" />
+    <div class="slds-box">
+        <aura:if isTrue="{!v.showSpinner}">
+            <lightning:spinner size="small" variant="brand" />
+        </aura:if>
+        <lightning:datatable keyField="id" data="{!v.data}" columns="{!v.columns}" hideCheckboxColumn="true" />
+        <footer class="slds-card__footer">
+            <aura:if isTrue="{!v.TotalRecords == 0}">
+                No records to show.
+                <aura:set attribute="else">
+                    Showing {!v.RecordStart}-{!v.RecordEnd} of {!v.TotalRecords} &nbsp;
+                    <lightning:button variant="brand" iconPosition="left" iconName="utility:chevronleft" onclick="{!c.handlePrev}" label="Previous" disabled="{!v.PageNumber == 1}" />
+                    <lightning:button variant="brand" iconPosition="right" iconName="utility:chevronright" onclick="{!c.handleNext}" label="Next" disabled="{!v.PageNumber == v.TotalPages}" />
+                </aura:set>
+            </aura:if>
+        </footer>
+    </div>
+</aura:component>

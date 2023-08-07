@@ -1,0 +1,33 @@
+<!--
+ * Created By   :   Girikon(Garima)
+ * Created On   :   September 27, 2019
+ * Description  :   This component is used to show reports section on Customer Settings Page.
+ **-->
+
+ <aura:component implements="flexipage:availableForAllPageTypes" access="global" controller="LtngUtilityCtrl">
+    <aura:attribute name="eventId" type="string" />
+    <aura:attribute name="eventName" type="string" />
+    <aura:handler name="init" value="{!this}" action="{!c.onLoad}" />
+    <article class="slds-card slds-p-around_medium">
+        <lightning:layout multipleRows="true">
+            <lightning:layoutItem size="12" class="slds-p-horizontal_medium slds-p-bottom_medium ">
+                <span class="slds-text-heading_medium" style="font-weight: bold;">{!v.eventName}</span>
+                <lightning:breadcrumbs>
+                    <lightning:breadcrumb label="Customer Centre" onclick="{!c.goToCustomerCenter}">
+                    </lightning:breadcrumb>
+                    <lightning:breadcrumb label="Customer Centre Settings" onclick="{!c.goToCustomerCenterSetting}">
+                    </lightning:breadcrumb>
+                    <lightning:breadcrumb label="REPORTS">
+                    </lightning:breadcrumb>
+                </lightning:breadcrumbs>
+            </lightning:layoutItem>
+            
+            <lightning:layoutItem size="12" class="slds-p-horizontal_medium">
+                <div style="height:30rem">
+                    <c:ExportAllReports eventId="{!v.eventId}"></c:ExportAllReports>
+                </div>
+            </lightning:layoutItem>
+       
+        </lightning:layout>
+    </article>
+</aura:component>

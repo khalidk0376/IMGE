@@ -1,0 +1,560 @@
+<!--
+    ************ Modification Log  ************
+    * Modified by : Girikon(Ashish)[CCEN-430 Dec 16 2018],Sunil[CCEN-592 Jan 23 2019],Aishwarya[BK-3272 Jan 23 2020],Aishwarya[BK-6540 July 31 2020] 
+-->
+<aura:component implements="flexipage:availableForAllPageTypes" controller="ApproveContractorCtrl">
+    <aura:attribute name="copydata" type="object" />
+    <aura:attribute name="childsingleBooth" type="BoothContractorMapping__c[]" />
+    <aura:attribute name="ChildBoothMapID" type="string" />
+    <aura:attribute name="SubConList" type="BoothContractorMapping__c[]" />
+    <aura:attribute name="StndDetails" type="Stand_Detail__c[]" />
+    <aura:handler name="change" value="{!v.ChildBoothMapID}" action="{!c.BoothMapIdChange}" />
+    <aura:handler name="init" value="{!this}" action="{!c.onLoad}" />
+    <aura:attribute name="Spinner" type="boolean" default="false" />
+    <aura:attribute name="msgtype" type="String" default=""/>
+    <aura:attribute name="msgbody" type="String" default=""/>
+    <ltng:require scripts="{!$Resource.CustomerCenterWS11 +'/CustomerCenterWS11/js/jquery-1.7.1.min.js?v=149'}"
+        afterScriptsLoaded="{!c.scriptsLoaded}" />
+   	
+    <aura:if isTrue="{!v.Spinner}">
+        <lightning:spinner class="spinner" alternativeText="Loading" size="medium" />
+    </aura:if>
+    
+    <aura:if isTrue="{!v.msgbody!=''}">
+        <div class="slds-notify_container slds-is-fixed">
+            <div class="{!'slds-notify slds-notify_toast slds-theme_'+v.msgtype}" role="alert">
+                <span class="slds-assistive-text">{!v.msgtype}</span>
+                <span class="{!'slds-icon_container slds-icon-utility-'+v.msgtype+' slds-m-right_small slds-no-flex slds-align-top'}" title="Description of icon when needed">
+                    <lightning:icon iconName="{!'utility:'+v.msgtype}" size="small" variant="inverse"/>
+                </span>
+                <div class="slds-notify__content">
+                    <h2 class="slds-text-heading_small" style="color:#fff;font-size:1rem">{!v.msgbody}</h2>
+                </div>
+                <button class="slds-button slds-button_icon slds-notify__close slds-button_icon-inverse" title="Close" onclick="{!c.closeToast}">
+                    <lightning:icon iconName="utility:close" size="small" variant="inverse"/>
+                    <span class="slds-assistive-text">Close</span>
+                </button>
+            </div>
+        </div>
+    </aura:if>
+    <div class="slds-scrollable" style="overflow-y: scroll;height: 50vh;">
+        <div class="slds-float_left" style="width: 45%; padding-left:5;">
+            <table class="slds-table slds-max-medium-table--stacked-horizontal;" role="grid" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th colspan="2" class="tabHeader" style="background-color: #ccc !important; color: #000 !important; text-transform: none;">
+                            Customer Details
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="slds-hint-parent">
+                        <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                            Type:
+                        </td>
+                        <td style="border-top: 0px solid rgb(217, 219, 221);">
+                            <aura:if isTrue="{!v.childsingleBooth[0].IsManagedbyAgent__c}">
+                                <lightning:formattedText value="Agent" />
+                                <aura:set attribute="else">
+                                    <lightning:formattedText value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.User_Type__r.Name}" />
+                                </aura:set>
+                            </aura:if>
+                        </td>
+                    </tr>
+                    <tr class="slds-hint-parent">
+                        <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                            {!$Label.c.Company}:
+                        </td>
+                        <td style="border-top: 0px solid rgb(217, 219, 221);">
+                            <aura:if isTrue="{!v.childsingleBooth[0].IsManagedbyAgent__c}">
+                                <lightning:formattedText value="{!v.childsingleBooth[0].Agent_Contact__r.Account.Name}" />
+                                <aura:set attribute="else">
+                                    <lightning:formattedText value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Account.Name}" />
+                                	  &nbsp;<lightning:button variant="Brand" label="Login As Customer" iconName="utility:user" value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__c}" onclick="{! c.loginAsUser}" /> 
+                                </aura:set>
+                            </aura:if>
+                        </td>
+                    </tr>
+                    <tr class="slds-hint-parent">
+                        <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                            {!$Label.c.Exhibiting_Name}:
+                        </td>
+                        <td style="border-top: 0px solid rgb(217, 219, 221);">
+                            <aura:if isTrue="{!v.childsingleBooth[0].IsManagedbyAgent__c}">
+                                <lightning:formattedText value="{!v.childsingleBooth[0].Agent_Contact__r.Account.Name}" />
+                                <aura:set attribute="else">
+                                    <lightning:formattedText value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Display_Name__c}" />
+                                </aura:set>
+                            </aura:if>
+                        </td>
+                    </tr>
+                    <tr class="slds-hint-parent">
+                        <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                            {!$Label.c.Address}:
+                        </td>
+                        <td style="border-top: 0px solid rgb(217, 219, 221);">
+                            <aura:if isTrue="{!v.childsingleBooth[0].IsManagedbyAgent__c}">
+                                <lightning:formattedText value="{!v.childsingleBooth[0].Agent_Contact__r.Account.BillingStreet}" /><br />
+                                <lightning:formattedText value="{!v.childsingleBooth[0].Agent_Contact__r.Account.BillingCity}" />
+                                <aura:if isTrue="{!v.childsingleBooth[0].Agent_Contact__r.Account.BillingState!=null}">
+                                    <lightning:formattedText value="{!','+v.childsingleBooth[0].Agent_Contact__r.Account.BillingState}" /><br />
+                                </aura:if>
+                                <lightning:formattedText value="{!v.childsingleBooth[0].Agent_Contact__r.Account.BillingPostalCode}" />
+                                <aura:set attribute="else">
+                                    <lightning:formattedText value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Account.BillingStreet}" /><br />
+                                    <lightning:formattedText value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Account.BillingCity}" />
+                                    <aura:if isTrue="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Account.BillingState!=null}">
+                                        <lightning:formattedText value="{!','+v.childsingleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Account.BillingState}" />
+                                    </aura:if>
+                                    <lightning:formattedText value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Account.BillingPostalCode}" />
+                                </aura:set>
+                            </aura:if>
+
+
+                        </td>
+
+                    </tr>
+                    <tr class="slds-hint-parent">
+                        <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                            {!$Label.c.Phone}:
+                        </td>
+                        <td style="border-top: 0px solid rgb(217, 219, 221);">
+                            <aura:if isTrue="{!v.childsingleBooth[0].IsManagedbyAgent__c}">
+                                <lightning:formattedText value="{!v.childsingleBooth[0].Agent_Contact__r.Account.Phone}" />
+                                <aura:set attribute="else">
+                                    <lightning:formattedText value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Account.Phone}" />
+                                </aura:set>
+                            </aura:if>
+                        </td>
+                    </tr>
+                    <tr class="slds-hint-parent">
+                        <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                            {!$Label.c.Stand}#:
+                        </td>
+                        <td style="border-top: 0px solid rgb(217, 219, 221);">
+                            <aura:if isTrue="{!v.childsingleBooth[0].IsManagedbyAgent__c}">
+                                <lightning:formattedText value="Agent Pavilion Space (multiple stands)" />
+                                <aura:set attribute="else">
+                                    <lightning:formattedText value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Booth_Number__c}" />
+                                </aura:set>
+                            </aura:if>
+                        </td>
+                    </tr>
+                    <tr class="slds-hint-parent">
+                        <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                            {!$Label.c.Stand_Type}:
+                        </td>
+                        <td style="border-top: 0px solid rgb(217, 219, 221);">
+                            <aura:if isTrue="{!v.childsingleBooth[0].IsManagedbyAgent__c}">
+                                <lightning:formattedText value="Agent Pavillion Space" />
+                                <aura:set attribute="else">
+                                    <lightning:formattedText value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Expocad_Booth__r.Booth_Type__c}" />
+                                </aura:set>
+                            </aura:if>
+                        </td>
+                    </tr>
+                    <tr class="slds-hint-parent">
+                        <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                            {!$Label.c.Stand_Size}:
+                        </td>
+                        <td style="border-top: 0px solid rgb(217, 219, 221);">
+                            <aura:if isTrue="{!v.childsingleBooth[0].IsManagedbyAgent__c}">
+                                <lightning:formattedText value="Agent Pavillion Space (multiple stands)" />
+                                <aura:set attribute="else">
+                                    <lightning:formattedText value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Expocad_Booth__r.Dimensions__c}" />
+                                </aura:set>
+                            </aura:if>
+                        </td>
+                    </tr>
+                    <tr class="slds-hint-parent">
+                        <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                            {!$Label.c.Assigning_Contact}:
+                        </td>
+                        <td style="border-top: 0px solid rgb(217, 219, 221);">
+                            <aura:if isTrue="{!v.childsingleBooth[0].IsManagedbyAgent__c}">
+                                <lightning:formattedText value="{!v.childsingleBooth[0].Agent_Contact__r.Name}" />
+                                <aura:set attribute="else">
+                                    <lightning:formattedText value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Name}" />
+                                </aura:set>
+                            </aura:if>
+                        </td>
+                    </tr>
+                    <tr class="slds-hint-parent">
+                        <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                            {!$Label.c.Contact_Phone}:
+                        </td>
+                        <td style="border-top: 0px solid rgb(217, 219, 221);">
+                            <aura:if isTrue="{!v.childsingleBooth[0].IsManagedbyAgent__c}">
+                                <lightning:formattedText value="{!v.childsingleBooth[0].Agent_Contact__r.Phone}" />
+                                <aura:set attribute="else">
+                                    <lightning:formattedText value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Phone}" />
+                                </aura:set>
+                            </aura:if>
+                        </td>
+                    </tr>
+                    <tr class="slds-hint-parent">
+                        <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                            {!$Label.c.Contact_Email}:
+                        </td>
+                        <td style="border-top: 0px solid rgb(217, 219, 221);">
+                            <aura:if isTrue="{!v.childsingleBooth[0].IsManagedbyAgent__c}">
+                                <lightning:formattedText value="{!v.childsingleBooth[0].Agent_Contact__r.Email}" />
+                                <aura:set attribute="else">
+                                    <lightning:formattedText value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Email}" />
+                                </aura:set>
+                            </aura:if>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="slds-float_right" style="width: 45%;padding-left:5;">
+            <table class="slds-table slds-max-medium-table--stacked-horizontal " style="float:right;" role="grid"
+                cellspacing="0">
+                <thead>
+                    <tr>
+                        <th colspan="2" class="tabHeader" style="background-color: #ccc !important; color: #000 !important; text-transform: none;">
+                            {!$Label.c.Contractor_Details}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="slds-hint-parent">
+                        <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                            {!$Label.c.Company}:
+                        </td>
+                        <td style="border-top: 0px solid rgb(217, 219, 221);">
+                            <lightning:formattedText  value="{!v.childsingleBooth[0].Contact__r.Account.Name}" />
+                            &nbsp;<lightning:button variant="Brand" label="Login As Stand Contractor" iconName="utility:user" value="{!v.childsingleBooth[0].Contact__c}" onclick="{! c.loginAsUser}" /> 
+                        </td>
+
+                    </tr>
+                    <tr class="slds-hint-parent">
+                        <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                            {!$Label.c.Address}:
+                        </td>
+                        <td style="border-top: 0px solid rgb(217, 219, 221);">
+                            <lightning:formattedText value="{!v.childsingleBooth[0].Contact__r.Account.BillingStreet}" /><br />
+                            <lightning:formattedText value="{!v.childsingleBooth[0].Contact__r.Account.BillingCity}" />
+                            <aura:if isTrue="{!v.childsingleBooth[0].Contact__r.Account.BillingState!=null}">
+                                <lightning:formattedText value="{!','+v.childsingleBooth[0].Contact__r.Account.BillingState}" />
+                            </aura:if>
+                            <lightning:formattedText value="{!v.childsingleBooth[0].Contact__r.Account.BillingPostalCode}" />
+                        </td>
+
+                    </tr>
+                    <tr class="slds-hint-parent">
+                        <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                            {!$Label.c.Contact}:
+                        </td>
+                        <td style="border-top: 0px solid rgb(217, 219, 221);">
+                            <lightning:formattedText value="{!v.childsingleBooth[0].Contact__r.Name}" />
+                        </td>
+                    </tr>
+                    <tr class="slds-hint-parent">
+                        <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                            MobilePhone:
+                        </td>
+                        <td style="border-top: 0px solid rgb(217, 219, 221);">
+                            <lightning:formattedText value="{!v.childsingleBooth[0].Contact__r.MobilePhone}" />
+                        </td>
+                    </tr>
+                    <tr class="slds-hint-parent">
+                        <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                            {!$Label.c.Contact_Phone}:
+                        </td>
+                        <td style="border-top: 0px solid rgb(217, 219, 221);">
+                            <lightning:formattedText value="{!v.childsingleBooth[0].Contact__r.Phone}" />
+                        </td>
+                    </tr>
+                    <tr class="slds-hint-parent">
+                        <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                            {!$Label.c.Contact_Email}:
+                        </td>
+                        <td style="border-top: 0px solid rgb(217, 219, 221);">
+                            <lightning:formattedText value="{!v.childsingleBooth[0].Contact__r.Email}" />
+                           
+                        </td>
+                       
+                       
+                    </tr>
+                    <tr class="slds-hint-parent">
+                          <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                          </td>
+                         <td >
+                             <lightning:button variant="Brand" label="Resend Welcome Email" iconName="utility:email" value="{!v.childsingleBooth[0].Contact__c}" onclick="{! c.handleClick}" />
+                          	 <lightning:button variant="Brand" label="Reset Password" iconName="utility:email" value="{!v.childsingleBooth[0].Contact__c}" onclick="{! c.resetPassword}" />
+                        </td>
+                    </tr>
+                    
+                    <tr class="slds-hint-parent">
+                        <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                            {!$Label.c.Services}:
+                        </td>
+                        <td style="border-top: 0px solid rgb(217, 219, 221);">
+                            <aura:iteration items="{!v.childsingleBooth[0].CustomerContractorServices__r}" var="obj"
+                                indexVar="index">
+                                <aura:if isTrue="{!index}">
+                                    {!', '+obj.ContractorService__r.Contractor_Service__c}
+                                    <aura:set attribute="else">
+                                        {!obj.ContractorService__r.Contractor_Service__c}
+                                    </aura:set>
+                                </aura:if>
+                            </aura:iteration>
+
+                        </td>
+                    </tr>
+
+                    <tr class="slds-hint-parent">
+                        <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                            {!$Label.c.Designation_Status}:
+                        </td>
+                        <td style="border-top: 0px solid rgb(217, 219, 221);">
+                            <lightning:formattedText value="{!v.childsingleBooth[0].Status__c}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align: center">
+                            <lightning:button class="slds-m-top_medium" variant="brand" label="{!$Label.c.Capture_Venue_Information}"
+                                onclick="{!c.showdataModal}" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div aria-hidden="false" id="showdata" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop">
+            <div class="slds-modal__container" style=" width: 40% !important; ">
+                <div class="div-body " aura:id="venueinfo">
+                    <div class="div-body-head" style="text-align: left;"><b>{!$Label.c.Information_for_venue}</b>
+                        <span class="closebtn" onclick="{!c.hideshowdataModal}">X</span>
+                    </div>
+                    <div class="slds-scrollable" style="overflow-y: scroll;height: 60vh;">
+                        <table class="venueinfo" style="float:right;" role="grid" cellspacing="0">
+                            <tbody>
+                                <tr>
+                                    <td colspan="2" class="infohead">{!$Label.c.Exhibitor_Information}</td>
+                                </tr>
+                                <tr class="slds-hint-parent">
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                        {!$Label.c.CompanyName}:
+                                    </td>
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                        <aura:if isTrue="{!v.childsingleBooth[0].IsManagedbyAgent__c}">
+                                            <lightning:formattedText value="{!v.childsingleBooth[0].Agent_Contact__r.Account.Name}" />
+                                            <aura:set attribute="else">
+                                                <lightning:formattedText value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Account.Name}" />
+                                            </aura:set>
+                                        </aura:if>
+                                    </td>
+                                </tr>
+                                <tr class="slds-hint-parent">
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                        {!$Label.c.Exhibiting_As}:
+                                    </td>
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                        <aura:if isTrue="{!v.childsingleBooth[0].IsManagedbyAgent__c}">
+                                            <lightning:formattedText value="{!v.childsingleBooth[0].Agent_Contact__r.Account.Name}" />
+                                            <aura:set attribute="else">
+                                                <lightning:formattedText value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Display_Name__c}" />
+                                            </aura:set>
+                                        </aura:if>
+                                    </td>
+                                </tr>
+                                <tr class="slds-hint-parent">
+                                    <td valign="top" style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                        {!$Label.c.Address}:
+                                    </td>
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                        <aura:if isTrue="{!v.childsingleBooth[0].IsManagedbyAgent__c}">
+                                            <lightning:formattedText value="{!v.childsingleBooth[0].Agent_Contact__r.Account.BillingStreet}" /><br />
+                                            <lightning:formattedText value="{!v.childsingleBooth[0].Agent_Contact__r.Account.BillingCity}" />
+                                            <aura:if isTrue="{!v.childsingleBooth[0].Agent_Contact__r.Account.BillingState!=null}">
+                                                <lightning:formattedText value="{!','+v.childsingleBooth[0].Agent_Contact__r.Account.BillingState}" /><br />
+                                            </aura:if>
+                                            <lightning:formattedText value="{!v.childsingleBooth[0].Agent_Contact__r.Account.BillingPostalCode}" />
+                                            <aura:set attribute="else">
+                                                <lightning:formattedText value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Account.BillingStreet}" /><br />
+                                                <lightning:formattedText value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Account.BillingCity}" />
+                                                <aura:if isTrue="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Account.BillingState!=null}">
+                                                    <lightning:formattedText value="{!','+v.childsingleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Account.BillingState}" />
+                                                </aura:if>
+                                                <lightning:formattedText value="{!v.childsingleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Account.BillingPostalCode}" />
+                                            </aura:set>
+                                        </aura:if>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" class="infohead">{!$Label.c.Contractor_Information}</td>
+                                </tr>
+                                <tr class="slds-hint-parent">
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                        {!$Label.c.CompanyName}:
+                                    </td>
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                        {!v.childsingleBooth[0].Contact__r.Account.Name}
+                                    </td>
+                                </tr>
+                                <tr class="slds-hint-parent">
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                        {!$Label.c.Contact}:
+                                    </td>
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                        {!v.childsingleBooth[0].Contact__r.Name}
+                                    </td>
+                                </tr>
+                                <tr class="slds-hint-parent">
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                        MobilePhone:
+                                    </td>
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                        {!v.childsingleBooth[0].Contact__r.MobilePhone}
+                                    </td>
+                                </tr>
+                                <tr class="slds-hint-parent">
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                        {!$Label.c.Contact_Phone}:
+                                    </td>
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                        {!v.childsingleBooth[0].Contact__r.Phone}
+                                    </td>
+                                </tr>
+                                <tr class="slds-hint-parent">
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                        {!$Label.c.Contact_Email}:
+                                    </td>
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                        {!v.childsingleBooth[0].Contact__r.Email}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" class="infohead">{!$Label.c.Stand_Details}</td>
+                                </tr>
+                                <tr class="slds-hint-parent">
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                        {!$Label.c.Stand}#:
+                                    </td>
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+
+                                        <aura:if isTrue="{!v.childsingleBooth[0].IsManagedbyAgent__c}">
+                                            Agent Pavillion Space (multiple stands)
+                                            <aura:set attribute="else">
+                                                {!v.childsingleBooth[0].Opp_Booth_Mapping__r.Booth_Number__c}
+                                            </aura:set>
+                                        </aura:if>
+                                    </td>
+                                </tr>
+                                <tr class="slds-hint-parent">
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                        {!$Label.c.Dimensions}:
+                                    </td>
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+
+                                        <aura:if isTrue="{!v.childsingleBooth[0].IsManagedbyAgent__c}">
+                                            Agent Pavillion Space (multiple stands)
+                                            <aura:set attribute="else">
+                                                <!-- {!v.StndDetails[0].Opp_Booth_Mapping__r.Expocad_Booth__r.Dimensions__c} -->
+                                                {!v.childsingleBooth[0].Opp_Booth_Mapping__r.Expocad_Booth__r.Dimensions__c}
+                                            </aura:set>
+                                        </aura:if>
+                                    </td>
+                                </tr>
+                                <tr class="slds-hint-parent">
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                        {!$Label.c.Stand_Height}:
+                                    </td>
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                        {!v.StndDetails[0].Stand_Height__c}
+                                    </td>
+                                </tr>
+                                <tr class="slds-hint-parent">
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                        {!$Label.c.Open_Sides}:
+                                    </td>
+                                    <td id="openside" style="border-top: 0px solid rgb(217, 219, 221);">
+                                        {!v.StndDetails[0].Open_Side__c}
+                                    </td>
+                                </tr>
+                                <tr class="slds-hint-parent">
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                        {!$Label.c.Do_you_have_Rigging}
+                                    </td>
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                        <aura:if isTrue="{!v.StndDetails[0].IsRigging__c==true}">
+                                            <lightning:formattedText value="Yes" />
+                                            <aura:set attribute="else">
+                                                <lightning:formattedText value="No" />
+                                            </aura:set>
+                                        </aura:if>
+                                    </td>
+                                </tr>
+                                <tr class="slds-hint-parent">
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                        {!$Label.c.Rigging_Height}:
+                                    </td>
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                        {!v.StndDetails[0].Rigging_Height__c}
+                                    </td>
+                                </tr>
+                                <tr class="slds-hint-parent">
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                        {!$Label.c.Are_you_building_a_Double_Decker_Stand}
+                                    </td>
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                        <aura:if isTrue="{!v.StndDetails[0].IsDoubleDecker__c==true}">
+                                            <lightning:formattedText value="Yes" />
+                                            <aura:set attribute="else">
+                                                <lightning:formattedText value="No" />
+                                            </aura:set>
+                                        </aura:if>
+                                    </td>
+                                </tr>
+                                <tr class="slds-hint-parent">
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                        <aura:unescapedHtml value="{!$Label.c.Do_you_have_heavy_machinery_or_vehicles_on_your_stand}" />
+                                    </td>
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                        <!--<lightning:formattedText value = "{!IF(!v.StndDetails[0].Is_Heavy_Machinery__c, Yes, No)}"/>-->
+                                        <aura:if isTrue="{!v.StndDetails[0].Is_Heavy_Machinery__c==true}">
+                                            <lightning:formattedText value="Yes" />
+                                            <aura:set attribute="else">
+                                                <lightning:formattedText value="No" />
+                                            </aura:set>
+                                        </aura:if>
+                                        <!--{!v.StndDetails[0].Is_Heavy_Machinery__c}-->
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" class="infohead">{!$Label.c.Subcontractor_Details}</td>
+                                </tr>
+                                <tr class="slds-hint-parent">
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);font-weight: bold;">
+                                        {!$Label.c.Subcontractor_Name}:
+                                    </td>
+
+
+                                    <td style="border-top: 0px solid rgb(217, 219, 221);">
+                                        <aura:iteration items="{!v.SubConList}" var="SubCons" indexVar="index">
+                                            <aura:if isTrue="{!index}">
+                                                {!', '+SubCons.TempContact__r.Name__c}
+                                                <aura:set attribute="else">
+                                                    {!SubCons.TempContact__r.Name__c}
+                                                </aura:set>
+                                            </aura:if>
+                                        </aura:iteration>
+                                    </td>
+
+
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <lightning:button class="slds-m-top_medium fLeft" variant="brand" label="Copy to Clipboard" onclick="{!c.copytoclipboard}" />
+                    <lightning:button class="slds-m-top_medium fLeft closeBtn" variant="neutral" label="Close Window"
+                        onclick="{!c.hideshowdataModal}" />
+
+                </div>
+            </div>
+        </div>
+    </div>
+</aura:component>

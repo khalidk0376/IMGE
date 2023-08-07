@@ -1,0 +1,423 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component implements="flexipage:availableForAllPageTypes" controller="AccountLtnCtrl">
+    <aura:attribute name="activeSections" type="List" />
+    <aura:attribute name="filteredOptions" type="String[]" />
+    <aura:attribute name="filteredOptionsBill" type="String[]" />
+    <aura:attribute name="searchKey" type="String" default=""/>
+    <aura:attribute name="searchKeyBill" type="String" default=""/>
+    <aura:attribute name="showSpinner" type="Boolean" default="false" />
+    <aura:attribute name="hasBpNumberAndisSales" type="Boolean" default="false" />
+    <!-- BK-22296 - Danish on 26-07-2022 -->
+    <aura:attribute name="isBpNumberAndSalesBrasil" type="Boolean" default="false"/>
+    <!-- BK-3828 - Rajesh Kumar on 14-04-2020 -->
+    <aura:attribute name="hasNationalClassficationNull" type="Boolean" default="false" />
+    <!-- 
+		1. isAddressDisabled attribute Set TRUE If BP Number Exist only for(Sales and Sales-Brasil Profile)
+		2. isAddressDisabled attribute Set FALSE If BP Number NOT Exist only for(Sales and Sales-Brasil Profile)
+		Note:- for other profile they should be able to edit.
+	-->
+    <aura:attribute name="isAddressDisabled" type="Boolean" default="false" />
+    
+    <!--<aura:attribute name="isAddressNotEditable" type="Boolean" default="true" />-->
+
+    <aura:attribute name="hasBpNumber" type="Boolean" default="false" />
+    <aura:attribute name="recordId" type="string" />
+    <aura:attribute name="isEditForm" type="boolean" />
+    <aura:attribute name="accountObj" type="Object" access="public" />
+    <aura:attribute name="response" type="string" default="" />
+    <aura:attribute name="isSaveClick" type="Boolean" />
+    
+    <aura:attribute name="meta" type="Object" />
+    
+    <aura:attribute name="depnedentFieldMapBill" type="map" description="map to store dependent values with controlling value" />
+    <aura:attribute name="depnedentFieldMapShip" type="map" description="map to store dependent values with controlling value" />
+
+    <aura:attribute name="billStateLoading" type="Boolean" default="false"/>
+    <aura:attribute name="shipStateLoading" type="Boolean" default="false" />
+
+    <aura:attribute name="billAdd" type="Object" />
+    <aura:attribute name="shipAdd" type="Object" />
+    <aura:attribute name="usrDtls" type="Object" />
+    <aura:attribute name="isBPUpdated" type="Boolean" default="false" />
+    
+    <aura:attribute name="isAccountCreditHold" type="Boolean" default="false" />
+    <aura:attribute name="defaultRecordType" type="string" access="public" />
+    <aura:registerEvent name="refreshUpload" type="c:refreshUpload" />
+    <aura:attribute name="googleApiFieldMap" type="map" description="map to store country name with its metadata" />
+    
+    <!-- Aura Handler -->
+    <aura:handler name="init" value="{!this}" action="{!c.loadData}" />
+    <aura:handler event="c:refreshEvent" action="{!c.onResponseChange}" />
+    <!-- Aura Handler -->
+    <div class="container">
+        <aura:if isTrue="{!v.showSpinner}">
+            <lightning:spinner size="small" variant="brand" />
+        </aura:if>        
+        <aura:if isTrue="{!and(v.hasBpNumber,v.isSaveClick)}">
+            <c:UploadDeclarationDocumentPopup isBpNumberPopUp="{!v.hasBpNumber}" isEditForm="{!v.isEditForm}" response="{!v.response}" />
+        </aura:if>
+        <lightning:recordEditForm aura:id="editForm" onload="{!c.handleLoad}" onsubmit="{!c.handleSubmit}" onerror="{!c.handleError}" onsuccess="{!c.handleSuccess}" objectApiName="Account" recordId="{!v.recordId}" recordTypeId = "{!v.defaultRecordType}">
+            <lightning:messages />
+            <lightning:accordion allowMultipleSectionsOpen="true" aura:id="accAccordion" activeSectionName="{!v.activeSections}" onsectiontoggle="{!c.handleSectionToggle}">
+                <!-- Account Information -->
+                <lightning:accordionSection class="slds-hide" name="summaryView" label="Account Information" aura:id="summaryView">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <!--lightning:inputField fieldName="Credit_Status__c" / -->
+                            <label class="slds-form-element__label">Credit Status</label><br />
+                            <aura:unescapedHtml value="{!v.accountObj.Credit_Status__c}" />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <!--lightning:inputField fieldName="Credit_Status__c" / -->
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <!--lightning:inputField fieldName="Credit_Status__c" / -->
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="Name" onchange="{!c.onFieldChange}" disabled="{!v.hasBpNumberAndisSales}" />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="Phone"  />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="Website"  />
+                        </lightning:layoutItem>
+                        
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="Type"  />
+                        </lightning:layoutItem>
+                        
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="Tax_Id__c" onchange="{!c.onFieldChange}" disabled="{!v.hasBpNumberAndisSales}"/>
+                        </lightning:layoutItem>
+                        
+                         <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="Primary_Email__c" onchange="{!c.onFieldChange}"/>
+                        </lightning:layoutItem>
+                        
+                        <!-- <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="Business_Unit__c" disabled="{!v.hasBpNumberAndisSales}"/>
+                        </lightning:layoutItem>-->
+                         <!-- Render for sales brasil start-->
+                        <aura:if isTrue="{!v.usrDtls.Profile.Name=='Sales-Brasil' || v.usrDtls.Profile.Name=='System Administrator' || v.usrDtls.Profile.Name=='GE System Administrator' || v.usrDtls.Profile.Name=='GE BA Administrator' || v.usrDtls.Profile.Name=='SSC Finance-Accounting' }">
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:inputField fieldName="Nome_Fantasia__c"  />
+                            </lightning:layoutItem>
+                        </aura:if>
+                        
+                        <!-- Render for sales brasil start-->
+                        <aura:if isTrue="{!v.usrDtls.Profile.Name=='Sales-Brasil' || v.usrDtls.Profile.Name=='System Administrator' || v.usrDtls.Profile.Name=='GE System Administrator' || v.usrDtls.Profile.Name=='GE BA Administrator' || v.usrDtls.Profile.Name=='SSC Finance-Accounting'}">
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:inputField fieldName="CNPJ__c"  />
+                            </lightning:layoutItem>
+                        </aura:if>
+                        <!-- Render for sales brasil end-->
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="Network__c"  />
+                            <lightning:inputField fieldName="Brand__c"  />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="Date_of_Last_Won_Deal__c"  />
+                        </lightning:layoutItem>
+                        <!-- Render for sales brasil start-->
+                        <aura:if isTrue="{!v.usrDtls.Profile.Name=='Sales-Brasil' || v.usrDtls.Profile.Name=='System Administrator' || v.usrDtls.Profile.Name=='GE System Administrator' || v.usrDtls.Profile.Name=='GE BA Administrator' || v.usrDtls.Profile.Name=='SSC Finance-Accounting'}">
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:inputField fieldName="City_Hall_Tax_Registration__c"  />
+                            </lightning:layoutItem>
+                        </aura:if>
+                        <!-- Render for sales brasil end-->
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="Count_of_Opportunities__c"  />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="State_Tax_Registration__c"  />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="Count_of_Won_Opportunities__c"  />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="CurrencyIsoCode"  />
+                        </lightning:layoutItem>
+                        <!-- Render for sales brasil start-->
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <aura:if isTrue="{!v.usrDtls.Profile.Name=='Sales-Brasil' || v.usrDtls.Profile.Name=='System Administrator' || v.usrDtls.Profile.Name=='GE System Administrator' || v.usrDtls.Profile.Name=='GE BA Administrator' || v.usrDtls.Profile.Name=='SSC Finance-Accounting'}">
+                                <lightning:combobox options="{!v.meta.Simples_Nacional__c.FieldPicklist}" value="{!v.accountObj.Simples_Nacional__c}" label="{!v.meta.Simples_Nacional__c.FieldLabel}" aura:id="inputFields"  />
+                                <lightning:inputField class="slds-hide" fieldName="Simples_Nacional__c"  />
+                            </aura:if>
+                        </lightning:layoutItem>
+                        <!-- Render for sales brasil end-->
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:combobox options="{!v.meta.Organization_Business_Vol__c.FieldPicklist}" value="{!v.accountObj.Organization_Business_Vol__c}" label="{!v.meta.Organization_Business_Vol__c.FieldLabel}" aura:id="inputFields"  />
+                            <lightning:inputField class="slds-hide" fieldName="Organization_Business_Vol__c"  />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="Description"  />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element form-element-hidden" size="4">
+                            <label class="slds-form-element__label">Parent Account</label>
+                            <lightning:inputField fieldName="ParentId" class="removeLabel"  />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:combobox options="{!v.meta.Organization_Size_In_Person__c.FieldPicklist}" value="{!v.accountObj.Organization_Size_In_Person__c}" label="{!v.meta.Organization_Size_In_Person__c.FieldLabel}" aura:id="inputFields"  />
+                            <lightning:inputField class="slds-hide" fieldName="Organization_Size_In_Person__c" />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="Requires_Company_Stamp__c" />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:combobox options="{!v.meta.Employees__c.FieldPicklist}" value="{!v.accountObj.Employees__c}" label="{!v.meta.Employees__c.FieldLabel}" aura:id="inputFields" />
+                            <lightning:inputField class="slds-hide" fieldName="Employees__c" />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="Inactive__c" value = "{!v.accountObj.Inactive__c}"/>
+                        </lightning:layoutItem>
+                        <!--lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="Business_Unit__c" disabled="{!v.hasBpNumberAndisSales}"/>
+                        </lightning:layoutItem -->
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:combobox options="{!v.meta.Industry__c.FieldPicklist}" value="{!v.accountObj.Industry__c}" label="{!v.meta.Industry__c.FieldLabel}" aura:id="inputFields" />
+                            <lightning:inputField class="slds-hide" fieldName="Industry__c" value="{!v.accountObj.Industry__c}" />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:combobox options="{!v.meta.Accounting_Credit_Hold__c.FieldPicklist}" value="{!v.accountObj.Accounting_Credit_Hold__c}" label="{!v.meta.Accounting_Credit_Hold__c.FieldLabel}" aura:id="inputFields"  />
+                            <lightning:inputField class="slds-hide" fieldName="Accounting_Credit_Hold__c" />
+                        </lightning:layoutItem>
+                        <!--Changes from here Added by Adarsh Sharma regarding Ticket No:BK-2673 START-->
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="CR_Number__c" />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="CR_Expiry__c" />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="GAZT_Number__c" />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="GAZT_Expiry__c" />
+                        </lightning:layoutItem>
+                        <!--Changes from here Added by Adarsh Sharma regarding Ticket No:BK-2673 STOP -->
+                         <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="National_Classification__c"  />
+                        </lightning:layoutItem>
+                        <!-- Added by Palla Kishore for the ticket BK-20945 -->
+                        <aura:if isTrue="{!v.accountObj.BillingCountry=='Brasil'}">
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:inputField fieldName="Is_Abimaq_Member__c"  />
+                            </lightning:layoutItem>
+                        </aura:if>
+                        <aura:if isTrue="{!v.usrDtls.Profile.Name=='Sales-Brasil' || v.usrDtls.Profile.Name=='System Administrator' || v.usrDtls.Profile.Name=='GE System Administrator'}">
+                            <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                                <lightning:inputField fieldName="Membro_Associado__c"  />
+                            </lightning:layoutItem>
+                        </aura:if>
+                    </lightning:layout>
+                </lightning:accordionSection>
+                <!-- Account Information -->
+                <!-- Account Address -->
+                <lightning:accordionSection class="slds-hide" name="accountaddInfo" label="Account Address" aura:id="accountaddInfo">
+                    <lightning:layout multipleRows="true">
+                        <!-- copy shipping address in billing address -->
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element " size="6">
+                            <lightning:inputField fieldName="IsFromShippingAddress__c" disabled="{!v.isAddressDisabled}" onchange="{!c.onCopyShippingAdd}" />
+                        </lightning:layoutItem>
+                        <!-- copy billing address in shipping address -->
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element " size="6">
+                            <lightning:inputField fieldName="IsFromBillingAddress__c" disabled="{!v.isAddressDisabled}" onchange="{!c.onCopyBillingAdd}" />
+                        </lightning:layoutItem>
+
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="6">
+                            <!-- google address auto complete-->
+                            <div class="slds-size_12-of-12 slds-dropdown-trigger slds-dropdown-trigger_click slds-combobox-lookup" aria-expanded="false" aria-haspopup="listbox" role="combobox" aura:id="searchLookupBilling">
+                                <lightning:input type="text" label="Billing Address Line 1" onchange="{!c.keyPressControllerBill}" value="{!v.searchKeyBill}" aura:id="inputFieldsBill" onfocus="{!c.keyPressControllerBill}" onblur="{!c.handleBlur}" disabled="{!v.isAddressDisabled}" required="true"/>
+                                <div id="listbox-unique-id" role="listbox">
+                                    <ul class="slds-listbox slds-listbox_vertical slds-dropdown slds-dropdown_fluid" role="presentation" style="max-width:99.9%">
+                                        <aura:if isTrue="{!v.filteredOptionsBill.length==0}">
+                                            <li role="presentation" class="slds-listbox__item">
+                                                <span id="listbox-option-unique-id-01" class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta" role="option">
+                                                    <span class="slds-media__body">
+                                                        <span class="slds-listbox__option-text slds-listbox__option-text_entity">
+                                                            Loading...</span> 
+                                                    </span>
+                                                </span>
+                                            </li>
+                                        </aura:if>
+                                        <aura:iteration items="{!v.filteredOptionsBill}" var="option">
+                                            <li role="presentation" class="slds-listbox__item" onclick="{!c.handleSelectBill}" data-value="{!option.value}" data-record="{!option.label}" data-locaval="{!option.locaval}" data-placeid="{!option.PlaceId}">
+                                                <span id="listbox-option-unique-id-01" class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta" role="option">
+                                                    <span class="slds-media__body">
+                                                        <span class="slds-listbox__option-text slds-listbox__option-text_entity">{!option.label}</span>
+                                                    </span>
+                                                </span>
+                                            </li>
+                                        </aura:iteration>
+                                    </ul>
+                                </div>
+                            </div>
+                            <!-- Google Auto complete end-->                            
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="6">
+                            <!-- google address auto complete-->
+                            <div class="slds-size_12-of-12 slds-dropdown-trigger slds-dropdown-trigger_click slds-combobox-lookup" aria-expanded="false" aria-haspopup="listbox" role="combobox" aura:id="searchLookup">
+                                <lightning:input type="text" label="Shipping Address Line 1" onchange="{!c.keyPressController}" value="{!v.searchKey}" aura:id="inputFieldShipingStreet" onfocus="{!c.keyPressController}" onblur="{!c.handleBlur}" disabled="{!v.isAddressDisabled}"/>
+                                <div id="listbox-unique-id" role="listbox">
+                                    <ul class="slds-listbox slds-listbox_vertical slds-dropdown slds-dropdown_fluid" role="presentation" style="max-width:99.9%">
+                                        <aura:if isTrue="{!v.filteredOptions.length==0}">
+                                            <li role="presentation" class="slds-listbox__item">
+                                                <span id="listbox-option-unique-id-01" class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta" role="option">
+                                                    <span class="slds-media__body">
+                                                        <span class="slds-listbox__option-text slds-listbox__option-text_entity">
+                                                            Loading...</span>
+                                                    </span>
+                                                </span>
+                                            </li>
+                                        </aura:if>
+                                        <aura:iteration items="{!v.filteredOptions}" var="option">
+                                            <li role="presentation" class="slds-listbox__item" onclick="{!c.handleSelect}" data-value="{!option.value}" data-record="{!option.label}" data-locaval="{!option.locaval}" data-placeid="{!option.PlaceId}">
+                                                <span id="listbox-option-unique-id-01" class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta" role="option">
+                                                    <span class="slds-media__body">
+                                                        <span class="slds-listbox__option-text slds-listbox__option-text_entity">{!option.label}</span>
+                                                    </span>
+                                                </span>
+                                            </li>
+                                        </aura:iteration>
+                                    </ul>
+                                </div>
+                            </div>
+                            <!-- Google Auto complete end-->
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="6">
+                            <lightning:input type="text" value="{!v.billAdd.billingAddLine2}" label="Billing Address Line 2" disabled="{!v.isAddressDisabled}" onchange="{!c.onFieldChange}" />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="6">
+                            <lightning:input type="text" value="{!v.shipAdd.shippingAddLine2}" label="Shipping Address Line 2" disabled="{!v.isAddressDisabled}" onchange="{!c.onFieldChange}" />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="6">
+                            <lightning:input type="text" value="{!v.billAdd.billingCity}" label="Billing City" disabled="{!v.isAddressDisabled}" onchange="{!c.onFieldChange}" />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="6">
+                            <lightning:input type="text" value="{!v.shipAdd.shippingCity}" label="Shipping City" disabled="{!v.isAddressDisabled}" onchange="{!c.onFieldChange}" />
+                        </lightning:layoutItem>
+
+                        <!-- country -->
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="6">
+                            <lightning:combobox options="{!v.meta.BillingCountryCode.FieldPicklist}" value="{!v.billAdd.billingCountryCode}" label="Billing Country" aura:id="inputFieldBillingCountry" onchange="{!c.onBillingCountryChange}" disabled="{!v.isAddressDisabled}" required="true"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="6">
+                            <lightning:combobox options="{!v.meta.ShippingCountryCode.FieldPicklist}" value="{!v.shipAdd.shippingCountryCode}" label="Shipping Country" aura:id="inputFieldShippingCountry" onchange="{!c.onShippingCountryChange}" disabled="{!v.isAddressDisabled}"/>
+                        </lightning:layoutItem>
+                        
+                        <!-- State -->
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="6">
+                            <lightning:combobox spinnerActive="{!v.billStateLoading}" value="{!v.billAdd.billingStateCode}" label="Billing State/Province" aura:id="billStateCode" disabled="{#v.isAddressDisabled}" onchange="{!c.onFieldChange}"/>
+                        </lightning:layoutItem>
+                        
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="6">
+                            <lightning:combobox spinnerActive="{!v.shipStateLoading}" value="{!v.shipAdd.shippingStateCode}" label="Shipping State / Province" aura:id="shipStateCode" disabled="{#v.isAddressDisabled}" onchange="{!c.onFieldChange}"/>
+                        </lightning:layoutItem>
+                        
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="6">                            
+                            <lightning:input type="text" value="{!v.billAdd.billingPostalCode}" disabled="{!v.isAddressDisabled}" onchange="{!c.onFieldChange}" label="Billing Zip/Postal Code"/>
+                        </lightning:layoutItem>                                                     
+                        
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="6">
+                            <lightning:input type="text" value="{!v.shipAdd.shippingPostalCode}" label="Shipping Zip/Postal Code" disabled="{!v.isAddressDisabled}" onchange="{!c.onFieldChange}" />
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </lightning:accordionSection>
+                <!-- Account Address -->
+                <!-- Account Translated Address -->               
+                <lightning:accordionSection class="slds-hide" name="accountTranslatedInfo" label="Account Translated Address" aura:id="accountTranslatedInfo">
+                    <div class="slds-box">
+                        <c:AccountDetail_TranslatedInfo parentId="{!v.recordId}" isEditMode="{!v.isEditForm}" isDisabled="{!v.isBpNumberAndSalesBrasil}"/>
+                    </div>
+                </lightning:accordionSection>
+                
+                <!-- Account Translated Address -->
+                <!-- Interest and Nature of Business -->
+                <lightning:accordionSection class="slds-hide" name="interestLevelnatureOfBuisness" label="Interest Level And Nature Of Business" aura:id="interestLevelnatureOfBuisness">
+                    <div class="slds-text-heading_small">Interest Level</div>
+                    <div class="slds-box">
+                        <c:AccountDetail_IntrestLevel recordId="{!v.recordId}" />
+                    </div>
+                    <div class="slds-text-heading_small">Nature Of Business</div>
+                    <div class="slds-box">
+                        <c:AccountDetail_NatureOfBusiness recordId="{!v.recordId}"/>
+                    </div>
+                </lightning:accordionSection>
+                <!-- Interest and Nature of Business -->
+                <!-- SSC Details -->
+                <lightning:accordionSection class="slds-hide" name="sscView" label="SSC Details" aura:id="sscView">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="SSC_SAP_CLient_Code__c"  />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="SSC_SAP_Cobr_Code__c"  />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="SSC_SAP_Ops_Code__c"  />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="Address_Verified__c"  />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="Tax_ID_Verified__c"  />
+                        </lightning:layoutItem>
+                        <!--
+                            Modified By: Yash Gupta
+                            @Description Remove the functionality from account as per ticket GGCKB-49
+                        -->
+                        <!-- <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="Declaration_Document_Received__c" disabled="{!v.hasBpNumberAndisSales}" />
+                        </lightning:layoutItem> -->
+                    </lightning:layout>
+                    <br />
+                    <div class="slds-text-heading_small">BP Number</div>
+                    <div class="slds-box">
+                        <c:AccountDetail_BPNumber recordId="{!v.recordId}" />
+                    </div>
+                </lightning:accordionSection>
+                <!-- SSC Details -->
+                <!-- Admin View -->
+                <lightning:accordionSection class="slds-hide" name="adminView" label="Admin View" aura:id="adminView">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="MDM_ID__c"  />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="x_Legacy_Id__c"  />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element form-element-hidden" size="4">
+                            <label class="slds-form-element__label">Created By</label>
+                            <lightning:inputField fieldName="CreatedById" class="removeLabel" />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="CreatedDate" />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element form-element-hidden" size="4">
+                            <label class="slds-form-element__label">Last Modified By</label>
+                            <lightning:inputField fieldName="LastModifiedById" class="removeLabel" />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small form-element" size="4">
+                            <lightning:inputField fieldName="LastModifiedDate" />
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </lightning:accordionSection>
+                <!-- Admin View -->
+            </lightning:accordion>
+            
+            <div class="slds-m-top_medium slds-align_absolute-center sticky">
+                <lightning:button variant="neutral" label="Cancel" title="Cancel" type="text" onclick="{!c.onCancelClick}" />
+                <aura:if isTrue="{!v.accountObj.Inactive__c!=true}">
+                    <input type="submit" class="slds-button slds-button_brand" value="Update" aura:id="saveBtn"/>
+                    <aura:set attribute="else">
+                        <input type="button" disabled="true" class="slds-button slds-button_brand" value="Update"/>
+                    </aura:set>
+                </aura:if>
+            </div>
+        </lightning:recordEditForm>
+    </div>
+</aura:component>

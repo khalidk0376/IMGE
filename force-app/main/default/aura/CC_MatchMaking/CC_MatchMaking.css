@@ -1,0 +1,12 @@
+.THIS .slds-form-element__control .slds-radio{
+      display : inline-block !important;
+       margin-left: 20px !important;
+ }
+ .THIS .inputWidth{padding-right: 4px; padding-left: 4px;}
+ .THIS #linkMapIt:hover {color:white;text-decoration: none;}
+ .THIS #linkMapIt:active {color:white;text-decoration: none;}
+ .THIS #linkMapIt:visited {color:white;text-decoration: none;}
+ .THIS #linkMapIt:focus {color:white;text-decoration: none;}
+ .THIS label{padding: 0px;}
+ .THIS label:hover{padding: 0px;margin: 0px;}
+ .THIS input:checked + label {margin: 0px;}

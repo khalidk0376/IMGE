@@ -1,0 +1,27 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component controller="NewCreateTemplateCtr" implements="force:appHostable,flexipage:availableForAllPageTypes" access="global" >
+    <!-- Start attribute -->
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="activeTab" type="String" default="search" />
+    <aura:attribute name="QnaireId" type="String" />
+    <aura:attribute name="tempId" type="String" />
+    <!-- End attribute -->
+    <!-- event handlers -->
+    <aura:handler name="init" action="{!c.doInit}" value="{!this}"></aura:handler>
+    <aura:handler event="c:QFSetActiveHeaderEvt" action="{!c.handleApplicationEvent}" />
+    
+    <!--Start show different type component behalf of header event -->
+    <div class="{!v.activeTab=='preview'}">
+        <aura:if isTrue="{!v.activeTab =='search'}">
+            <div aura:id="searchTamplate">
+                <c:ListTemplate />
+            </div>
+        </aura:if>
+        <aura:if isTrue="{!v.activeTab=='createTemplate'}">
+            <div aura:id="CreateTemplate">
+                <!--<c:CreateTemplateComp QnaireId="{!v.QnaireId}" viewType="questionEditor"/>-->
+                <c:NewCreateTemplate QnaireId="{!v.QnaireId}" viewType="questionEditor"/>
+            </div>
+        </aura:if>
+    </div>    
+</aura:component>

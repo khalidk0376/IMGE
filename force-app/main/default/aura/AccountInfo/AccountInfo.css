@@ -1,0 +1,27 @@
+.THIS .slds-accordion__summary-action {
+    display: flex;
+    align-items: center;
+    background: rgb(243, 242, 242);
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    color: currentColor;
+    font-size: inherit;
+    /*padding: 6px;*/
+    padding: 20px !important;  
+    height: 45px !important;
+}
+.THIS .slds-accordion__list-item
+{
+    border-top: 0;
+}
+.THIS .slds-accordion__section {
+    padding: 5px;
+}
+.THIS .slds-form-element__static {
+    flex-basis: 0%;
+    border-bottom: 1px solid rgb(221, 219, 218);
+    margin-bottom: 0;
+    padding-bottom: .125rem;
+}
+.THIS .slds-th__action .slds-th__action-button { display: none; }

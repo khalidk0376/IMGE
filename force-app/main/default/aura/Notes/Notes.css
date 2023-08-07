@@ -1,0 +1,3 @@
+.THIS .textWidth  {width:100%;height:100px;}
+.THIS .noborder{border:0px solid black !important;color: black;font-weight: bold; }
+.THIS .maindiv{max-height: 300px !important; border:1px solid rgb(169, 169, 169) !important;overflow-y: scroll;}

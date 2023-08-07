@@ -1,0 +1,45 @@
+<!--
+    ************ Modification Log  ************
+    * Modified by : Girikon(Sunil[CCEN-592 Jan 18 2019]) , Aishwarya[BK-14780 25 March 2021]
+-->
+<aura:component>
+    <!--<ltng:require scripts="{!$Resource.CustomerCenterWS11 +'/CustomerCenterWS11/js/copytoClipboard.js'}"/>-->
+    <!-- <aura:attribute name="copydata" type="object" /> -->
+    <aura:attribute name="objEditor" type="object" />
+    <aura:attribute name="scrollFunc" type="object" />
+    <aura:attribute name="eventId" type="string" />
+    <aura:attribute name="tabCssAtt" type="list" />
+    <aura:handler name="init" value="{!this}" action="{!c.onloadTabs}" />
+    <aura:attribute name="selTabId" type="String" default="tab3" />
+    <lightning:tabset selectedTabId="{!v.selTabId}">
+        <lightning:tab label="{!$Label.c.ExhibitorWithoutContractorTab}" id="tab1">
+            <aura:if isTrue="{!v.selTabId == 'tab1'}">
+                <c:ExhibitorsWithoutContractors eventId="{!v.eventId}" selTabId1="{!v.selTabId}"
+                    tabCssAtts="{!v.tabCssAtt}" />
+            </aura:if>
+        </lightning:tab>
+        <lightning:tab label="{!$Label.c.ContractorSalesForceApprovals}" id="tab2">
+            <aura:if isTrue="{!v.selTabId == 'tab2'}">
+                <c:ApproveContractor EventId="{!v.eventId}" selTabId2="{!v.selTabId}" tabCssAtts="{!v.tabCssAtt}" />
+            </aura:if>
+        </lightning:tab>
+        <lightning:tab label="{!$Label.c.AllAssignedContractors}" id="tab3">
+            <aura:if isTrue="{!v.selTabId == 'tab3'}">
+                <c:ViewContractors EventId="{!v.eventId}" selTabVal="{!v.selTabId}" tabCssAtts="{!v.tabCssAtt}"/>
+            </aura:if>
+        </lightning:tab>
+        <lightning:tab label="{!$Label.c.Subcontractors}" id="tab4">
+            <aura:if isTrue="{!v.selTabId == 'tab4'}">
+                <div class="subConList">
+                    <c:ViewSubContractor eventId="{!v.eventId}" boothMapId="" />
+                </div>
+            </aura:if>
+        </lightning:tab>
+        
+        <lightning:tab label="{!$Label.c.EmailReminders}" id="tab5">
+            <aura:if isTrue="{!v.selTabId == 'tab5'}">
+                <c:EmailReminders eventId="{!v.eventId}" />
+            </aura:if>
+        </lightning:tab>
+    </lightning:tabset>
+</aura:component>

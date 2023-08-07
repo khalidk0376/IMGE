@@ -1,0 +1,346 @@
+.THIS .step li a {
+    color: #a0a0a0 !important;
+    text-decoration: none !important;
+    font-weight: bold;
+}
+
+.THIS .step .active a {
+    color: #000 !important;
+    font-weight: bold;
+}
+
+.THIS .mainsection p {
+    margin: 10px 0px;
+}
+
+.THIS .section p {
+    margin: auto;
+}
+
+.THIS .sectionheading {
+    margin: 10px 0 !important;
+}
+
+.THIS .bold-heading {
+    padding: 0 !important;
+    font-size: 13px !important;
+    ;
+}
+
+.THIS .bold-heading2 {
+    padding: 4px !important;
+}
+
+.THIS .required-table p {
+    margin: 0px;
+}
+
+.THIS .primary-btn {
+    color: white;
+}
+.THIS .div-body-head{ 
+    border-bottom:3px solid #b7b7b7; 
+    font-size:20px; 
+    line-height:14px; 
+    color:#000;
+    border-top: 3px solid #b7b7b7;
+    margin-top: 2%;
+    margin-bottom: 2%;
+    padding-top: 2%;
+    padding-bottom: 2%
+}
+
+.THIS .btnmanuals i {
+    font-size: 40px;
+    float: left;
+}
+
+.THIS .step .finish a {
+    color: #3aac66 !important;
+}
+
+.THIS .required-table tr td {
+    border-bottom: 0;
+    color: black !important;
+    font-size: 13px;
+}
+
+.THIS .required-table tr td input[type="text"] {
+    width: 40%;
+}
+
+.THIS label:hover {
+    margin-top: 0;
+    margin-left: 0;
+}
+
+.THIS .inline {
+    display: inline-block;
+    padding: 2px 2px;
+}
+
+.THIS .inline+.inline {
+    margin-left: 10px;
+}
+
+.THIS .radio {
+    position: relative;
+}
+
+.THIS .radio span {
+    position: relative;
+    padding-left: 20px;
+}
+
+.THIS .radio input[type="radio"] {
+    cursor: pointer;
+    position: absolute;
+    top: 6px;
+}
+
+.THIS .radio input[type="radio"]:checked+span {
+    color: #555;
+}
+
+.THIS .sectionhide {
+    display: none
+}
+
+.THIS .slds-input {
+    width: 60% !important;
+}
+
+.THIS .slds-form-element label {
+    padding: 0px;
+}
+
+.THIS .slds-select {
+    width: 30% !important;
+}
+
+.THIS .inputWidth {
+    width: 30%;
+    padding-right: 4px;
+    padding-left: 4px;
+}
+
+.THIS .section hr {
+    margin: 20px 0px !important;
+}
+
+.THIS .black-bold {
+    color: #000 !important;
+    font-weight: bold !important;
+}
+
+.THIS .section .inner {
+    margin: 10px;
+}
+
+.THIS .slds-accordion__summary {
+    background-color: #e6e6e6;
+    padding: 15px;
+}
+
+.THIS .slds-accordion__list-item {
+    border: 0;
+}
+
+.THIS .slds-accordion__section {
+    padding: 2px !important;
+}
+
+.THIS .uploadallbg {
+    border: 1px solid #b4b4b4;
+}
+
+.THIS .uploadall {
+    background-color: #efefef;
+    padding: 20px 0px;
+    text-align: center;
+    font-size: 13px !important;
+}
+
+.THIS .uploadall a {
+    font-weight: 700;
+    color: #007bcb;
+    font-size: 13px;
+}
+
+.THIS .uploadall p {
+    font-size: 13px;
+}
+
+.THIS .uploadall-btn {
+    background: #3790c7;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    padding: 15px 45px;
+    margin-top: 15px;
+    margin-bottom: 25px;
+}
+
+.THIS .f-black {
+    color: #4d4d4d;
+    font-size: 13px !important;
+}
+
+.THIS .color-grey {
+    font-size: 13px !important;
+}
+
+.THIS .slds-accordion__summary-heading .slds-button:focus {
+    color: #000 !important;
+    text-decoration: none !important;
+    box-shadow: none !important;
+    font-weight: bold !important;
+}
+
+.THIS .slds-accordion__summary-heading .slds-button {
+    color: #000 !important;
+    font-weight: bold !important;
+}
+
+.THIS .slds-accordion__summary-heading .slds-button:active {
+    color: #000 !important;
+    font-weight: bold !important;
+}
+
+.THIS .slds-accordion__content {
+    padding: 0px 20px;
+}
+
+.THIS .tab-content {
+    font-size: 13px;
+}
+
+.THIS .stand-designul ul {
+    margin-left: 30px !important;
+    list-style-type: initial;
+}
+
+.THIS .stand-designul ul li {
+    font-size: 13px !important;
+    color: #4d4d4d;
+}
+
+.THIS .uploadall a {
+    text-decoration: none !important;
+}
+
+.THIS .font-size20 {
+    font-size: 20px;
+}
+
+.THIS .form-input {
+    width: 98%;
+}
+
+.THIS .accordion {
+    background-color: #eee;
+    color: #444;
+    cursor: pointer;
+    padding: 12px 20px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+    transition: 0.2s;
+    margin: 2px 0px;
+}
+
+.THIS .accordion:hover {
+    background-color: #ccc;
+}
+
+.THIS .panel {
+    padding: 0 18px;
+    background-color: white;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.9s ease-out;
+}
+
+.THIS .close {
+    line-height: 0;
+}
+
+.THIS .bodycomapny {
+    padding: 7px 0 0 0;
+    color: #555 !important;
+}
+
+.THIS .modal-header h2 {
+    font-weight: 700 !important;
+    font-size: 20px !important;
+}
+
+.THIS .inputfile {
+    border: 1px solid #d2d2d2;
+    padding: 7px;
+    margin-top: 8px;
+}
+
+.THIS .msgbackground {
+    background: #f8f2a0;
+    padding: 10px;
+    margin: 10px 0px;
+}
+
+.THIS .msgbackground i {
+    font-size: 24px;
+}
+
+.THIS .step .changecolor a {
+    color: #0072bc !important;
+}
+
+.THIS .marginleft {
+    margin-left: 8px;
+}
+
+.THIS .customModal {
+    max-width: 80%;
+}
+
+.THIS .CustomMarginBtn {
+    margin-top: 10px;
+}
+
+.THIS .customCheckBox label {
+    border: 2px solid #fff;
+}
+.THIS .customtable {
+    position: relative;
+    background-color: rgba(235, 235, 235, 0.4);
+    border: 1px solid rgb(161, 161, 161);
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.THIS .disabled {
+    background: #86BCDD; 
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    padding: 15px 45px;
+    margin-top: 15px;
+    margin-bottom: 25px;
+}
+
+.THIS .disabled1 {
+    background: #86BCDD; 
+    color: white;
+}
+
+.THIS button:disabled {
+    opacity: 0.6;
+    filter: alpha(opacity=50);
+}
+.THIS .mybreadcrumb{display: inline-block;}

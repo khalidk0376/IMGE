@@ -1,0 +1,4 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:event type="APPLICATION" description="Event template">
+<aura:attribute name="isEditMode" type="boolean"/>
+</aura:event>

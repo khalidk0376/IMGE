@@ -1,0 +1,22 @@
+<!-- 
+    ************ Creation Log  ************
+    * Created By :{Girikon([Prashant[C2E-103 18 Sept 2019])} 
+    ************ Modification Log  ************  
+    * Modified By :  
+-->
+
+<aura:component implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes" controller="BadgesUtils">
+
+    <!--AccountId , EventId, EventCode are received from Skuid_Page(CustomerBadges)-->
+    <aura:attribute name="accountId" type="string"/>
+    <aura:attribute name="eventId" type="string" default=" "/>
+    <aura:attribute name="eventCode" type="string" />
+    <aura:attribute name="currentUser" type="string" default=""/>
+    <aura:handler name="init" value="{!this}" action="{!c.OnloadData}" />
+    <aura:if isTrue="{!and(and(and(v.currentUser != 'Agent', v.currentUser != ''), v.accountId), v.eventId)}" >
+        <c:CommunityExhibitorBadge accountId = "{!v.accountId}" eventId = "{!v.eventId}" eventCode = "{!v.eventCode}"/>
+    </aura:if>
+    <aura:if isTrue="{!and(and(v.currentUser == 'Agent',v.accountId), v.eventId)}" > 
+        <c:AgentCommunityExhibitorBadge accountId = "{!v.accountId}" eventId = "{!v.eventId}" eventCode = "{!v.eventCode}"/>
+    </aura:if>    
+</aura:component>

@@ -1,0 +1,11 @@
+.THIS .slds-accordion__summary-action {
+    display: flex;
+    align-items: center;
+    background: rgb(243, 242, 242);
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    color: currentColor;
+    font-size: inherit;
+    padding: 6px;
+}

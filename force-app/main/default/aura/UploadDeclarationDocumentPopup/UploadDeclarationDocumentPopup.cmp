@@ -1,0 +1,47 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId" access="global">
+    
+    <aura:attribute name="isOpenDocuModal" default="false" type="Boolean" access="public" />
+    <aura:attribute name="isEditForm" type="boolean" />
+    <aura:attribute name="isBpNumberPopUp" default="false" type="Boolean" />
+    <aura:attribute name="acName" type="string" />
+    <aura:attribute name="response" type="Boolean" default="false"/>
+    
+
+    <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" style="height: 300px;margin-top: 10%;" class="slds-modal slds-fade-in-open">
+        <div class="slds-modal__container"> 
+            <aura:if isTrue="{!v.isBpNumberPopUp}">
+                <header class="slds-modal__header">
+                    <button onclick="{!c.closeDocuModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                        <lightning:icon iconName="utility:close" size="small" variant="bare" />
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Alert</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1" style="height:150px;max-height:auto">
+                    <center><b> BP number exists. It might affect SAP. Do you wish to continue ? </b></center>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning:button label="Ok" onclick="{!c.closeDocuModalOk}" iconName="utility:check" iconPosition="left" variant="brand" />
+                    <lightning:button label="Cancel" onclick="{!c.closeDocuModal}" iconName="utility:close" iconPosition="left" variant="destructive" />
+                </footer>
+                <aura:set attribute="else">
+                    <header class="slds-modal__header">
+                        <button onclick="{!c.closeDocuModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                            <lightning:icon iconName="utility:close" size="small" variant="bare" />
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Declaration Document: {!v.acName}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1" style="height:300px;max-height:auto">
+                        <center> <b>{!$Label.c.Label_Declaration_Doc}</b></center>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning:button label="Continue" type="submit" onclick="{!c.OpenPopUpModel}" iconName="utility:check" iconPosition="left" variant="brand" />
+                        <lightning:button label="Cancel" onclick="{!c.closeDocuModal}" iconName="utility:close" iconPosition="left" variant="destructive" />
+                    </footer>
+                </aura:set>
+            </aura:if>
+        </div>
+    </section>
+    <div class="slds-backdrop slds-backdrop_open"></div>
+</aura:component>

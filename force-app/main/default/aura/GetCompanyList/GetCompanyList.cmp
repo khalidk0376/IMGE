@@ -1,0 +1,37 @@
+<!--
+  @description       : Button to get all Company list from 3E[EX-21]
+  @author            : Girikon
+  @Project           : 3E Expocad Integration
+  @last modified on  : 06-24-2022
+  @last modified by  : Girikon
+-->
+<aura:component controller="SyncRecords3EExpocadUtil" implements="force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global">
+    <aura:attribute name="confirm" type="Boolean" description="description" default="false" />
+    <aura:attribute name="recordId" type="Id" />
+    <aura:if isTrue="{!!v.confirm}">
+        <Div style="text-align:center;margin:60px 0px;">
+            Are you sure want to get company list?
+        </Div>
+        <div style="Float:right;margin: 12px;">
+            <lightning:button variant="Brand" label="No" title="No" onclick="{!c.modalClose}"/>
+            <lightning:button variant="Brand" label="Yes" title="Yes" onclick="{!c.startSync}"/>
+        </div>
+    </aura:if>
+    <aura:if isTrue="{!v.confirm}">
+        <c:processApiSyncronizationBatch recordId="{!v.recordId}" syncProcess="getCompanyList" onclose="{!c.modalClose}" />
+    </aura:if>
+
+	<aura:html tag="style">
+		.cuf-content { 
+		padding: 0 0rem !important; 
+		}
+		.slds-p-around--medium {
+		padding: 0rem !important;
+		}
+		.slds-modal__content{
+		overflow-y:hidden !important;
+		height:unset !important;
+		max-height:unset !important;
+		}
+	</aura:html>
+</aura:component>

@@ -1,0 +1,18 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId" controller="AccountLtnCtrl">
+    
+
+    <aura:attribute name="objectName" type="String" default="" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+
+    <ltng:require scripts="{!$Resource.LtngUtility}"/>
+    
+    <!--<lightning:card title="Quotes" iconName="standard:quotes">-->
+        <aura:if isTrue="{!v.objectName=='Contact'}">
+            <c:LightningDataTable object="SBQQ__Quote__c" operator="OR" fields="Name,SBQQ__Account__r.Name,Billing_Contact__r.Name,SBQQ__PrimaryContact__r.Name" whereField="Billing_Contact__c,SBQQ__PrimaryContact__c" whereValue="{!v.recordId+','+v.recordId}" inlineEditable="false"/>
+        </aura:if>
+        <aura:if isTrue="{!v.objectName=='Account'}">
+            <c:LightningDataTable object="SBQQ__Quote__c" operator="OR" fields="Name,Event_Edition_Name__c,SBQQ__NetAmount__c,Billing_Contact__r.Name,SBQQ__PrimaryContact__r.Name,Opportunity_Name__c" whereField="SBQQ__Account__c" whereValue="{!v.recordId}" inlineEditable="false"/>
+        </aura:if>
+    <!--</lightning:card>-->
+</aura:component>

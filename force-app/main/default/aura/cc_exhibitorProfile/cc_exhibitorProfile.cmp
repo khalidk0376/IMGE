@@ -1,0 +1,33 @@
+<!--
+    ************ Modification Log  ************
+    * Created by : Girikon(Sunil)[STL 117 (sep 29 2019)] 
+  @description : This component is use to exhibitor profile tab in Customer Center.
+-->
+<aura:component implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes" access="global"
+                controller="LtngUtilityCtrl">
+    <aura:handler name="init" value="{!this}" action="{!c.OnloadData}" />
+    <aura:attribute name="eventCode" type="String"  />
+    <aura:attribute name="eventSettings" type="Object" />
+    <aura:attribute name="userDetails" type="Object" />
+    <section>
+        <div class="container">
+            <div class="row">
+                <lightning:breadcrumbs>
+                    <lightning:breadcrumb label="Home" onclick="{!c.goToHome}">
+                    </lightning:breadcrumb>
+                    <lightning:breadcrumb label="{!v.eventSettings.Exhibitor_Directory_Title__c}">
+                    </lightning:breadcrumb>
+                </lightning:breadcrumbs>
+                <br />
+                <h1 class="top-h1-heading">{!v.eventSettings.Exhibitor_Directory_Title__c}</h1>
+                <p class="text-normal slds-text-longform">
+                    <aura:unescapedHtml value="{!v.eventSettings.Welcome_Text_Exhibitor_Profile__c}" />
+                </p>    
+                <div class="clearfix"></div>
+                <aura:if isTrue="{!and(v.eventSettings.Event_Edition__c ,v.userDetails.AccountId)}">
+                    <c:CC_CustomerProfile eventId="{!v.eventSettings.Event_Edition__c}" eventCode="{!v.eventCode}" exhAccountID="{!v.userDetails.AccountId}"></c:CC_CustomerProfile>
+                </aura:if>
+            </div>
+        </div>
+    </section>
+</aura:component>

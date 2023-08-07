@@ -1,0 +1,195 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component controller="AddDeleteNotesController_class" Implements="force:lightningQuickAction,flexipage:availableForRecordHome,force:appHostable,flexipage:availableForAllPageTypes,lightning:actionOverride,force:hasRecordId"
+                access="global">
+    
+     <!--Init handler to call doInit js function on component Load-->  
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/> 
+    <!--Note Record ID-->
+    <aura:attribute name="recordId" type="String" />
+    <aura:attribute name="EditForm" type="Note" 
+                    default="{'sobjectType':'ContentNote',
+                             'parentId' : '',
+                             'Title' : '',
+                             'Content' : '',
+                             'IsPrivate' : ''
+                             }"></aura:attribute>
+    
+    <!--Attributes for Pagination-->
+    <aura:attribute name="columns" type="List"/> 
+    <aura:attribute name="NoteList" type="ContentNote[]"/>
+    <aura:attribute name="PageNumber" type="integer" default="1"/>
+    <aura:attribute name="TotalPages" type="integer" default="0"/>
+    <aura:attribute name="TotalRecords" type="integer" default="0"/>
+    <aura:attribute name="RecordStart" type="integer" default="0"/>
+    <aura:attribute name="RecordEnd" type="integer" default="0"/>
+    <!--Attributes for Pagination-->
+    
+    
+    <!--Aura attribute to get notes -->    
+    <aura:attribute name="NoteListPagination" type="ContentNote[]"/>
+    <aura:attribute name="NewNoteModel" type="boolean" default="false" />
+    <aura:attribute name="NoteId" type="Id" />
+    <aura:attribute name="DelNoteId" type="Id" />
+    <aura:attribute name="EditRecordmodal" type="boolean" default="false" /> 
+    <aura:attribute name="NotesDetail" type="ContentNote" 
+                    default="{'sobjectType':'ContentNote',
+                             'parentId' : '',
+                             'Title' : '',
+                             'Content' : '',
+                             'IsPrivate' : ''
+                             }"></aura:attribute>
+    
+    <div class = "slds-p-vertical_xx-small">
+        
+        <button class="slds-button slds-button_brand left-align" onclick="{!c.newNote}">New Note</button>
+        <button class="slds-button slds-button_brand slds-button_neutral left-align" onclick="{!c.deleteSlctd}">Mass Delete</button>     
+        
+        <!-- Pagination-->
+        <div class="slds-float_right" style = "padding-bottom:10px;">
+            <ui:inputSelect aura:id="pageSize" label="Display Records Per Page:" change="{!c.onSelectChange}">
+                <ui:inputSelectOption text="10" label="10" value="true"/>
+                <ui:inputSelectOption text="15" label="15"/>
+                <ui:inputSelectOption text="20" label="20"/>
+            </ui:inputSelect>
+        </div>
+        <!-- Pagination-->
+    </div>
+
+    
+   <aura:If isTrue="{!v.NewNoteModel}">
+        <div class="demo-only" style="height: 640px;">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">New Note</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <div class="Create Notes">
+                            <lightning:card iconName="action:new_note" title="Create Note">                               
+                                <div class="slds-p-horizontal--small">
+                                    <lightning:outputField fieldName="ParentId" value = "!v.NotesDetail.ParentId"  /><br></br>  
+                                    <lightning:input aura:id="NoteField" label="Title" value="{!v.NotesDetail.Title}"/><br></br>  
+                                    <lightning:inputRichText label="Body" value="{!v.NotesDetail.Content}" placeholder="Type something interesting"/><br></br>
+                                    <lightning:input type="checkbox" id = "boxVal" label="Private" aura:id="checkboxNew" value="{!v.NotesDetail.IsPrivate}" onchange="{!c.checkedOrNot}" />                                      
+                                </div>
+                            </lightning:card>        
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_destructive" onclick = "{!c.cancelNoteModal}">Cancel</button>
+                        <button class="slds-button slds-button_brand" onclick = "{!c.saveRecords}">Save</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </aura:If>
+    
+    <!--Table Part-->           
+    <table class="slds-table slds-table_bordered slds-table_cell-buffer" style = "padding-top:20px;"> 
+        <thead>
+            <tr class="slds-text-title_caps">
+                <th scope="col">
+                    <div class="slds-truncate" title="Select">Select</div>
+                </th>      
+                <th scope="col">
+                    <div class="slds-truncate" title="Title">Title</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Private">Private</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Body">Body</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Created By Id">Created By</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Created Date">Created Date</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Owner">Owner</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Action">Action</div>
+                </th>             
+            </tr>
+        </thead>        
+        <aura:iteration items="{!v.NoteListPagination}" var="Note" indexVar="index">
+            <tr style = "Salesforce Sans',Arial,sans-serif;">
+                <td class = "slds-truncate slds-border_top">     
+                    <ui:inputCheckbox  aura:id="cboxRow" change="{!c.onCheck}" text="{!Note.Id}"/>
+                </td>
+                
+                <td class = "slds-truncate slds-border_top" style = "Salesforce Sans',Arial,sans-serif;"><h3>{!Note.Title}</h3></td>
+                <td class = "slds-truncate slds-border_top" style = "Salesforce Sans',Arial,sans-serif;">
+                    <ui:outputCheckbox aura:id="checkbox" value = "{!Note.IsPrivate}" />
+                </td>
+                <td class = "slds-truncate slds-border_top" style = "Salesforce Sans',Arial,sans-serif;"><h3>{!Note.Content}</h3></td>
+                <td class = "slds-truncate slds-border_top" style = "Salesforce Sans',Arial,sans-serif;"><h3>{!Note.CreatedBy}</h3></td>
+                <td class = "slds-truncate slds-border_top">
+                    <lightning:formattedDateTime style = "Salesforce Sans',Arial,sans-serif;" month="short" day="numeric" year="numeric" hour="2-digit"  minute="2-digit" second="2-digit" hour12="true" timeZone="{!$Locale.timezone}" title="Created Date" value="{!Note.CretaedDate}"></lightning:formattedDateTime>
+                </td>
+                <td class = "slds-truncate slds-border_top" style = "Salesforce Sans',Arial,sans-serif;"><h3>{!Note.OwnerName}</h3></td>
+                <td >
+                     <lightning:buttonMenu  aura:id="menu" iconName="utility:down" alternativeText="Show menu" onselect="{!c.handleSelect}">  
+                        <lightning:menuItem  value="{!'Edit_'+index}" label="Edit" onactive = "{!c.editRecord}"/>
+                        <lightning:menuItem aura:id="NtId" value="{!Note.Id}" label="Delete" onactive = "{!c.deleteNote}"/>     
+                    </lightning:buttonMenu>
+                </td>                      
+            </tr>
+        </aura:iteration>
+    </table>
+    
+    <aura:if isTrue="{!v.NoteListPagination.length > 0}">
+        <div class="slds-clearfix">
+            <div class="slds-page-header" role="banner">
+                <div class="slds-float_right">            
+                    <lightning:button disabled="{!v.PageNumber == 1}" variant="brand" aura:id="prevPage" label="Prev" onclick="{!c.handlePrev}" />            
+                    <lightning:button disabled="{!v.PageNumber == v.TotalPages}" aura:id="nextPage" variant="brand" label="Next" onclick="{!c.handleNext}"/>
+                </div>
+                <p class="slds-page-header__title">{!v.RecordStart}-{!v.RecordEnd} of {!v.TotalRecords} | Page {!v.PageNumber} of {!v.TotalPages}</p>
+            </div>
+        </div>
+        <aura:set attribute="else">
+            <center><p style = "margin-top:2%;"><b>No Note</b></p></center>
+        </aura:set> 
+    </aura:if>
+    
+    
+     <!-- Edit note model    -->
+    <aura:If isTrue="{!v.EditRecordmodal}">
+        <div class="demo-only" style="height: 640px;">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Note Edit</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <div class="Create Contact">
+                            <lightning:card iconName="action:new_note" title="Edit Note">
+                                <div class="slds-p-horizontal--small">
+                                    <lightning:outputField fieldName="ParentId" value = "!v.EditForm.ParentId"/>
+                                    <lightning:input aura:id="NoteField" type="String" label="Title" value="{!v.EditForm.Title}"/>
+                                    <lightning:inputRichText aura:id="NoteField" label="Body" value="{!v.EditForm.Content}"/>
+                                    <ui:inputCheckbox aura:id="checkbox" label="Private" value="{!v.EditForm.IsPrivate}"/>                      
+                                </div>
+                            </lightning:card>
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_destructive" onclick = "{!c.cancelEditRecord}">Cancel</button>
+                        <button class="slds-button slds-button_brand" onclick = "{!c.SaveEditrecord}">Save</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </aura:If>
+</aura:component>

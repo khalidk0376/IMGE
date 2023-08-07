@@ -1,0 +1,3 @@
+<design:component label="Thankyou">
+	<design:attribute name="message" default="Thankyou for submit survey"/>
+</design:component>

@@ -1,0 +1,1036 @@
+<!--
+    ************ Modification Log  ************
+    * Modified by : Girikon(Sunil[CCEN-711(Apr 19 2019)],Ashish[CCEN-430 (Dec 16 2018)], Prashant[CCEN-648 Feb 6 2019], Aishwarya[BK-1762 July 1 2019])  
+					[Aishwarya BK-4682 8 june 2020]
+-->
+<aura:component implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes" access="global"
+	controller="MyExhibitorsCtrl">
+	<ltng:require scripts="{!$Resource.CustomerCenterWS11 +'/CustomerCenterWS11/js/jquery-1.7.1.min.js?v=149'}"
+		afterScriptsLoaded="{!c.scriptsLoaded}" />
+	<!-- Pram Attribute -->
+	<aura:attribute name="eventcode" type="String" default="" />
+	<aura:attribute name="mapid" type="String" default="" />
+	<aura:attribute name="accountId" type="String" default="" />
+	<!-- Agent self - manage on behalf of there exhibitors [C2E-17] -->
+
+	<!-- Ui Attribute -->
+	<aura:attribute name="Event_Setting" type="Event_Settings__c" />
+	<aura:attribute name="message" type="string" />
+	<aura:handler name="init" value="{!this}" action="{!c.cartOnloadData}" />
+	<aura:attribute name="exhibitorDtls" type="string" />
+	<aura:attribute name="checkManuals" type="boolean" default="false" />
+	<aura:attribute name="isAgree" type="boolean" default="false" />
+	<aura:attribute name="isStandDetail" type="boolean" default="false" />
+	<aura:attribute name="isStandDesign" type="boolean" default="false" />
+	<aura:attribute name="openSection" type="String" />
+	<aura:attribute name="hostnm" type="String" />
+	<aura:attribute name="standDetail" type="Stand_Detail__c"
+		default="{'sObjectType':'Stand_Detail__c', 'Rigging_Height__c':'11'}" />
+	<aura:attribute name="standDesign" type="Stand_Design__c" />
+	<aura:attribute name="files" type="String" />
+	<aura:attribute name="lstOpenSide" type="List" />
+	<aura:attribute name="standDesignAttachments" type="Stand_Design_Attachments__c[]" />
+	<aura:attribute name="standDesignAttachmentsList" type="Stand_Design_Attachments__c[]" />
+	<aura:attribute name="designtype" type="String" default="" />
+	<aura:attribute name="uploadfiletype" type="String" default="" />
+	<aura:attribute name="step1" type="boolean" default="false" />
+	<aura:attribute name="step2" type="boolean" default="false" />
+	<aura:attribute name="step3" type="boolean" default="false" />
+	<aura:attribute name="step4" type="boolean" default="false" />
+	<aura:attribute name="styleWidth" type="string" default="0" />
+	<aura:attribute name="styleborder" type="string" default="0" />
+	<aura:attribute name="NoRigging" type="boolean" default="true" />
+	<aura:attribute name="uploadTitle" type="String" default="" />
+	<aura:attribute name="accept" type="List" default="['.jpg', '.pdf']" />
+	<aura:attribute name="expiredManual" type="boolean" default="false" />
+	<aura:attribute name="manualIndexNo" type="integer" />
+	<aura:attribute name="manualAttachmentId" type="string" />
+	<aura:attribute name="manualContentId" type="string" />
+	<aura:attribute name="manualAttachmentName" type="string" />
+	<aura:attribute name="selManualAgree" type="boolean" default="unchecked" />
+	<aura:attribute name="disDateTime" type="boolean" default="false" />
+	<aura:attribute name="reqManualslist" type="User_Manual_Action__c[]" />
+
+	<aura:handler event="aura:waiting" action="{!c.showSpinner}" />
+	<aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}" />
+	<aura:attribute name="Spinner" type="boolean" default="false" />
+	<aura:attribute name="disableSpinner" type="boolean" default="false" />
+	<aura:attribute name="checkAttachment" type="boolean" default="false" />
+	
+		<div class="container" style="height: 107px;">
+			<div class="row">
+				<div class="col-sm-12">
+					<lightning:breadcrumbs class="mybreadcrumb">
+						<lightning:breadcrumb label="Home" onclick="{!c.goToHome}">
+						</lightning:breadcrumb>
+						<aura:if isTrue="{!v.exhibitorDtls.Is_Self_Managed__c}">
+							<lightning:breadcrumb label="{!$Label.c.Stand + $Label.c.Contractor }"
+								onclick="{!c.goToStandContractor}">
+							</lightning:breadcrumb>
+							<aura:set attribute="else">
+								<lightning:breadcrumb label="{!$Label.c.My_Exhibitors}" onclick="{!c.goToMyExhibitors}">
+								</lightning:breadcrumb>
+							</aura:set>
+						</aura:if>
+						<lightning:breadcrumb
+							label="{!v.exhibitorDtls.Opp_Booth_Mapping__r.Opportunity__r.Account.Name}">
+						</lightning:breadcrumb>
+					</lightning:breadcrumbs>
+					<br />
+
+					<aura:if isTrue="{!v.exhibitorDtls.Opp_Booth_Mapping__r.Booth_Number__c}">
+						<h1 class="top-h1-heading" style="line-height: 45px;">{!v.exhibitorDtls.Opp_Booth_Mapping__r.Opportunity__r.Account.Name} .
+							{!$Label.c.Stand}
+							#:{!v.exhibitorDtls.Opp_Booth_Mapping__r.Booth_Number__c}</h1>
+						<aura:set attribute="else">
+							<h1 class="top-h1-heading">{!$Label.c.Stand} #: (Agent Pavilion Space - multiple stands)
+							</h1>
+						</aura:set>
+					</aura:if>
+					<p class="text-normal">
+						<aura:unescapedHtml value="{!v.Event_Setting.Welcome_Text_My_Exhibitor_Booth_Details__c}" />
+					</p>
+					<br />
+				</div>
+			</div>
+		</div>
+	
+		<div class="clearfix"></div>
+		<div class="container mainsection">
+			<div class="row">
+				<div class="col-sm-12" style="margin-bottom:20px ">
+					<div id="steps" class="step">
+						<ul class="stepsul slds-grid">
+							<aura:if isTrue="{!!v.checkManuals}">
+								<aura:if isTrue="{!v.Event_Setting.Contractor_MyExhibitor_Detail_Tab_1__c}">
+									<li class="active slds-col" id="readandagree" onclick="{!c.showSection}"><a
+											href="javascript:void(0)">{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_1_Title__c}</a></li>
+								</aura:if>
+								<!-- <aura:if isTrue="{!v.Event_Setting.Contractor_MyExhibitor_Detail_Tab_2__c}"> -->
+								<li class="slds-col" id="filldetails"><a
+										href="javascript:void(0)">{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_2_Title__c}</a></li>
+								<!-- </aura:if>
+							<aura:if isTrue="{!v.Event_Setting.Contractor_MyExhibitor_Detail_Tab_3__c}"> -->
+								<li class="slds-col" id="uploaddesign"><a
+										href="javascript:void(0)">{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_3_Title__c}</a></li>
+								<!-- </aura:if>
+							<aura:if isTrue="{!v.Event_Setting.Contractor_MyExhibitor_Detail_Tab_4__c}"> -->
+								<li class="slds-col" id="agreement"><a
+										href="javascript:void(0)">{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_4_Title__c}</a></li>
+								<!-- </aura:if> -->
+								<aura:set attribute="else">
+									<aura:if isTrue="{!!v.isStandDetail}">
+										<aura:if isTrue="{!v.Event_Setting.Contractor_MyExhibitor_Detail_Tab_1__c}">
+											<li class="finish slds-col" id="readandagree" onclick="{!c.showSection}"><a
+													href="javascript:void(0)"><i
+														class="fa fa-check fa-padding-5"></i>{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_1_Title__c}</a>
+											</li>
+										</aura:if>
+										<!-- <aura:if isTrue="{!v.Event_Setting.Contractor_MyExhibitor_Detail_Tab_2__c}"> -->
+										<li class="active lbordernone slds-col" id="filldetails"
+											onclick="{!c.showSection}"><a
+												href="javascript:void(0)">{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_2_Title__c}</a>
+										</li>
+										<!-- </aura:if>
+											<aura:if isTrue="{!v.Event_Setting.Contractor_MyExhibitor_Detail_Tab_3__c}"> -->
+										<li class="slds-col" id="uploaddesign"><a
+												href="javascript:void(0)">{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_3_Title__c}</a>
+										</li>
+										<!-- </aura:if>
+											<aura:if isTrue="{!v.Event_Setting.Contractor_MyExhibitor_Detail_Tab_4__c}"> -->
+										<li class="slds-col" id="agreement"><a
+												href="javascript:void(0)">{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_4_Title__c}</a>
+										</li>
+										<!-- </aura:if> -->
+										<aura:set attribute="else">
+											<aura:if isTrue="{!!v.isStandDesign}">
+												<aura:if
+													isTrue="{!v.Event_Setting.Contractor_MyExhibitor_Detail_Tab_1__c}">
+													<li class="finish slds-col" id="readandagree"
+														onclick="{!c.showSection}"><a href="javascript:void(0)"><i
+																class="fa fa-check fa-padding-5"></i>{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_1_Title__c}</a>
+													</li>
+												</aura:if>
+												<!-- <aura:if isTrue="{!v.Event_Setting.Contractor_MyExhibitor_Detail_Tab_2__c}"> -->
+												<li class="finish lbordernone slds-col" id="filldetails"
+													onclick="{!c.showSection}"><a href="javascript:void(0)"><i
+															class="fa fa-check fa-padding-5"></i>{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_2_Title__c}</a>
+												</li>
+												<!-- </aura:if>
+													<aura:if isTrue="{!v.Event_Setting.Contractor_MyExhibitor_Detail_Tab_3__c}"> -->
+												<li class="active lbordernone slds-col" id="uploaddesign"
+													onclick="{!c.showSection}"><a
+														href="javascript:void(0)">{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_3_Title__c}</a>
+												</li>
+												<!-- </aura:if>
+													<aura:if isTrue="{!v.Event_Setting.Contractor_MyExhibitor_Detail_Tab_4__c}"> -->
+												<li class="slds-col" id="agreement"><a
+														href="javascript:void(0)">{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_4_Title__c}</a>
+												</li>
+												<!-- </aura:if> -->
+												<aura:set attribute="else">
+													<aura:if isTrue="{!v.isAgree}">
+														<aura:if
+															isTrue="{!v.Event_Setting.Contractor_MyExhibitor_Detail_Tab_1__c}">
+															<li class="finish slds-col" id="readandagree"
+																onclick="{!c.showSection}"><a href="javascript:void(0)"><i
+																		class="fa fa-check fa-padding-5"></i>{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_1_Title__c}</a>
+															</li>
+														</aura:if>
+														<!-- <aura:if isTrue="{!v.Event_Setting.Contractor_MyExhibitor_Detail_Tab_2__c}"> -->
+														<li class="finish lbordernone slds-col" id="filldetails"
+															onclick="{!c.showSection}"><a href="javascript:void(0)"><i
+																	class="fa fa-check fa-padding-5"></i>{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_2_Title__c}</a>
+														</li>
+														<!-- </aura:if>
+															<aura:if isTrue="{!v.Event_Setting.Contractor_MyExhibitor_Detail_Tab_3__c}"> -->
+														<li class="finish lbordernone slds-col" id="uploaddesign"
+															onclick="{!c.showSection}"><a href="javascript:void(0)"><i
+																	class="fa fa-check fa-padding-5"></i>{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_3_Title__c}</a>
+														</li>
+														<!-- </aura:if>
+															<aura:if isTrue="{!v.Event_Setting.Contractor_MyExhibitor_Detail_Tab_4__c}"> -->
+														<li class="finish borderon slds-col" id="agreement"
+															onclick="{!c.showSection}"><a href="javascript:void(0)"><i
+																	class="fa fa-check fa-padding-5"></i>{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_4_Title__c}</a>
+														</li>
+														<!-- </aura:if> -->
+														<aura:set attribute="else">
+															<aura:if
+																isTrue="{!v.Event_Setting.Contractor_MyExhibitor_Detail_Tab_1__c}">
+																<li class="finish slds-col" id="readandagree"
+																	onclick="{!c.showSection}"><a href="javascript:void(0)"><i
+																			class="fa fa-check fa-padding-5"></i>{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_1_Title__c}</a>
+																</li>
+															</aura:if>
+															<!-- <aura:if isTrue="{!v.Event_Setting.Contractor_MyExhibitor_Detail_Tab_2__c}"> -->
+															<li class="finish lbordernone slds-col" id="filldetails"
+																onclick="{!c.showSection}"><a href="javascript:void(0)"><i
+																		class="fa fa-check fa-padding-5"></i>{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_2_Title__c}</a>
+															</li>
+															<!-- </aura:if>	
+																<aura:if isTrue="{!v.Event_Setting.Contractor_MyExhibitor_Detail_Tab_3__c}"> -->
+															<li class="finish lbordernone slds-col" id="uploaddesign"
+																onclick="{!c.showSection}"><a href="javascript:void(0)"><i
+																		class="fa fa-check fa-padding-5"></i>{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_3_Title__c}</a>
+															</li>
+															<!-- </aura:if>	
+																<aura:if isTrue="{!v.Event_Setting.Contractor_MyExhibitor_Detail_Tab_4__c}"> -->
+															<li class="active borderon slds-col" id="agreement"
+																onclick="{!c.showSection}"><a
+																	href="#">{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_4_Title__c}</a>
+															</li>
+															<!-- </aura:if> -->
+														</aura:set>
+													</aura:if>
+												</aura:set>
+											</aura:if>
+										</aura:set>
+									</aura:if>
+								</aura:set>
+							</aura:if>
+						</ul>
+					</div>
+					<div class="section" id="divreadandagree">
+						<br></br>
+						<p class="text-normal">
+							<aura:unescapedHtml
+								value="{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_1_Title_Intr__c}" />
+						</p>
+						<br></br>
+
+						<!-- <iframe width="100%" height="100%" src="{!'https://'+v.hostnm +'/servlet/servlet.FileDownload?file=00P1F000000nT5pUAE'}" /> -->
+						<div class="customtable">
+							<div class="nx-template">
+								<p>
+									<span style="font-size:20px;"><strong>*
+											{!$Label.c.Required}&nbsp;{!$Label.c.Manuals}
+										</strong><strong>*&nbsp;</strong>
+									</span>
+								</p>
+							</div>
+
+							<table class="required-table" cellspacing="0">
+								<thead>
+									<tr>
+										<th>{!$Label.c.Manual}&nbsp;{!$Label.c.Name}</th>
+										<th>{!$Label.c.Provider}</th>
+										<th>{!$Label.c.Manual}&nbsp;{!$Label.c.Type} </th>
+										<th>{!$Label.c.Deadline}</th>
+										<th>{!$Label.c.Viewed}</th>
+										<th>{!$Label.c.Agreed}</th>
+									</tr>
+								</thead>
+								<tbody>
+
+									<aura:iteration items="{!v.reqManualslist}" var="item" indexVar="indexNo">
+										<tr>
+											<td class=" valigntop" onclick="{!c.showModalViewManualPdf}"
+												data-selected-Index="{!indexNo}">
+												<a data-selected-Index="{!indexNo}">
+													{!item.Manual_Permission__r.Manuals__r.Name}
+												</a>
+											</td>
+											<td class=" valigntop">{!item.Manual_Permission__r.Manuals__r.Provider__c}
+											</td>
+											<td class=" valigntop">
+												{!item.Manual_Permission__r.Manuals__r.Manual_Type__c}</td>
+											<td class=" valigntop">{!item.Manual_Permission__r.Manuals__r.Deadline__c}
+											</td>
+											<td class=" valigntop">
+												<div class="checkboxFive customCheckBox">
+													<input disabled="true" id="checkboxFiveInput5"
+														checked="{!item.Is_Viewed__c== true ? 'true':'false'  }"
+														name="chkAgreement" type="checkbox" />
+													<!--<label for="checkboxFiveInput5"></label>-->
+												</div>
+												<!--{!item.Is_Viewed__c} -->
+											</td>
+											<td class=" valigntop">
+												<div class="checkboxFive customCheckBox">
+													<input disabled="true" id="checkboxFiveInput5"
+														checked="{!item.Is_Agree__c==true ? 'true':'false'}"
+														name="chkAgreement" type="checkbox" />
+													<!--<label for="checkboxFiveInput5"></label>-->
+												</div>
+												<!--{!item.Is_Agree__c} -->
+
+											</td>
+										</tr>
+									</aura:iteration>
+								</tbody>
+							</table>
+						</div>
+
+						<!-- <button type="button" onclick="{!c.readManuals}" class="primary-btn btnmanuals" style="{!'width: 215px; background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i class="fa fa-book fa-padding-5"></i> Read and agree to required manuals</button> -->
+						<!-- <a href="{!'manuals?eventcode='+v.eventcode}">Read and agree to required manuals</a> -->
+					</div>
+					<div class="section sectionhide" id="divfilldetails">
+						<aura:if isTrue="{!v.message}">
+							<div class="col-sm-12 msgbackground">
+								<i class="fa fa-exclamation-circle fa-padding-5"></i>{!v.message}</div>
+						</aura:if>
+						<div class="col-sm-12">
+							<br></br>
+
+							<p class="text-normal">
+								<aura:unescapedHtml
+									value="{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_2_Title_Intr__c}" />
+							</p>
+							<table class="required-table" cellspacing="0">
+								<tr>
+									<td class="black-bold">{!$Label.c.Stand}#:</td>
+									<td style="width:40%;">
+										<aura:if isTrue="{!v.exhibitorDtls.Opp_Booth_Mapping__r.Booth_Number__c}">
+											{!v.exhibitorDtls.Opp_Booth_Mapping__r.Booth_Number__c}
+											<aura:set attribute="else">
+												(Agent Pavilion Space - multiple stands)
+											</aura:set>
+										</aura:if>
+									</td>
+								</tr>
+								<tr>
+									<td class="black-bold">{!$Label.c.Dimensions}:</td>
+									<td>
+										<aura:if isTrue="{!v.exhibitorDtls.Opp_Booth_Mapping__r.Booth_Number__c}">
+											{!v.exhibitorDtls.Opp_Booth_Mapping__r.Expocad_Booth__r.Dimensions__c}
+											<aura:set attribute="else">
+												(Agent Pavilion Space - multiple stands)
+											</aura:set>
+										</aura:if>
+
+									</td>
+								</tr>
+								<tr>
+									<td class="black-bold">{!$Label.c.Stand_Height}<span class="slds-required">*</span>:
+									</td>
+									<td>
+										<div class="col-sm-7">
+											<ui:inputSelect class="slds-select" aura:id="MaxstandHeight"
+												value="{!v.standDetail.StandHeight}" />&nbsp;
+											<ui:inputSelect class="slds-select" aura:id="MaxstandHeightDecimal"
+												value="{!v.standDetail.StandHeightDecimal}" />&nbsp;&nbsp;m
+										</div>
+									</td>
+								</tr>
+								<tr>
+									<td colspan="2">
+										<p>{!$Label.c.BoothInfoLine}</p>
+									</td>
+								</tr>
+								<aura:iteration items="{!v.lstOpenSide}" var="openSide" indexVar="index">
+									<tr>
+										<td class="black-bold">
+											<aura:if isTrue="{!index==0}">
+												{!$Label.c.Open_Sides}
+											</aura:if>
+										</td>
+										<td>
+											<label class="radio inline">
+												<aura:if isTrue="{!v.standDetail.Open_Side__c==openSide.value}">
+													<input type="radio" name="openSides" id="{!openSide.value}"
+														checked="checked" onchange="{!c.changeOpenSides}" />
+													<aura:set attribute="else">
+														<input type="radio" name="openSides" id="{!openSide.value}"
+															onchange="{!c.changeOpenSides}" />
+													</aura:set>
+												</aura:if>
+												<span>{!openSide.label}</span>
+											</label>
+										</td>
+									</tr>
+								</aura:iteration>
+
+								<tr>
+									<td class="black-bold">{!$Label.c.Do_you_have_Rigging} </td>
+									<td>
+										<label class="radio inline">
+											<input type="radio" name="isRigging" id="isRiggingYes" value="true"
+												onclick="{!c.isRiggingChange}"
+												checked="{!v.standDetail.IsRigging__c}" />
+											<span>{!$Label.c.Yes}</span>
+										</label>
+										<label class="radio inline">
+											<input type="radio" name="isRigging" id="isRiggingNo" value="false"
+												onclick="{!c.isRiggingChange}"
+												checked="{!!v.standDetail.IsRigging__c}" />
+											<span>{!$Label.c.No}</span>
+										</label>
+									</td>
+								</tr>
+								<tr>
+									<td class="black-bold">{!$Label.c.Rigging_Height}
+										<aura:if isTrue="{!v.standDetail.IsRigging__c}">
+											<span class="slds-required">*</span>:
+										</aura:if>
+									</td>
+									<td>
+										<div class="col-sm-7">
+											<ui:inputSelect class="slds-select" aura:id="MaxRiggingHeight"
+												value="{!v.standDetail.RiggingHeight}" disabled="{!v.NoRigging}" />
+											&nbsp;
+											<ui:inputSelect class="slds-select" aura:id="MaxRiggingHeighDecimal"
+												disabled="{!v.NoRigging}"
+												value="{!v.standDetail.RiggingHeightDecimal}" />&nbsp;&nbsp;m
+										</div>
+									</td>
+								</tr>
+								<tr>
+									<td class="black-bold"> {!$Label.c.Are_you_building_a_Double_Decker_Stand}</td>
+									<td>
+										<label class="radio inline">
+											<input type="radio" name="isDoubleDecker" id="isDoubleDeckerYes"
+												value="true" onclick="{!c.isDoubleDeckerChange}"
+												checked="{!v.standDetail.IsDoubleDecker__c}" />
+											<span>{!$Label.c.Yes}</span>
+										</label>
+										<label class="radio inline">
+											<input type="radio" name="isDoubleDecker" id="isDoubleDeckerNo"
+												value="false" onclick="{!c.isDoubleDeckerChange}"
+												checked="{!!v.standDetail.IsDoubleDecker__c}" />
+											<span>{!$Label.c.No}</span>
+										</label>
+									</td>
+								</tr>
+
+								<tr>
+									<td class="black-bold">
+										{!$Label.c.Do_you_have_heavy_machinery_or_vehicles_on_your_stand}</td>
+									<td>
+										<label class="radio inline">
+											<input type="radio" name="isMachinery" id="isMachineryYes" value="true"
+												onclick="{!c.isheavyMachineChange}"
+												checked="{!v.standDetail.Is_Heavy_Machinery__c}" />
+											<span>{!$Label.c.Yes}</span>
+										</label>
+										<label class="radio inline">
+											<input type="radio" name="isMachinery" id="isMachineryNo" value="false"
+												onclick="{!c.isheavyMachineChange}"
+												checked="{!!v.standDetail.Is_Heavy_Machinery__c}" />
+											<span>{!$Label.c.No}</span>
+										</label>
+									</td>
+								</tr>
+
+								<tr>
+									<td class="black-bold">{!$Label.c.Do_you_have_vehicles_in_your_stand}</td>
+									<td>
+										<label class="radio inline">
+											<input type="radio" name="IsVehicles" id="IsVehiclesYes" value="true"
+												onclick="{!c.isVehiclesChange}"
+												checked="{!v.standDetail.Is_Vehicles__c}" />
+											<span>{!$Label.c.Yes}</span>
+										</label>
+										<label class="radio inline">
+											<input type="radio" name="IsVehicles" id="IsVehiclesNo" value="false"
+												onclick="{!c.isVehiclesChange}"
+												checked="{!!v.standDetail.Is_Vehicles__c}" />
+											<span>{!$Label.c.No}</span>
+										</label>
+									</td>
+								</tr>
+								<tr>
+									<td class="black-bold">Required Early Access?</td>
+									<td>
+										<label class="radio inline">
+											<input type="radio" name="requiredEarly" id="requireEarlyAccessYes"
+												value="true" onclick="{!c.requireErlyAcces}"
+												checked="{!v.standDetail.Require_Early_Access__c}"
+												onchange="{!c.handleChange}" />
+											<span>{!$Label.c.Yes}</span>
+										</label>
+										<label class="radio inline">
+											<input type="radio" name="requiredEarly" id="requireEarlyAccessNo"
+												value="false" onclick="{!c.requireErlyAcces}"
+												checked="{!!v.standDetail.Require_Early_Access__c}"
+												onchange="{!c.handleChange}" />
+											<span>{!$Label.c.No}</span>
+										</label>
+									</td>
+									<td>
+										<div id="requiredCheck" style="color:red; margin-left: -260px; display:none;">
+											You have indicated you DO NOT require early access, please remove your early
+											access date/time values.</div>
+									</td>
+									<td>
+										<div id="requireEarlyCheck"
+											style="color:red; margin-left: -260px; display:none;">You have indicated you
+											require early access, please provide the early access date/time this is
+											required from.</div>
+									</td>
+								</tr>
+								<tr>
+									<td class="black-bold">Early Access Date/Time:</td>
+									<td>
+										<ui:inputDateTime aura:id="erlyAccessDateTime"
+											value="{!v.standDetail.Early_Access_Date_Time__c}" displayDatePicker="true"
+											disabled="{!or(!v.standDetail.Require_Early_Access__c,v.disDateTime)}" />
+									</td>
+								</tr>
+								<tr>
+									<td class="black-bold">Early Access Cost:</td>
+									<td>
+										<ui:inputtext value="{!v.standDetail.Early_Access_Cost__c}" size="8"
+											disabled="{!and(v.standDetail.Require_Early_Access__c,v.standDetail.Early_Access_Date_Time__c)}" />
+									</td>
+								</tr>
+								<tr>
+									<td><button type="button" onclick="{!c.saveStandDetails}" class="primary-btn"
+											style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+												class="fa fa-check fa-padding-5"></i> {!$Label.c.Save}</button></td>
+									<td></td>
+								</tr>
+							</table>
+
+						</div>
+					</div>
+					<div class="section sectionhide" id="divuploaddesign">
+						<aura:if isTrue="{!v.Event_Setting.Is_Cont_MyEx_Detail_Tab_3_Status_Visible__c}">
+							<aura:if isTrue="{!v.standDesign}">
+								<p class="black-bold slds-align_absolute-center sectionheading">{!$Label.c.Status} :
+									{!v.standDesign.Booth_Design_Status__c} </p>
+								<aura:set attribute="else">
+									<p class="black-bold slds-align_absolute-center sectionheading">{!$Label.c.Status} :
+										No Design </p>
+								</aura:set>
+							</aura:if>
+						</aura:if>
+						<button id="acc1"
+							class="accordion">{!v.Event_Setting.Cont_MyExh_Detail_Tab_3_Design_Label_1__c}</button>
+						<div id="pan1" class="panel">
+							<p>
+								<div class="tab-content slds-m-top_x-large">
+									<div class="uiOutputRichText">
+										<ui:outputRichText class="slds-text-longform tile__title red-txt"
+											value="{!v.Event_Setting.Cont_MyExh_Detail_Tab_3_Design_Text_1__c}" />
+									</div>
+									<br></br>
+									<div class="uploadallbg">
+										<div class="uploadall">
+											<aura:if isTrue="{!v.standDesign==null}">
+												<div onclick="{!c.showmodalfiletype}" data-type="Non Complex"
+													style="cursor: pointer;">
+													<i class="fa fa-upload font-size20" aria-hidden="true"
+														style="color: #015ba7;"></i><b style="color: #015ba7;">
+														{!$Label.c.Upload_all_Stand_Design_Attachments_here}</b>
+												</div>
+												<aura:set attribute="else">
+													<aura:if
+														isTrue="{!and(or(v.standDesign.Booth_Design_Status__c=='No Design',v.standDesign.Booth_Design_Status__c=='Contractor Resubmit (Incomplete)'),v.standDesign.Stand_Type__c=='Non Complex')}">
+														<div onclick="{!c.showmodalfiletype}" data-type="Non Complex"
+															style="cursor: pointer;">
+															<i class="fa fa-upload font-size20" aria-hidden="true"
+																style="color: #015ba7;"></i><b style="color: #015ba7;">
+																{!$Label.c.Upload_all_Stand_Design_Attachments_here}</b>
+														</div>
+														<aura:set attribute="else">
+															<i class="fa fa-upload font-size20" aria-hidden="true"
+																style="color: #015ba7;"></i><b style="color: #015ba7;">
+																{!$Label.c.Upload_all_Stand_Design_Attachments_here}</b>
+														</aura:set>
+													</aura:if>
+												</aura:set>
+											</aura:if>
+											<p>{!$Label.c.Stand_Design_Note}</p>
+										</div>
+										<div class="slds-m-around_small">
+											<div class="slds-scrollable" style="max-height: 130px; ">
+												<aura:if isTrue="{!v.standDesign.Stand_Type__c=='Non Complex'}">
+													<aura:iteration items="{!v.standDesign.DesignAttachmentTypes__r}"
+														var="att">
+														<p class="font-size16 bold-heading bold-heading2"><i
+																class="fa fa-file-pdf-o font-size20"
+																aria-hidden="true"></i>
+															{!att.File_Name__c}
+															<aura:if
+																isTrue="{!or(v.standDesign.Booth_Design_Status__c=='No Design',v.standDesign.Booth_Design_Status__c=='Contractor Resubmit (Incomplete)')}">
+																<i onclick="{!c.removeFile}"
+																	data-sid="{!v.standDesign.Id}"
+																	data-aid="{!att.AttachmentId__c}"
+																	class="fa fa-trash-o font-size20"
+																	aria-hidden="true"></i>
+															</aura:if>
+														</p>
+													</aura:iteration>
+												</aura:if>
+											</div>
+										</div>
+									</div>
+									<div class="text-center">
+										<aura:if
+											isTrue="{!and(and(and(or(v.standDesign.Booth_Design_Status__c=='No Design',v.standDesign.Booth_Design_Status__c=='Contractor Resubmit (Incomplete)'),v.standDesign),v.standDesign.Stand_Type__c=='Non Complex'),v.standDesign.DesignAttachmentTypes__r.length!=null)}">
+
+											<button onclick="{!c.showmodalconfirmDesign}"
+												style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"
+												type="button" class="uploadall-btn"><i class="fa fa-paper-plane"
+													aria-hidden="true"></i>&nbsp;&nbsp;&nbsp;{!$Label.c.Save_and_Submit_Button}</button>
+											<aura:set attribute="else">
+												<button type="button" class="disabled"><i class="fa fa-paper-plane"
+														aria-hidden="true"></i>&nbsp;&nbsp;&nbsp;{!$Label.c.Save_and_Submit_Button}</button>
+											</aura:set>
+
+										</aura:if>
+									</div>
+								</div>
+							</p>
+						</div>
+
+						<button id="acc2"
+							class="accordion">{!v.Event_Setting.Cont_MyExh_Detail_Tab_3_Design_Label_2__c}</button>
+						<div id="pan2" class="panel">
+							<p>
+								<div class="tab-content slds-m-top_x-large">
+									<div class="uiOutputRichText">
+										<ui:outputRichText class="slds-text-longform tile__title red-txt"
+											value="{!v.Event_Setting.Cont_MyExh_Detail_Tab_3_Design_Text_2__c}" />
+									</div>
+									<br></br>
+
+									<div class="uploadallbg">
+										<div class="uploadall">
+											<aura:if isTrue="{!v.standDesign==null}">
+												<div onclick="{!c.showmodalfiletype}" data-type="Complex Stand 1"
+													style="cursor: pointer;">
+													<i class="fa fa-upload font-size20" aria-hidden="true"
+														style="color: #015ba7;"></i><b style="color: #015ba7;">
+														{!$Label.c.Upload_all_Stand_Design_Attachments_here}</b>
+												</div>
+												<aura:set attribute="else">
+													<aura:if
+														isTrue="{!and(or(v.standDesign.Booth_Design_Status__c=='No Design',v.standDesign.Booth_Design_Status__c=='Contractor Resubmit (Incomplete)'),v.standDesign.Stand_Type__c=='Complex Stand 1')}">
+														<div onclick="{!c.showmodalfiletype}"
+															data-type="Complex Stand 1" style="cursor: pointer;">
+															<i class="fa fa-upload font-size20" aria-hidden="true"
+																style="color: #015ba7;"></i><b style="color: #015ba7;">
+																{!$Label.c.Upload_all_Stand_Design_Attachments_here}</b>
+														</div>
+														<aura:set attribute="else">
+															<i class="fa fa-upload font-size20" aria-hidden="true"
+																style="color: #015ba7;"></i><b style="color: #015ba7;">
+																{!$Label.c.Upload_all_Stand_Design_Attachments_here}</b>
+														</aura:set>
+													</aura:if>
+												</aura:set>
+											</aura:if>
+											<p>{!$Label.c.Stand_Design_Note}</p>
+										</div>
+										<div class="slds-m-around_small">
+											<div class="slds-scrollable" style="max-height: 130px; ">
+												<aura:if isTrue="{!v.standDesign.Stand_Type__c=='Complex Stand 1'}">
+													<aura:iteration items="{!v.standDesign.DesignAttachmentTypes__r}"
+														var="att">
+														<p class="font-size16 bold-heading bold-heading2"><i
+																class="fa fa-file-pdf-o font-size20"
+																aria-hidden="true"></i>
+															{!att.File_Name__c}
+															<aura:if
+																isTrue="{!or(v.standDesign.Booth_Design_Status__c=='No Design',v.standDesign.Booth_Design_Status__c=='Contractor Resubmit (Incomplete)')}">
+																<i onclick="{!c.removeFile}"
+																	data-sid="{!v.standDesign.Id}"
+																	data-aid="{!att.AttachmentId__c}"
+																	class="fa fa-trash-o font-size20"
+																	aria-hidden="true"></i>
+															</aura:if>
+														</p>
+													</aura:iteration>
+												</aura:if>
+											</div>
+										</div>
+									</div>
+									<div class="text-center">
+										<aura:if
+											isTrue="{!and(and(and(or(v.standDesign.Booth_Design_Status__c=='No Design',v.standDesign.Booth_Design_Status__c=='Contractor Resubmit (Incomplete)'),v.standDesign),v.standDesign.Stand_Type__c=='Complex Stand 1'),v.standDesign.DesignAttachmentTypes__r.length!=null)}">
+
+											<button onclick="{!c.showmodalconfirmDesign}"
+												style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"
+												type="button" class="uploadall-btn"><i class="fa fa-paper-plane"
+													aria-hidden="true"></i>&nbsp;&nbsp;&nbsp;{!$Label.c.Save_and_Submit_Button}</button>
+
+											<aura:set attribute="else">
+												<button type="button" class="disabled"><i class="fa fa-paper-plane"
+														aria-hidden="true"></i>&nbsp;&nbsp;&nbsp;{!$Label.c.Save_and_Submit_Button}</button>
+											</aura:set>
+										</aura:if>
+									</div>
+								</div>
+							</p>
+						</div>
+
+						<button id="acc3"
+							class="accordion">{!v.Event_Setting.Cont_MyExh_Detail_Tab_3_Design_Label_3__c}</button>
+						<div id="pan3" class="panel">
+							<p>
+								<div class="tab-content slds-m-top_x-large">
+									<div class="uiOutputRichText">
+										<ui:outputRichText class="slds-text-longform tile__title red-txt"
+											value="{!v.Event_Setting.Cont_MyExh_Detail_Tab_3_Design_Text_3__c}" />
+									</div>
+									<br></br>
+									<!--
+								<aura:if isTrue="{!v.message}">
+									<div class="col-sm-12 msgbackground">
+										<i class="fa fa-exclamation-circle fa-padding-5"></i>{!v.message}</div>
+								</aura:if>-->
+									<div class="uploadallbg">
+										<div class="uploadall">
+											<aura:if isTrue="{!v.standDesign==null}">
+												<div onclick="{!c.showmodalfiletype}" data-type="Complex Stand 2"
+													style="cursor: pointer;">
+													<i class="fa fa-upload font-size20" aria-hidden="true"
+														style="color: #015ba7;"></i><b style="color: #015ba7;">
+														{!$Label.c.Upload_all_Stand_Design_Attachments_here}</b>
+												</div>
+												<aura:set attribute="else">
+													<aura:if
+														isTrue="{!and(or(v.standDesign.Booth_Design_Status__c=='No Design',v.standDesign.Booth_Design_Status__c=='Contractor Resubmit (Incomplete)'),v.standDesign.Stand_Type__c=='Complex Stand 2')}">
+														<div onclick="{!c.showmodalfiletype}"
+															data-type="Complex Stand 2" style="cursor: pointer;">
+															<i class="fa fa-upload font-size20" aria-hidden="true"
+																style="color: #015ba7;"></i><b style="color: #015ba7;">
+																{!$Label.c.Upload_all_Stand_Design_Attachments_here}</b>
+														</div>
+														<aura:set attribute="else">
+															<i class="fa fa-upload font-size20" aria-hidden="true"
+																style="color: #015ba7;"></i><b style="color: #015ba7;">
+																{!$Label.c.Upload_all_Stand_Design_Attachments_here}</b>
+														</aura:set>
+													</aura:if>
+												</aura:set>
+											</aura:if>
+											<p>{!$Label.c.Stand_Design_Note}</p>
+										</div>
+										<div class="slds-m-around_small">
+											<div class="slds-scrollable" style="max-height: 130px; ">
+												<aura:if isTrue="{!v.standDesign.Stand_Type__c=='Complex Stand 2'}">
+													<aura:iteration items="{!v.standDesign.DesignAttachmentTypes__r}"
+														var="att">
+														<p class="font-size16 bold-heading bold-heading2"><i
+																class="fa fa-file-pdf-o font-size20"
+																aria-hidden="true"></i>
+															{!att.File_Name__c}
+															<aura:if
+																isTrue="{!or(v.standDesign.Booth_Design_Status__c=='No Design',v.standDesign.Booth_Design_Status__c=='Contractor Resubmit (Incomplete)')}">
+																<i onclick="{!c.removeFile}"
+																	data-sid="{!v.standDesign.Id}"
+																	data-aid="{!att.AttachmentId__c}"
+																	class="fa fa-trash-o font-size20"
+																	aria-hidden="true"></i>
+															</aura:if>
+														</p>
+													</aura:iteration>
+												</aura:if>
+											</div>
+										</div>
+									</div>
+									<div class="text-center">
+										<aura:if
+											isTrue="{!and(and(and(or(v.standDesign.Booth_Design_Status__c=='No Design',v.standDesign.Booth_Design_Status__c=='Contractor Resubmit (Incomplete)'),v.standDesign),v.standDesign.Stand_Type__c=='Complex Stand 2'),v.standDesign.DesignAttachmentTypes__r.length!=null)}">
+											<button onclick="{!c.showmodalconfirmDesign}"
+												style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"
+												type="button" class="uploadall-btn"><i class="fa fa-paper-plane"
+													aria-hidden="true"></i>&nbsp;&nbsp;&nbsp;{!$Label.c.Save_and_Submit_Button}</button>
+											<aura:set attribute="else">
+												<button type="button" class="disabled"><i class="fa fa-paper-plane"
+														aria-hidden="true"></i>&nbsp;&nbsp;&nbsp;{!$Label.c.Save_and_Submit_Button}</button>
+											</aura:set>
+										</aura:if>
+									</div>
+								</div>
+							</p>
+						</div>
+
+
+					</div>
+
+					<div class="section sectionhide" id="divagreement">
+						<aura:if isTrue="{!v.message}">
+							<div class="col-sm-12 msgbackground">
+								<i class="fa fa-exclamation-circle fa-padding-5"></i>{!v.message}</div>
+						</aura:if>
+						<div>
+							<br></br>
+							<div class="uiOutputRichText">
+								<ui:outputRichText class="slds-text-longform tile__title red-txt"
+									value="{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_4_Title_Intr__c}" />
+								<!--<lightning:formattedRichText  value="{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_4_Title_Intr__c}" ></lightning:formattedRichText>-->
+								<!--<aura:unescapedHtml value="{!v.Event_Setting.Cont_MyExhibitor_Detail_Tab_4_Title_Intr__c}"  />-->
+							</div>
+						</div>
+
+						<aura:if isTrue="{!v.Event_Setting.Cont_MyExh_Detail_Tab_4_Show_Amount__c}">
+							<div class="div-body-head" align="center">
+								{!$Label.c.Performance_Bond} Amount
+								({!v.Event_Setting.Cont_MyExh_Detail_Tab_4_Amount_Currency__c})&nbsp;:&nbsp;<b>{!v.standDetail.Amount__c}</b>
+							</div>
+						</aura:if>
+
+						<div class="inner">
+							<aura:if isTrue="{!!v.isAgree}">
+								<table width="100%" class="slds-m-top_x-large " cellspacing="0">
+									<tr>
+										<aura:if isTrue="{!v.Event_Setting.Is_Cont_MyEx_Detail_Tab_4_Agree_Visible__c}">
+											<td width="3%">
+												<div class="checkboxFive">
+													<input id="checkboxAgree" name="chkAgreement" type="checkbox"
+														onclick="{!c.agreeAgreementchange}" />
+													<!--<label for="checkboxAgree">&nbsp;</label>-->
+												</div>
+											</td>
+											<td width="37%">{!$Label.c.Agree_Contractor_Agreement}</td>
+										</aura:if>
+										<aura:if isTrue="{!v.Event_Setting.Is_Cont_MyExh_Tab_4_Signature_Visible__c}">
+											<td width="10%">{!$Label.c.Sign_your_name}:</td>
+											<td width="40%">
+												<ui:inputText class="form-input"
+													value="{!v.standDesign.Signatory_Name__c}" />
+											</td>
+										</aura:if>
+										<td width="10%">
+
+
+
+
+
+
+
+
+
+
+											<aura:if
+												isTrue="{!or(v.standDesign.Contractor_Agreement_CA__c,!v.Event_Setting.Is_Cont_MyEx_Detail_Tab_4_Agree_Visible__c)}">
+												<button type="button" onclick="{!c.agreeAgreement}" class="primary-btn"
+													style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+														class="fa fa-check fa-padding-5"></i> {!$Label.c.Save}</button>
+												<aura:set attribute="else">
+													<button type="button" class="primary-btn disabled1"><i
+															class="fa fa-check fa-padding-5"></i>
+														{!$Label.c.Save}</button>
+												</aura:set>
+											</aura:if>
+										</td>
+
+									</tr>
+								</table>
+								<aura:set attribute="else">
+									<table width="100%" class="slds-m-top_x-large " cellspacing="0">
+										<tr>
+											<aura:if
+												isTrue="{!v.Event_Setting.Is_Cont_MyEx_Detail_Tab_4_Agree_Visible__c}">
+												<td width="3%">
+													<div class="checkboxFive">
+														<input disabled="true" id="checkboxAgree" checked="checked"
+															name="chkAgreement" type="checkbox"
+															onclick="{!c.agreeAgreementchange}" />
+														<!--<label for="checkboxAgree"></label>-->
+													</div>
+												</td>
+												<td width="37%">{!$Label.c.Agree_Contractor_Agreement} </td>
+											</aura:if>
+											<aura:if
+												isTrue="{!v.Event_Setting.Is_Cont_MyExh_Tab_4_Signature_Visible__c}">
+												<td width="10%">{!$Label.c.Sign_your_name}:</td>
+												<td width="50%">
+													<ui:inputText disabled="true" class="form-input"
+														value="{!v.standDesign.Signatory_Name__c}" />
+												</td>
+												<td>
+												</td>
+											</aura:if>
+										</tr>
+									</table>
+								</aura:set>
+							</aura:if>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="clearfix"></div>
+	
+	<!-- Select desgin attachment type-->
+	<div id="modalfiletype" class="modal">
+		<div class="modal-content">
+			<div class="modal-header"> <span onclick="{!c.hidemodalfiletype}" class="close">&times;</span>
+				<h2>{!v.uploadTitle}</h2>
+			</div>
+			<div class="modal-body bodycomapny ">
+				<aura:if isTrue="{!v.message}">
+					<div class="col-sm-12 msgbackground">
+						<i class="fa fa-exclamation-circle fa-padding-5"></i>{!v.message}</div>
+				</aura:if>
+				<div class="col-sm-12">
+					<p>{!$Label.c.Upload_Design_Title}</p>
+				</div>
+				<br></br><br></br><br></br>
+				<aura:iteration items="{!v.standDesignAttachments}" var="fileType" indexVar="index">
+					<label class="radio inline">
+						<input type="radio" name="standDesign" id="{!'standDesign'+index}" value="{!fileType.Name}"
+							onclick="{!c.getuploadfiletype}" />
+						<span>{!fileType.Name}</span>
+					</label>
+				</aura:iteration>
+				<br></br><br></br>
+				<span class="inputfile"><input type="file" aura:id="inputFile" class="file" /></span>
+				<p class="f-black slds-m-top_small">File size must not exceed 4.25mb</p>
+				<div class="clearfix"></div>
+				<p class="slds-m-top_large">
+					<button type="button" onclick="{!c.saveAttcahment}" class="primary-btn"
+						style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+							class="fa fa-upload fa-padding-5"></i>{!$Label.c.Upload}</button>
+					<button type="button" onclick="{!c.hidemodalfiletype}" class="primary-btn slds-m-left_medium"
+						style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+							class="fa fa-close fa-padding-5"></i>{!$Label.c.Cancel}</button>
+				</p>
+			</div>
+		</div>
+	</div>
+	<!--end-->
+	<!-- Remove contractor -->
+	<div id="modalconfirmDesign" class="modal">
+		<div class="modal-content">
+			<div class="modal-header"> <span onclick="{!c.hidemodalconfirmDesign}" class="close">&times;</span>
+				<h2 id="confimtxt">{!$Label.c.Confirm}</h2>
+			</div>
+			<div class="modal-body bodycomapny ">
+				<p class="slds-align_absolute-center slds-m-vertical_large">{!$Label.c.Submit_Attachments_Message}</p>
+				<p class="slds-align_absolute-center">
+					<button type="button" onclick="{!c.submitforApproval}" class="primary-btn marginleft"
+						style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+							class="fa fa-check-square-o fa-padding-5"></i>{!$Label.c.Yes}</button>
+					<button type="button" onclick="{!c.hidemodalconfirmDesign}" class="primary-btn marginleft"
+						style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+							class="fa fa-close fa-padding-5"></i>{!$Label.c.Cancel}</button>
+				</p>
+			</div>
+		</div>
+	</div>
+	<!-- end -->
+
+
+	<!--modal agree manual -->
+	<div id="modalViewManualPdf" class="modal">
+		<div class="modal-content customModal slds-modal--large">
+			<div class="modal-body bodycomapny ">
+				<div class="">
+					<aura:if isTrue="{!!v.expiredManual}">
+						<aura:if isTrue="{!v.checkAttachment}">
+							<iframe width="100%" style="min-height: 60vh;"
+								src="{!'https://'+v.hostnm +'/CustomerCenter/servlet/servlet.FileDownload?file=' +v.manualAttachmentId}" />
+						
+								<aura:set attribute="else">
+										<iframe width="100%" style="min-height: 60vh;"
+										src="{!'https://'+v.hostnm +'/CustomerCenter/sfc/servlet.shepherd/version/download/' +v.manualContentId}" />
+								</aura:set>
+						</aura:if>
+					
+							<div class="clearfix"></div>
+						<p class="slds-m-top_large CustomMarginBtn  ">
+							<span class=" ">
+								{!$Label.c.Read_and_agree_document}&nbsp;&nbsp;
+								<input disabled="{!v.selManualAgree}" id="agreeContent" checked="{!v.selManualAgree}"
+									name="agreeToContents" type="checkbox" onclick="{!c.agreeContentCheckBox}" />
+							</span>
+							<span class="slds-float_right">
+								<lightning:icon iconName="utility:download" alternativeText="Download"
+									size="xx-small" />&nbsp;
+							<!--	<a href="{!v.sfdcBaseurl+'/CustomerCenter/servlet/servlet.FileDownload?file='+v.manualAttachmentId+'&amp;operationContext=S1'}"  -->
+								<aura:if isTrue="{!v.checkAttachment}">
+										<a href="{!v.sfdcBaseurl+'/CustomerCenter/servlet/servlet.FileDownload?file='+v.manualAttachmentId+'&amp;operationContext=S1'}"	
+										target="_blank" download="{!v.manualAttachmentName}"
+											style="margin-right:23px;margin-left:0px;">{!$Label.c.Download}
+											&nbsp;{!$Label.c.Pdf}
+										</a>
+										<aura:set attribute="else">
+												<a href="{!v.sfdcBaseurl+'/CustomerCenter/sfc/servlet.shepherd/version/download/'+v.manualContentId}"	
+												target="_blank" download="{!v.manualAttachmentName}"
+													style="margin-right:23px;margin-left:0px;">{!$Label.c.Download}
+													&nbsp;{!$Label.c.Pdf}
+												</a>
+										</aura:set>
+								</aura:if>
+								<!--
+								<a href="{!v.sfdcBaseurl+'/CustomerCenter/sfc/servlet.shepherd/version/download/'+v.manualAttachmentId}"	
+								target="_blank" download="{!v.manualAttachmentName}"
+									style="margin-right:23px;margin-left:0px;">{!$Label.c.Download}
+									&nbsp;{!$Label.c.Pdf}
+								</a> -->
+								<button type="button" onclick="{!c.agreeContentSaveBtn}" id="btnSave"
+									class="primary-btn"
+									style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+										class="fa fa-upload fa-padding-5"></i>{!$Label.c.Save}</button>
+								<button type="button" onclick="{!c.hideModalViewManualPdf}"
+									class="primary-btn slds-m-left_medium"
+									style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+										class="fa fa-close fa-padding-5"></i>{!$Label.c.Cancel}</button>
+							</span>
+						</p>
+						<!-- showing expired manual pop up  -->
+						<aura:set attribute="else">
+							<div class="nx-fieldtext slds-text-align_center">
+								<span style="color:red;" class="slds-text-align_center">
+									{!$Label.c.Manual_has_been_expired}
+								</span>
+								<br /><br />
+								<button type="button" onclick="{!c.hideModalViewManualPdf}" class="primary-btn"
+									style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+										class="fa fa-close fa-padding-5"></i>{!$Label.c.Cancel}</button>
+							</div>
+						</aura:set>
+					</aura:if>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end -->
+	<!--loading spinner start... style=Brand Medium (blue dots)-->
+	<aura:if isTrue="{!v.Spinner}">
+		<div aura:id="spinnerId" class="slds-spinner_container">
+			<div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+				<span class="slds-assistive-text">Loading</span>
+				<div class="slds-spinner__dot-a"></div>
+				<div class="slds-spinner__dot-b"></div>
+			</div>
+		</div>
+	</aura:if>
+	<!-- Loading spinner end-->
+</aura:component>

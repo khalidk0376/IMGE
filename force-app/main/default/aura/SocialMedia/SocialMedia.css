@@ -1,0 +1,36 @@
+.THIS .slds-form-element__static {
+    flex-basis: 0%;
+    border-bottom: 1px solid rgb(221, 219, 218);
+    margin-bottom: 0;
+    padding-bottom: .125rem;
+}
+.THIS .slds-form-element__static {
+    flex-basis: 0%;
+    border-bottom: 1px solid rgb(221, 219, 218);
+    margin-bottom: 0;
+    padding-bottom: .125rem;
+}
+.THIS .slds-form-element
+{
+    display: block;
+}
+.THIS .edit
+{
+    float: right;
+    margin-top: -30px;
+   display: none;
+}
+.THIS .form-element:hover .edit {
+    display: block;
+}
+.THIS div.sticky {
+    position: -webkit-sticky;
+    position: sticky;
+    bottom: 0;
+    padding: 20px 0;
+    background-color: white;
+    z-index: 999;
+}
+.THIS .form-element {
+    position: relative;
+}

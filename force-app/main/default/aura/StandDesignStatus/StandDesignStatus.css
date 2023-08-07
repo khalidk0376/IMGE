@@ -1,0 +1,18 @@
+.THIS .slds-select {margin-top: 0px;}
+.THIS .temp{color:#024886}
+/*.THIS .txtareawidth{width: 100%;text-align: left;}*/
+.THIS .txtareawidth{height: auto;width: 100%;text-align: left;} 
+.THIS .inputfile{border: 1px solid #d2d2d2;padding: 7px;margin-top: 8px;}
+.THIS .f-black{color: #4d4d4d;font-size: 13px !important;margin-top: -4px !important;}
+.THIS .modal-body{margin-top: 20px;}
+.THIS .button{margin: 8px 0px 8px 0px;}
+.THIS .slds-select{width: 285px !important;}
+.THIS .closebtn{float:right;color:black;font-weight:bold;cursor: pointer;}
+.THIS .div-body-head{ border-bottom:3px solid #b7b7b7; font-size:16px; line-height:14px; color:#000; padding-bottom:10px;}
+.THIS .row{margin-top: 10px !important;}
+.THIS .div-body{ width:100%;}
+.THIS .div-body{margin:0px auto; background-color:#fff; padding:20px;}
+.THIS .div-body p{ font-size:14px; line-height:18px; color:#666;padding: 10px 0px;}
+.THIS .ql-editor {min-height: 60vh !important;}
+.THIS textarea {width: 100%;}
+.THIS .slds-spinner_container{position: fixed !important;}

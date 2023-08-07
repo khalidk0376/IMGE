@@ -1,0 +1,23 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component >
+    <aura:attribute name="message" type="String" default=""></aura:attribute>
+    <aura:if isTrue="{!v.message != ''}">
+        <div class="demo-only" style="height: 4rem;">
+            <div class="slds-notify_container slds-is-relative">
+                <div class="slds-notify slds-notify_toast slds-theme_error" role="alert">
+                    <span class="slds-assistive-text">error</span>
+                    <span class="icn slds-icon_container slds-icon-utility-error slds-m-right_small slds-no-flex slds-align-top" title="Description of icon when needed">
+            <lightning:icon iconName="utility:error" size="xx-large" alternativeText="Error"/>
+          </span>
+                    <div class="slds-notify__content">
+                        <h2 class="slds-text-heading_small ">{!v.message}.</h2>
+                    </div>
+                    <button class="icn slds-button slds-button_icon slds-notify__close slds-button_icon-inverse" title="Close" onclick="{!c.closeMessage}">
+                        <lightning:icon iconName="utility:close" size="xx-large" alternativeText="close" />
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </aura:if>
+</aura:component>

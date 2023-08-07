@@ -1,0 +1,91 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component controller="OppActionButtonController">
+    <!-- Standard -->
+    <ltng:require scripts="{!$Resource.LtngUtility}"/>	
+    <aura:attribute name="objectName" type="String" access="public"/>
+    <aura:attribute name="objectLabel" default="Contact" type="String" access="public"/>	
+    <aura:attribute name="nameFieldApi" type="String" access="public"/>
+    <aura:attribute name="selectedItem" type="Object" access="public"/>
+    <aura:attribute name="selectedItemId" type="Object" access="public"/>
+    
+    
+    <aura:attribute name="queryFieldValues" type="String" default="" access="public"/>    
+    <aura:attribute name="queryFields" type="String" default="" access="public"/>
+    
+    <aura:attribute name="searchKey" type="String" access="private"/>
+    <!--  <aura:attribute name="spinner" type="Boolean" access="private"/> -->
+    <aura:attribute name="lookupData" type="List" access="private"/>
+    <aura:attribute name="Spinner" type="boolean" default="false"/>   
+    <aura:attribute name="isOpenModal" type="Boolean" access="public" default="false"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+<!--    <aura:handler event="aura:waiting" action="{!c.showSpinner}"/>
+    <aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}"/>  -->
+    
+    
+    
+    <aura:if isTrue="{!v.isOpenModal}">
+    <!--    <aura:if isTrue="{!v.Spinner}">
+            <lightning:spinner aura:id="spinner" variant="brand" size="medium"/>
+        </aura:if>	  -->
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_medium">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button onclick="{!c.closeModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                        <lightning:icon iconName="utility:close" size="small" variant="bare"/>
+                    </button>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate modal-header">{!'Select '+v.objectLabel}</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem size="12" padding="around-small">
+                            <lightning:input type="search" value="{!v.searchKey}" onchange="{!c.searchContact}" placeholder="Search..." variant="label-hidden"/>
+                        </lightning:layoutItem>
+                        
+                        
+                        <lightning:layoutItem size="12" padding="around-small">
+                            <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                                <thead>
+                                    <tr class="slds-line-height_reset">
+                                        <th class="" scope="col">
+                                            <div class="slds-truncate" title="Select">Select</div>
+                                        </th>
+                                        <th class="" scope="col">
+                                            <div class="slds-truncate" title="{!v.objectLabel+' Name'}">{!v.objectLabel+' Name'}</div>
+                                        </th>
+                                        <th class="" scope="col">
+                                            <div class="slds-truncate" >UserLicense</div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>					  		
+                                    <aura:iteration items="{!v.lookupData}" var="item" indexVar="ind">					
+                                        <tr class="slds-hint-parent">
+                                            <th data-label="Select" scope="row">
+                                                <div class="slds-truncate" title="">
+                                                    <lightning:buttonIcon value="{!item}" iconName="utility:linked" variant="bare" onclick="{!c.selectLookup}" alternativeText="Select" />
+                                                </div>
+                                            </th>
+                                            <td data-label="{!v.objectName+' Name'}">
+                                                <div class="slds-truncate" title="{!item.Name}">{!item.Name}</div>
+                                            </td>
+                                            
+                                            <td data-label="{!item.Profile.UserLicense.Name}">
+                                                <div class="slds-truncate" title="{!item.Profile.UserLicense.Name}">{!item.Profile.UserLicense.Name}</div>
+                                            </td>
+                                        </tr>
+                                    </aura:iteration>
+                                </tbody>
+                            </table>
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </div>
+                <footer class="slds-modal__footer slds-modal__footer_directional">
+                    
+                    <button onclick="{!c.closeModal}" class="slds-button slds-button_neutral">Cancel</button>    
+                    
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+</aura:component>

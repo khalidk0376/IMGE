@@ -1,0 +1,220 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId" access="global" controller="ContactDetailsCtrl" >
+    <aura:attribute name="activeSections" type="List"/>
+    <aura:attribute name="isEditForm" type="boolean" />
+    
+    <aura:attribute name="isOpenInOtherReasonPopUp" type="boolean" default="false" access="public"/>
+    <aura:attribute name="inactiveReasonvalue" type="String" default=" " access="public"/> 
+        
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <lightning:recordViewForm aura:id="viewFormContact" recordId="{!v.recordId}" objectApiName="Contact"> 
+        <lightning:accordion aura:id="accordionCon" allowMultipleSectionsOpen="true" activeSectionName="{!v.activeSections}"  onsectiontoggle="{!c.handleSectionToggle}" >
+            <lightning:accordionSection class="slds-hide" name="summary" label="Summary" aura:id="summary"> 
+                <lightning:layout multipleRows="true">
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}"  fieldName="Name" class="slds-m-top_small" />
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="form-element" >
+                            <label class="slds-form-element__label slds-m-top_small">Job Title</label>
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Title" variant="label-hidden"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Contact_Type__c" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Gender__c" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Job_Level__c" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        <!--<lightning:layoutItem class="form-element" >
+                        <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Job_function__c" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                    </lightning:layoutItem>-->
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="CPF__c" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Source_Description__c" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Source_System__c" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        
+                        <!--<lightning:layoutItem class="form-element" >
+                        <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Type__c" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                    </lightning:layoutItem>-->
+                    </lightning:layoutItem>	
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Email" class="slds-m-top_small" />
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Alternate_Email_Address__c" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Main_Language__c" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Secondary_Language__c" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Preferred_Communication__c" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Relationship__c" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="LeadSource" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>							
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Referred_By__c" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Phone" class="slds-m-top_small" />
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="MobilePhone" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="OtherPhone" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Fax" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Contact_Preferred_Time_of_Day__c" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        
+                 <!--       Added By Himanshu -->     
+                        
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Inactive__c" class="slds-m-top_small" />
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>  
+                     
+                        <lightning:layoutItem class="form-element" >
+                            
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Inactive_Reason__c" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem> 
+                        
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Inactive_Additional_Reason__c" class="slds-m-top_xx-small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>  
+                        </lightning:layoutItem> 
+                     
+              <!--    Added by Himanshu -->          
+                    </lightning:layoutItem>	  
+                </lightning:layout>               
+            </lightning:accordionSection> 
+            <lightning:accordionSection class="slds-hide"  name="address" label="Address Information" aura:id="address">
+                <lightning:layout multipleRows="true"> 
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="MailingStreet" class="slds-m-top_small" />
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="MailingCity" class="slds-m-top_small" />
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="MailingCountry" class="slds-m-top_small" />
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="MailingState" class="slds-m-top_small" />
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>                        
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                        <lightning:layoutItem class="form-element">
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="MailingPostalCode" class="slds-m-top_small" />
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                    </lightning:layoutItem>
+                </lightning:layout> 
+            </lightning:accordionSection> 
+            <lightning:accordionSection class="slds-hide" name="admin" label="Admin View" aura:id="admin"> 
+                <lightning:layout multipleRows="true"> 
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="x_Legacy_Id__c" class="slds-m-top_small" />
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Address_Verified__c" class="slds-m-top_small" />
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="MDM_ID__c" class="slds-m-top_small" />
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                    </lightning:layoutItem>	 
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4"> 
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="Email_Opt_In__c" class="slds-m-top_small" />
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="form-element">
+                            <lightning:outputField fieldName="Contact_Source__c" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="form-element">
+                            <lightning:outputField fieldName="Specific_Source__c" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>                        
+                       
+                    </lightning:layoutItem>	 
+                    
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4"> 
+                        <lightning:layoutItem class="form-element" >
+                            <lightning:outputField ondblclick="{!c.editRecord}" fieldName="CreatedById" class="slds-m-top_small" />
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        
+                        <lightning:layoutItem class="form-element">
+                            <lightning:outputField fieldName="LastModifiedById" class="slds-m-top_small"/>
+                            <lightning:buttonIcon iconName="utility:edit" class="edit" iconClass="slds-button__icon_hint" variant="bare" alternativeText="Edit Record" onclick="{!c.editRecord}"/>   
+                        </lightning:layoutItem>
+                        
+                    </lightning:layoutItem>	 	  
+                </lightning:layout>
+            </lightning:accordionSection>  
+        </lightning:accordion> 
+    </lightning:recordViewForm> 
+</aura:component>

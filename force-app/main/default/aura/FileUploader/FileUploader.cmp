@@ -1,0 +1,67 @@
+<!--
+    ************ Modification Log  ************
+    * Modified by :{Girikon(Amish)[CCEN-594] Jan 31 2019, Girikon(Mahesh)[CCEN-653] Feb 11 2019,[CCEN-679] Feb 22 2019}  
+-->
+<aura:component description="FileUploader" controller="FBFileUploadCtrl">    
+    <aura:attribute name="questionId" type="String" default="" />
+    <aura:attribute name="questionerId" type="String" default="" />
+    <aura:attribute name="AccountId" type="String" default=""/> 
+    <aura:attribute name="required" type="Boolean" default="false" />
+    <aura:attribute name="allValid" type="Boolean" default="true" />
+    <aura:attribute name="showLoadingSpinner" type="boolean" default="false" />
+    <aura:attribute name="fileName" type="String" default="No File Selected.." />
+    <aura:attribute name="fileId" type="String" default="" />
+    <aura:attribute name="fileFormat" type="String" default=".docx,.pdf,.ppt,.pptx,.xls,.xlsx,.gif,.jpg,.png,.doc" />    
+    <aura:attribute name="responseAttachmentId" type="String" default="" />
+    <aura:attribute name="Spinner" type="Boolean" default="false" />
+    <aura:attribute name="Attchments" type="object[]" />
+    <aura:handler name="init" value="{!this}" action="{!c.onLoad}" />
+    <aura:attribute name="msgtype" type="String" default=""/>
+    <aura:attribute name="msgbody" type="String" default=""/>
+    <aura:attribute name="Uploadvalidmap" type="Map"/>
+
+    <aura:if isTrue="{!v.Spinner}">
+        <lightning:spinner size="medium" variant="brand" aura:id="spinnerId"/>
+    </aura:if>
+
+    <aura:if isTrue="{!v.msgbody!=''}">
+        <div class="slds-notify_container slds-is-fixed">
+
+            <div class="{!'slds-notify slds-notify_toast slds-theme_'+v.msgtype}" role="alert">
+              <span class="slds-assistive-text">{!v.msgtype}</span>
+              <span class="{!'slds-icon_container slds-icon-utility-'+v.msgtype+' slds-m-right_small slds-no-flex slds-align-top'}" title="Description of icon when needed">
+                <lightning:icon iconName="{!'utility:'+v.msgtype}" size="small" variant="inverse"/>
+              </span>
+              <div class="slds-notify__content">
+                <h2 class="slds-text-heading_small" style="color:#fff;font-size:1rem">{!v.msgbody}</h2>
+              </div>
+              <button class="slds-button slds-button_icon slds-notify__close slds-button_icon-inverse" title="Close" onclick="{!c.closeToast}">
+                <lightning:icon iconName="utility:close" size="small" variant="inverse"/>
+                <span class="slds-assistive-text">Close</span>
+              </button>
+            </div>
+        </div>
+    </aura:if>
+
+    <!-- Object for Question Response  --> 
+    <lightning:input class="slds-clearfix qf-hide-label" aura:id="fileId"  onchange="{!c.handleFilesChange}" type="file" accept="{!v.fileFormat}" name="file" label="Upload Attachment" multiple="false"/>
+    <tr>
+    <td>
+        <!-- <div class="slds-text-body_small slds-text-color_error"> <a href="" target=""  data-id="{!v.fileId}" onclick="{!c.download}">{!v.fileName==''?'No File Selected..':v.fileName}</a>&nbsp;</div></td> -->
+     <div>
+            <aura:iteration items="{!v.Attchments}" var="Attchmnt">
+            <div class="slds-text-body_small slds-text-color_error">
+               <a href="" target="" data-id="{!Attchmnt.attId}"  onclick = "{!c.download}">{!Attchmnt.attName}</a>&nbsp; 
+            <!-- <a href="" target="" data-id="{!Attchmnt.id}"  onclick = "{!c.download}">{!v.fileName==''?'No File Selected..':v.fileName}</a> -->
+            </div>
+            </aura:iteration>  
+     </div>
+    </td>
+    </tr>
+    <!--use aura:if for show-hide the loading spinner image--> 
+    <aura:if isTrue="{!v.showLoadingSpinner}">
+        <div class="slds-text-body_small slds-text-color_error">Uploading... 
+            <img src="/auraFW/resources/aura/images/spinner.gif" class="spinner-img" alt="Loading"/>'
+        </div>
+    </aura:if>
+</aura:component>

@@ -1,0 +1,10 @@
+<aura:event type="APPLICATION" description="close component model for input type" access="global">
+	<aura:attribute name="closeModel" type="Boolean" description="close the  model" /> 
+	<aura:attribute name="modelName" type="String" description="set model name" /> 
+	<aura:attribute name="isUpdateRecord" type="Boolean" description="if record update in Quesntion and Quenstion Quenstion Quenstionniare record."/>
+	<aura:attribute name="signData" type="String" default=""/>
+    <aura:attribute name="responseValue" type="String" default=""/>
+    <aura:attribute name="responseId" type="String" default=""/>
+	<aura:attribute name="checkData" type="Boolean" default="Checking data for the blank signature"/>
+	<aura:attribute name="checkImageData" type="Boolean" default="Checking data for the blank signature"/>
+</aura:event>

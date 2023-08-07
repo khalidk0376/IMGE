@@ -1,0 +1,173 @@
+.THIS .custmModal {
+    max-width: 1172px;
+}
+
+.THIS .RemoveClass {
+    color: #015ba7;font-size: 13px;cursor: pointer;
+}
+
+.THIS .checkBoxCust label {
+    display: inline-block;
+    padding: 10px 0 0 39px;
+    font-weight: 400;
+    text-align: center;
+    color: #464646;
+}
+
+.THIS .checkBoxCust label:hover {
+    background: transparent;
+    color: #000;
+    margin: 0px;
+}
+
+.THIS .checkBoxCust input:checked+label {
+
+    margin-top: 0px;
+    margin-left: 0px;
+}
+
+.THIS .checkBoxCust label:focus {
+    margin: 0px;
+    padding: 0px;
+}
+
+.THIS .L3CustomHelpText {
+    padding-left: 38px;
+    color: gray;
+    font-size: smaller;
+    padding-bottom: 10px;
+
+}
+
+.THIS .L1CustomLabel {
+    color: #015ba7;
+    font-weight: bold;
+    padding-bottom: 4px;
+    padding-top: 4px;
+    padding-left: 9px;
+    margin-right: 12px;
+    margin-bottom: auto;
+
+
+}
+
+.THIS .CustomL3Heading {
+    color: #000;
+    display: block;
+    padding-bottom: 10px;
+    font-size: 16px;
+}
+
+.THIS .darkBlackColor {
+    color: black;
+}
+
+.THIS .Custbutnaccordion {
+    padding-top: 0px;
+    font-weight: bold;
+    color: black;
+    font-size: small;
+}
+
+.THIS .Custbutnaccordion .slds-button:hover {
+    color: black;
+    text-decoration: none;
+}
+
+.THIS .Custbutnaccordion .slds-button:active {
+    color: black;
+    text-decoration: none;
+}
+
+.THIS .Custbutnaccordion .slds-button:focus {
+    color: black;
+    text-decoration: none;
+}
+
+.THIS .slds-accordion__summary {
+    margin-bottom: 0px !important;
+
+}
+
+.THIS .slds-accordion__section {
+    padding: 0px .75rem;
+}
+
+.THIS .innerSpan {
+    margin-top: 2%;
+}
+
+.THIS .custClass {
+    background: azure;
+}
+
+.THIS .slds-text-longform ul {
+    margin-left: 0;
+    list-style: none;
+}
+
+.THIS .checkBoxCust label {
+    text-align: left;
+
+}
+
+.THIS .SelectL1 {
+    background-color: #e5e0e0;
+    padding-bottom: 4px;
+    padding-top: 4px;
+    padding-left: 9px;
+    margin-right: 12px;
+}
+
+.THIS .modal-header h2 {
+    padding: 0px;
+}
+
+.THIS .close {
+    color: #000;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    top: 5px;
+    position: absolute;
+    right: 27px;
+}
+
+.THIS .rederror {
+    color: red;
+    float: right;
+    margin-top: 36px;
+    margin-right: 7px;
+}
+.THIS .slds-form-element__label
+{
+    font-size: 13px;
+}
+.THIS .slds-truncate {
+    padding-left: 10px;
+}
+/* .THIS .slds-accordion__content label:first-child {
+    padding-top: 0;
+}
+.THIS .slds-accordion__content label:last-child {
+    padding-bottom: 10px;
+  } */
+.THIS .slds-scope .slds-spinner_container
+{
+    position: fixed !important; 
+}
+.THIS .spinner { position: fixed !important;}
+
+.THIS .mainsection{
+    position: relative;
+    background-color: rgb(242, 242, 242);
+    border: 1px solid rgb(12, 12, 12);
+    padding: 20px;
+    box-sizing: border-box;
+}
+.THIS .title{
+    font-size: 30px !important; text-align: center;
+}
+.THIS .subtitle{
+    font-size: 18px !important; text-align: center;margin-bottom: 12px;
+}

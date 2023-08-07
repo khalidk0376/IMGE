@@ -1,0 +1,278 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<!--
+    ************ Modification Log  ************
+	* Modified by :{Girikon(Sunil[CCEN-744 Apr 12 2019]}
+-->
+<aura:component implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes,lightning:isUrlAddressable"
+    access="global" controller="AddCustomerProductCategoryLtngCtrl">
+    <ltng:require scripts="{!$Resource.CustomerCenterWS11 +'/CustomerCenterWS11/js/jquery-1.7.1.min.js?v=149'}"
+        afterScriptsLoaded="{!c.setScriptLoaded}" />
+    <aura:handler name="init" value="{!this}" action="{!c.onInit}" />
+    <aura:handler event="aura:waiting" action="{!c.showSpinner}" />
+    <aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}" />
+    <aura:attribute name="Spinner" type="boolean" default="false" />
+    <aura:attribute name="l3Spinner" type="boolean" default="false" />
+    <aura:attribute name="col3Show" type="boolean" default="false" />
+    <aura:attribute name="showCol2L3" type="boolean" default="false" />
+    <aura:attribute name="showFakeL3" type="boolean" default="false" />
+    <aura:attribute name="exceedLimit" type="boolean" default="false" />
+    <aura:attribute name="Event_Setting" type="Event_Settings__c" />
+    <aura:attribute name="eventcode" type="String" default="" />
+    <aura:attribute name="totalProdCatCount" type="Integer" default="" />
+    <!-- need to pass evnt edtn ? -->
+    <aura:attribute name="AccountId" type="String" default="" />
+    <aura:attribute name="uId" type="String" default="" />
+    <aura:attribute name="ContactId" type="String" default="" />
+    <aura:attribute name="eventId" type="String" default="" />
+    <aura:attribute name="expoId" type="String" default="" />
+    <!-- attributes to pass  AccountId  uId  ContactId  eventId  expoId-->
+    <aura:attribute name="eventEdtionId" type="String" default="" />
+    <aura:attribute name="wrapSelectedCheckbox" type="object[]" />
+    <aura:attribute name="selectedCategories" type="object[]" />
+    
+    <aura:attribute name="wrapperlsist" type="object" />
+    <aura:attribute name="wrapperlist" type="object[]" />
+    <aura:attribute name="WrapEEPCMAndchild" type="object[]" />
+    <aura:attribute name="WrapEESCMValuesANDCheckbox" type="object[]" />
+    <section >
+           
+
+    <!-- {!v.Spinner}  true  false WrapEESCMValuesANDCheckbox -->
+    <aura:if isTrue="{!v.Spinner}">
+        <lightning:spinner class="spinner" alternativeText="Loading" size="medium" />
+    </aura:if>
+    
+    <div class="slds-grid slds-wrap">
+        <div class="slds-size_1-of-4">
+            <div class="mainsection">
+                <aura:if isTrue="{!v.totalProdCatCount>0}">
+                        <div class="title">{!v.selectedCategories.length} out of {!v.totalProdCatCount}</div>     
+                        <div class="subtitle">Product Categories added</div>    
+                </aura:if>
+                <div class="slds-align_absolute-center">
+                    <lightning:button variant="brand" iconName="utility:edit" label="{!$Label.c.Manage_Categories}" onclick="{! c.openPopUp }" />
+                </div>   
+            </div> 
+        </div>
+        <div class="slds-size_3-of-4 slds-p-left_xx-large">
+                <aura:if isTrue="{!v.selectedCategories.length>0}">
+                        <div>
+                            <b class=" slds-align_absolute-left sectionheading CustomL3Heading">
+                                {!$Label.c.Selected_Categories}
+                            </b>
+                            <aura:iteration items="{!v.selectedCategories}" var="item" indexVar="indexNo">
+                                <aura:if isTrue="{!item.isFakeL3}">
+                                    <!-- fake value -->
+                                    <p>
+                                        <span class="darkBlackColor"> {!indexNo+1}.
+                                            {!item.fakeL3Value}
+                                        </span>
+                                        <span class="RemoveClass">
+                                            <span onclick="{!c.removeSelectedCategories}" data-catId="{!item.selectedCatId}" data-indexValue="{!indexNo}">&nbsp;(delete)
+                                            </span>
+                                        </span>
+                                    </p>
+                                    <p class="L3CustomHelpText"> 
+                                        {!item.fakeL3L1Value}
+                                        >
+                                        {!item.fakeL3Value}
+                                    </p>
+                                    <!-- fake value -->
+
+                                    <!-- real values -->
+                                    <aura:set attribute="else"> 
+                                        <p>
+                                            <span class="darkBlackColor">{!indexNo+1}.
+                                                {!item.ObjEESCM.Levels_Master__r.LevelValue__c}
+                                            </span>
+                                            <span class="RemoveClass">
+                                                <span onclick="{!c.removeSelectedCategories}"
+                                                    data-indexValue="{!indexNo}" data-catId="{!item.selectedCatId}" data-subCatId="{!item.selectedsubCatId}">&nbsp;(delete)
+                                                </span>
+                                            </span>
+                                        </p>
+                                        <p class="L3CustomHelpText">
+                                            {!item.ObjEESCM.Levels_Master__r.Mapped_To_Level__r.Mapped_To_Level__r.LevelValue__c}
+                                            >
+                                            {!item.ObjEESCM.Levels_Master__r.Mapped_To_Level__r.LevelValue__c}
+                                        </p>
+                                    </aura:set>
+                                    <!-- real values -->
+                                </aura:if>
+
+                            </aura:iteration>
+
+                        </div>
+                    </aura:if>
+        </div>
+    </div>
+
+    <!--modal copy paste      --> 
+
+    <div id="modalCategory" style="Display:none">
+        <section  role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-modal_medium slds-fade-in-open">
+          <div class="slds-modal__container">
+            <header class="slds-modal__header">
+              <button onclick="{!c.hidemodalCategory}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                <lightning:icon iconName="utility:close" variant="bare" size="small"/>
+              </button>
+              <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Select Product Categories</h2>      
+            </header>
+            <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                <div class="">
+                    <!-- text below line-->
+                    <aura:iteration items="{!v.wrapperlsist}" var="item" indexVar="indexNo">
+                        {!item.L1Heading}
+                    </aura:iteration>
+        
+                    <p> {!$Label.c.To_select}
+                    </p>
+                    <!-- content inside pop up below line  -->
+                    <br></br>
+                    <div class="slds-grid slds-gutter">
+                        <div class="slda-col slds-size_1-of-3">
+                            <div class="slds-scrollable_y" style="height: 22rem; margin-right: 12px;">
+                                <div class="slds-text-longform">
+                                    <aura:iteration items="{!v.wrapperlist}" var="item" indexVar="indexNo">
+                                        <p class="L1CustomLabel" onclick="{!c.L1ClickedHtml}" data-selected-item="{!item}"
+                                            data-index="{!indexNo}" aura:id="testli">
+                                            {!item.L1Heading}
+                                            <!-- <ui:outputText value="{!item.LevelValue__c}" class="L1CustomLabel" click="{!c.L1Clicked}" /> -->
+                                        </p>
+                                    </aura:iteration>
+                                </div>
+                            </div>
+                        </div>
+        
+                        <div class="slda-col slds-size_1-of-3">
+                            <div class="slds-scrollable_y" style="height: 22rem; margin-right: 12px;">
+                                <div class="slds-text-longform">
+                                    <lightning:accordion aura:id="accordion"  >
+                                        <aura:iteration items="{!v.WrapEEPCMAndchild}" var="itemWrapEEPCMAndchild" 
+                                            indexVar="indexNo">
+                                            <div class="custClick" id = "LTwoEEProdCatMapgId" data-LTwoEEProdCatMapgId="{!itemWrapEEPCMAndchild.EEPCMObj.Id}"
+                                                onclick="{!c.l2EEProdCatMapgClick}" data-indexValue="{!indexNo}">
+                                                <lightning:accordionSection name="{!itemWrapEEPCMAndchild.EEPCMObj.Id}"
+                                                    label="{!itemWrapEEPCMAndchild.EEPCMObj.Levels_Master__r.LevelValue__c}"
+                                                    class="Custbutnaccordion ">
+        
+                                                    <aura:set attribute="body">
+        
+                                                        <span data-idSpan="innerSpan">
+                                                            <!-- true {!v.l3Spinner} custClass -->
+        
+                                                            <aura:if isTrue="{!v.showCol2L3}">
+                                                                <aura:iteration items="{!v.WrapEESCMValuesANDCheckbox}"
+                                                                    var="itemWrapEESCMValuesANDCheckbox" indexVar="indx">
+        
+                                                                    <aura:if isTrue="{!itemWrapEESCMValuesANDCheckbox.isFakeL3}">
+                                                                        <!-- fake value -->
+                                                                        <lightning:input type="checkbox" checked="{!itemWrapEESCMValuesANDCheckbox.isFakeL3Checked}"
+                                                                            label="{!itemWrapEESCMValuesANDCheckbox.fakeL3Value}"
+                                                                            class="checkBoxCust" name="{!indx}"
+                                                                            onchange="{!c.checkBoxClicked}" />
+                                                                        <aura:set attribute="else">
+                                                                            <!-- real value  -->
+                                                                            <lightning:input type="checkbox" checked="{!itemWrapEESCMValuesANDCheckbox.isChecked}"
+                                                                                label="{!itemWrapEESCMValuesANDCheckbox.ObjEESCM.Levels_Master__r.LevelValue__c}"
+                                                                                class="checkBoxCust" name="{!indx}"
+                                                                                onchange="{!c.checkBoxClicked}" />
+                                                                        </aura:set>
+                                                                    </aura:if>
+                                                                </aura:iteration>
+        
+                                                            </aura:if>
+                                                        </span>
+                                                    </aura:set>
+                                                </lightning:accordionSection>
+                                            </div>
+                                        </aura:iteration>
+                                    </lightning:accordion>
+                                </div>
+                            </div>
+                        </div>
+        
+                        <div class="slda-col slds-size_1-of-3">
+                            <div class="slds-scrollable_y" style="height: 22rem; margin-right: 12px;">
+                                <div class="slds-text-longform">
+                                    <!-- "{!v.col3Show}" -->
+                                    <aura:if isTrue="{!v.wrapSelectedCheckbox.length>0}">
+                                        <div>
+                                            <b class=" slds-align_absolute-left sectionheading CustomL3Heading">
+                                                {!$Label.c.Selected_Categories}
+                                            </b>
+                                            <aura:iteration items="{!v.wrapSelectedCheckbox}" var="item" indexVar="indexNo">
+                                                <aura:if isTrue="{!item.isFakeL3}">
+                                                    <!-- fake value -->
+                                                    <p>
+                                                        <span class="darkBlackColor"> {!indexNo+1}.
+                                                            {!item.fakeL3Value}
+                                                        </span>
+                                                        <span class="RemoveClass">
+                                                            <span onclick="{!c.removeSelectedCheckbox}" data-indexValue="{!indexNo}"  data-catId="{!item.selectedCatId}" >&nbsp;(remove)
+                                                            </span>
+                                                        </span>
+                                                    </p>
+                                                    <p class="L3CustomHelpText">
+                                                        {!item.fakeL3L1Value}
+                                                        >
+                                                        {!item.fakeL3Value}
+                                                    </p>
+                                                    <!-- fake value -->
+        
+                                                    <!-- real values -->
+                                                    <aura:set attribute="else">
+                                                        <p>
+                                                            <span class="darkBlackColor">{!indexNo+1}.
+                                                                {!item.ObjEESCM.Levels_Master__r.LevelValue__c}
+                                                            </span>
+                                                            <span class="RemoveClass">
+                                                                <span onclick="{!c.removeSelectedCheckbox}"
+                                                                    data-indexValue="{!indexNo}"  data-catId="{!item.selectedCatId}" data-subCatId="{!item.selectedsubCatId}">&nbsp;(remove)
+                                                                </span>
+                                                            </span>
+                                                        </p>
+                                                        <p class="L3CustomHelpText">
+                                                            {!item.ObjEESCM.Levels_Master__r.Mapped_To_Level__r.Mapped_To_Level__r.LevelValue__c}
+                                                            >
+                                                            {!item.ObjEESCM.Levels_Master__r.Mapped_To_Level__r.LevelValue__c}
+                                                        </p>
+                                                    </aura:set>
+                                                    <!-- real values -->
+                                                </aura:if>
+        
+                                            </aura:iteration>
+        
+                                        </div>
+                                    </aura:if>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            <footer class="slds-modal__footer">
+              <!-- content inside pop up   -->
+              <div class="slds-float_right ">			
+                    <span style="margin-right: 20px;"><b>{!v.wrapSelectedCheckbox.length} </b>
+                        &nbsp; {!$Label.c.out_of} &nbsp; <b> {!v.totalProdCatCount}</b>&nbsp;
+                        {!$Label.c.selected}
+                    </span>
+                    <aura:if isTrue="{!v.wrapSelectedCheckbox.length>0}">
+                        <lightning:button variant="brand" iconName="utility:check" onclick="{!c.saveClicked}" label="{!$Label.c.Save}"/>					
+                    </aura:if>
+                    <lightning:button variant="destructive" iconName="utility:close" onclick="{!c.hidemodalCategory}" label="{!$Label.c.Cancel}"/>
+                </div>
+                <aura:if isTrue="{!v.exceedLimit}">
+                    <div class="rederror">You have exceed the selection limit. </div>
+                </aura:if>
+                <div class="clearfix"></div>
+            </footer>
+          </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    <!--modal copy paste -->
+</section>
+</aura:component>

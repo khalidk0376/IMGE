@@ -1,0 +1,771 @@
+<!--
+    ************ Modification Log  **************
+    * Modified by : Girikon(Ashish[CCEN-430 Dec 16 2018],Sunil[CCEN-589 Jan 10 2019],[CCEN-592 Jan 22 2019] , Amish [CCEN 588 Jan 22 2019], Prashant[CCEN-684 March 6 2019],[CCEN-808 May 31 2019]),Girikon(Garima [CCEN-231 Oct 4 2019],Girikon(Himanshu [BK-2876 15 Dec 2019]), 
+					Aishwarya[BK-3544 Mar 3 2020])
+-->
+<aura:component implements="flexipage:availableForAllPageTypes" controller="ApproveContractorCtrl">
+    <!--Filter attributes --> 
+    <ltng:require scripts="{!$Resource.CustomerCenterWS11 +'/CustomerCenterWS11/js/copytoClipboard.js'}"/>
+    <aura:attribute name="selectedRiggedOption" type="String" default="All"/>
+    <aura:attribute name="isDoubleDecker" type="Boolean" default="false"/>
+    <aura:attribute name="isCA" type="Boolean" default="false"/>
+    <aura:attribute name="isPBS" type="Boolean" default="false"/>
+    <aura:attribute name="isPBNS" type="Boolean" default="false"/>
+    <aura:attribute name="isSME" type="Boolean" default="false"/>
+    <aura:attribute name="isAllAgt" type="Boolean" default="false"/>
+    <aura:attribute name="isAgtPvnSpc" type="Boolean" default="false"/>
+    <aura:attribute name="searchTearm" type="String" default=""/>
+    <aura:attribute name="selectedValue" type="String" default="All"/>
+    <aura:attribute name="selectedValue2" type="String" default="All"/>
+    <aura:attribute name="aggregateResults" type="Map"/>
+    <aura:attribute name="designationInfo" type="List" default="[]"/>
+    <aura:attribute name="options" type="List" />
+    <aura:attribute name="riggeringOptions" type="List" default="[]"/>
+    <aura:attribute name="EventId" type="string" />
+    <aura:attribute name="optionsBoothStatus" type="List" />
+    <aura:attribute name="tabCssAtts" type="List" />
+    <aura:attribute name="contractors" type="BoothContractorMapping__c[]"/> 
+
+    <aura:attribute name="wrapperList" type="object[]"/>
+    <aura:attribute name="sortingColumn" type="String" default="ExpocadBooth__r.Opportunity__r.account.name"/>
+    <aura:attribute name="sortingOrder" type="String" default="asc"/>
+    <aura:attribute name="PageNumber" type="integer" default="1"/>
+	<aura:attribute name="pageSize" type="integer" default="50"/>
+    <aura:attribute name="TotalPages" type="integer" default="0"/>
+    <aura:attribute name="TotalRecords" type="integer" default="0"/>
+    <aura:attribute name="RecordStart" type="integer" default="0"/>
+    <aura:attribute name="RecordEnd" type="integer" default="0"/>
+
+    <aura:attribute name="singleBooth" type="BoothContractorMapping__c[]"  />
+    <aura:attribute name="AccOnSingleBooth" type="String"/>
+    <aura:attribute name="isRigged" type="Boolean" default="false"/>
+    <aura:attribute name="PrntAccountId" type="string"/> 
+    <aura:attribute name="clonePrntAccountId" type="string"/>
+    <aura:attribute name="PrntBoothId" type="string"/>
+    <aura:attribute name="PrntEventEditionId" type="string"/>
+    <aura:attribute name="PrntPopupclosed" type="Boolean" default="false"/>
+    <aura:attribute name="selTabId" type="String" default="tab1" />
+    <aura:attribute name="AgentsExhibitors" type="object[]"/>
+    <aura:attribute name="CurrentAgent" type="object" />
+    <aura:attribute name="searchText" type="String" default=""/>
+    <aura:attribute name="copydata" type="object" />
+    <aura:attribute name="objEditor" type="object" />
+    <aura:attribute name="downlodCsv" type="object" />
+    <aura:attribute name="tableColumns" type="string[]" />
+    <aura:attribute name="selectedColumns" type="string" />
+    <aura:attribute name="toDeleteVal" type="string" default=""/>
+    <aura:attribute name="toDeleteDetials" type="string" default=""/>
+    <aura:attribute name="selTabVal" type="String" default="tab3" />
+    <aura:attribute name="isSpinner" type="Boolean" default="false"/>
+    <aura:attribute name="RejectionReason" type="String" default=""/>
+    <aura:attribute name="scrollFunc" type="object" />
+    <!-- <aura:handler name="change" value="{!v.selTabVal}" action="{!c.loadOptions}"/> -->
+    <aura:handler name="init" value="{!this}" action="{!c.loadOptions}" />
+    <aura:handler event="aura:waiting" action="{!c.waiting}"/> 
+    <aura:handler event="aura:doneWaiting" action="{!c.doneWaiting}"/> 
+    <aura:attribute name="isSandbox" type="boolean" default="true"/>  
+
+    <aura:if isTrue="{!v.isSpinner}">
+        <lightning:spinner class="position" size="large" variant="brand"/>
+    </aura:if>
+ 
+		<div id="topportion">
+    <lightning:layout multipleRows="true">
+       
+       
+            
+                <lightning:layoutItem flexibility="auto, no-grow" class="slds-p-left_x-small" padding="around-small">
+                    
+                    <div>
+                        <c:MultiSelectUIComp options_="{!v.optionsBoothStatus}"  defaultInfoText="--Booth Status--" selectChange="{!c.handleSelectChangeEvent}"/>
+                    </div>
+                    <div class="slds-m-top_small">                            
+                        <!-- <lightning:combobox options="{!v.riggeringOptions}" label="Rigged" variant="label-hidden" value="{!v.selectedRiggedOption}" onchange="{!c.onfilterContractor}"/> -->
+                        <c:MultiSelectUIComp options_="{!v.riggeringOptions}"  defaultInfoText="--Rigged--" selectChange="{!c.selectChangeEventRigging}"/>
+                    </div>
+                </lightning:layoutItem>
+                <lightning:layoutItem flexibility="auto, no-grow" class="slds-p-right_x-small" padding="around-small">
+                    <div>
+                        <lightning:combobox  options="{!v.options}" label="Designation Status" variant="label-hidden" aura:Id="mySelect" value="{!v.selectedValue}"  onchange="{!c.onfilterContractor}"/>
+                    </div>
+                    <div class="slds-m-top_small">
+                        <lightning:input  aura:id="Mysearch" type="search" onchange="{!c.onfilterContractor}" placeholder="Keyword Search" label="Search Keyword" value="{!v.searchTearm}" variant="label-hidden"/>
+                    </div>
+                </lightning:layoutItem>
+                <lightning:layoutItem flexibility="auto, no-grow" class="slds-p-left_x-small slds-p-right_x-small" padding="around-small">
+                    <lightning:input type="checkbox" label="{!$Label.c.Double_Decker}" checked="{!v.isDoubleDecker}" onchange="{!c.onfilterContractor}"/>
+                    <lightning:input type="checkbox" label="{!$Label.c.Contractor_Agreement_CA}" checked="{!v.isCA}" onchange="{!c.onfilterContractor}"/>
+                    <lightning:input type="checkbox" label="{!$Label.c.Performance_Bond_Submitted}" checked="{!v.isPBS}" onchange="{!c.onfilterContractor}"/>
+                    <lightning:input type="checkbox" label="{!$Label.c.Performance_Bond_Not_Submitted}" checked="{!v.isPBNS}" onchange="{!c.onfilterContractor}"/>
+                    <lightning:input type="checkbox" label="{!$Label.c.Self_Managed_Exhibitor}" checked="{!v.isSME}" onchange="{!c.onfilterContractor}"/>
+                    <lightning:input type="checkbox" label="All Agents" checked="{!v.isAllAgt}" onchange="{!c.onfilterContractor}"/>
+                    <lightning:input type="checkbox" label="Agent Pavilion Space" checked="{!v.isAgtPvnSpc}" onchange="{!c.onfilterContractor}"/>
+                </lightning:layoutItem>
+                <lightning:layoutItem flexibility="auto, no-grow" class="slds-p-left_x-small slds-p-right_x-small">
+                    <div style="text-align:center;"><strong class="brand-color">Total Filter</strong></div>
+                    <div class="slds-m-top_x-small brand-color" style="text-align:center;font-size:21px;font-weight:bold;">{!v.TotalRecords}</div>
+                    <div style="text-align:center;" class="slds-m-top_x-small">
+                        <lightning:button variant="brand" label="{!$Label.c.Export}" onclick="{!c.downloadexcel}"/>  
+                        <lightning:icon class="black pointer slds-m-left_small slds-m-top_small" iconName="utility:table" size="x-large" onclick="{!c.showTableSettings}" />   
+                    </div>
+                </lightning:layoutItem>
+            
+        
+      
+      
+        
+                <lightning:layoutItem flexibility="auto, no-grow" class="slds-p-left_x-small slds-p-right_x-small" >
+                    <div class="brand-color"><strong>{!$Label.c.Designation_Info}</strong></div>
+                    <lightning:layout multipleRows="true">
+                        <aura:iteration items="{!v.designationInfo}" var="item">
+                            <aura:if isTrue="{!item.key=='Total Number of Exhibitors'}">
+                                <lightning:layoutItem size="6" class="slds-p-right_x-small">
+                                    <span class="brand-color">{!$Label.c.Total_Number_of_Exhibitors}</span>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="2" class="slds-p-right_x-small">
+                                    <span class="brand-color">{!item.value}</span>
+                                </lightning:layoutItem>
+                            </aura:if>
+                            <aura:if isTrue="{!item.key=='Exhibitors without Contractors'}">
+                                <lightning:layoutItem size="6" class="slds-p-right_x-small">
+                                    <span class="brand-color">{!$Label.c.Exhibitors_without_Contractors}</span>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="2" class="slds-p-right_x-small">
+                                    <span class="brand-color">{!item.value}</span>
+                                </lightning:layoutItem>
+                            </aura:if>
+                            <aura:if isTrue="{!item.key=='All Assigned Contractors'}">
+                                 <lightning:layoutItem size="6" class="slds-p-right_x-small">
+                                    <span class="brand-color">{!$Label.c.All_Assigned_Contractors}</span>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="2" class="slds-p-right_x-small">
+                                    <span class="brand-color">{!item.value}</span>
+                                </lightning:layoutItem>
+                            </aura:if>
+                        </aura:iteration>
+                    </lightning:layout>
+                </lightning:layoutItem>
+                <lightning:layoutItem flexibility="auto, no-grow" class="slds-p-left_x-small slds-p-right_x-small" >
+                    <div class="brand-color"><strong>{!$Label.c.Stand_Design_Status}</strong></div>
+                    <lightning:layout multipleRows="true">
+                        <!-- MapUI component is used for getting the value for the respective key[CCEN-808]-->
+                        <aura:if isTrue="{!not(empty(v.aggregateResults))}">
+
+                            <lightning:layoutItem size="6" class="slds-p-right_x-small">
+                                <span class="brand-color">No Design</span>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem size="2" class="slds-p-right_x-small">
+                                    <c:MapUI map="{!v.aggregateResults}" key="No Design" DefaultValue ="0"/>
+                            </lightning:layoutItem>
+
+                            <lightning:layoutItem size="6" class="slds-p-right_x-small">
+                                <span class="brand-color">{!$Label.c.Pending_Review}</span>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem size="2" class="slds-p-right_x-small">
+                                    <c:MapUI map="{!v.aggregateResults}" key="Pending Review" DefaultValue ="0"/>
+                            </lightning:layoutItem>
+                            
+                            <lightning:layoutItem size="6" class="slds-p-right_x-small">
+                                <span class="brand-color">{!$Label.c.Contractor_Resubmit}</span>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem size="2" class="slds-p-right_x-small">
+                                    <c:MapUI map="{!v.aggregateResults}" key="Contractor Resubmit (Incomplete)" DefaultValue ="0"/>
+                            </lightning:layoutItem>
+
+                            <lightning:layoutItem size="6" class="slds-p-right_x-small">
+                                <span class="brand-color">{!$Label.c.Pending_Sales_Approval}</span>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem size="2" class="slds-p-right_x-small">
+                                    <c:MapUI map="{!v.aggregateResults}" key="Pending Sales Approval" DefaultValue ="0"/>
+                            </lightning:layoutItem>
+
+                            <lightning:layoutItem size="6" class="slds-p-right_x-small">
+                                <span class="brand-color">{!$Label.c.Submitted_to_Venue}</span>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem size="2" class="slds-p-right_x-small">
+                                    <c:MapUI map="{!v.aggregateResults}" key="Submitted To Venue" DefaultValue ="0"/>
+                            </lightning:layoutItem> 
+                            
+                            <lightning:layoutItem size="6" class="slds-p-right_x-small">
+                                <span class="brand-color">Pending Venue Approval</span>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem size="2" class="slds-p-right_x-small">
+                                    <c:MapUI map="{!v.aggregateResults}" key="Pending Venue Approval" DefaultValue ="0"/>
+                            </lightning:layoutItem>
+
+                            <lightning:layoutItem size="6" class="slds-p-right_x-small">
+                                <span class="brand-color">Tentative Approval</span>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem size="2" class="slds-p-right_x-small">
+                                    <c:MapUI map="{!v.aggregateResults}" key="Tentative Approval" DefaultValue ="0"/>
+                            </lightning:layoutItem>
+
+                        </aura:if>
+                    </lightning:layout>
+                </lightning:layoutItem>
+            </lightning:layout>
+        
+    </div>
+    <br/>
+    <lightning:layout multipleRows="true">
+        <lightning:layoutItem size="12">
+            <!-- <p>{!$Label.c.The_following_list_is_all_Contractors_that_have_been_assigned_by_Exhibitors}</p> -->
+            <table id="viewExhTable" class="slds-table slds-table_bordered slds-max-medium-table--stacked-horizontal " role="grid" cellspacing="0"  >
+                <thead  class="header" id="viewConHeader">
+                    <tr>
+                        <th class="tabHeader" >
+
+                        </th>
+                        <aura:if isTrue="{!v.selectedColumns.exh}"> 
+                            <th  onclick="{!c.sortContractor}" aura:id="strExh"  id="strExhibitor" class="{!v.sortingColumn=='strExhibitor'?'tabHeader '+v.sortingOrder:'tabHeader both'}">
+                                CUSTOMER
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.usrType}"> <!--Added Type [CCEN-430] -->
+                            <th  onclick="{!c.sortContractor}" id="userType" class="{!v.sortingColumn=='userType'?'tabHeader '+v.sortingOrder:'tabHeader both'}">
+                                TYPE
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.exhName}"> 
+                            <th  onclick="{!c.sortContractor}" id="exhibitingName" class="{!v.sortingColumn=='exhibitingName'?'tabHeader '+v.sortingOrder:'tabHeader both'}">
+                                Exhibiting Name  
+                            </th> 
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.agntName}"> 
+                            <th  onclick="{!c.sortContractor}" id="agentName" class="{!v.sortingColumn=='agentName'?'tabHeader '+v.sortingOrder:'tabHeader both'}">
+                                Agent Name  
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.booth}">
+                            <th onclick="{!c.sortContractor}" id="strBooth" class="{!v.sortingColumn=='strBooth'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                                {!$Label.c.Booth}#
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.boothType}">
+                            <th  onclick="{!c.sortContractor}" id="boothProductType" class="{!v.sortingColumn=='boothProductType'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                                Matched Product Name
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.comp}">
+                            <th  onclick="{!c.sortContractor}" id="contractorCompany"  class="{!v.sortingColumn=='contractorCompany'?v.sortingOrder+' tabHeader':'tabHeader both'}">             {!$Label.c.Contractor_Company}                                
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.prfbnd}">
+                            <th  onclick="{!c.sortContractor}" id="isReceived" class="{!v.sortingColumn=='isReceived'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                                Performance<br/>Bond Submitted
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.prfAmt}">
+                            <th  onclick="{!c.sortContractor}" id="performanceBondAmount" class="{!v.sortingColumn=='performanceBondAmount'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                                Performance<br/>Bond Amount
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.rig}">
+                            <th  onclick="{!c.sortContractor}" id="boolRigging" class="{!v.sortingColumn=='boolRigging'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                                {!$Label.c.Rigging}
+                            </th>
+                        </aura:if> 
+                        <aura:if isTrue="{!v.selectedColumns.doub}">
+                            <th  onclick="{!c.sortContractor}" id="boolDblDckr" class="{!v.sortingColumn=='boolDblDckr'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                                <aura:unescapedHtml value="{!$Label.c.Double_Decker2}" />
+                            </th>
+                        </aura:if> 
+                        <aura:if isTrue="{!v.selectedColumns.heavy}">
+                            <th  onclick="{!c.sortContractor}" id="boolHevyMachin" class="{!v.sortingColumn=='boolHevyMachin'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                                <aura:unescapedHtml value="{!$Label.c.Heavy_Macheniry}" />
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.bvech}">
+                            <th  onclick="{!c.sortContractor}" id="boolVehicle" class="{!v.sortingColumn=='boolVehicle'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                                <aura:unescapedHtml value="{!$Label.c.Vehicle}" />
+                            </th>
+                        </aura:if>
+                        <!--<aura:if isTrue="{!v.selectedColumns.bvech}">
+                            <th style="width: 30%;" onclick="{!c.sortContractor}" id="bvchle" class="{!v.sortingColumn=='bvchle'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                              	 VEHICLE:                              
+                            </th>
+                        </aura:if>-->
+                        <aura:if isTrue="{!v.selectedColumns.sub}">
+                            <th   onclick="{!c.sortContractor}" id="dBoothDsnSbmttdOn" class="{!v.sortingColumn=='dBoothDsnSbmttdOn'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                                <aura:unescapedHtml value="{!$Label.c.Booth_Design_Submitted_On}" />
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.ca}">
+                            <th   onclick="{!c.sortContractor}" id="boolCA" class="{!v.sortingColumn=='boolCA'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                                {!$Label.c.CA}
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.sts}">
+                            <th   onclick="{!c.sortContractor}" id="sBoothStatus" class="{!v.sortingColumn=='sBoothStatus'?v.sortingOrder+' tabHeader':'tabHeader both'}">{!$Label.c.Booth_Status}
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.desig}">
+                            <th   onclick="{!c.sortContractor}" id="sContrctorStatus" class="{!v.sortingColumn=='sContrctorStatus'?v.sortingOrder+' tabHeader':'tabHeader both'}">          
+                                {!$Label.c.Designation_Status}                                
+                            </th> 
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.note}">
+                            <th style="width: 30%;" onclick="{!c.sortContractor}" id="sRcntNote" class="{!v.sortingColumn=='sRcntNote'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                                {!$Label.c.Notes}                                
+                            </th>
+                        </aura:if>
+                         <aura:if isTrue="{!v.selectedColumns.reqErlyAcc}">
+                            <th style="width: 30%;" onclick="{!c.sortContractor}" id="sreqErlyAcc" class="{!v.sortingColumn=='sreqErlyAcc'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                                Require Early Access?                        
+                            </th>
+                        </aura:if>
+                         <aura:if isTrue="{!v.selectedColumns.erlyaccDte_Time}">
+                            <th style="width: 30%;" onclick="{!c.sortContractor}" id="serlyaccDte_Time" class="{!v.sortingColumn=='serlyaccDte_Time'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                              	 Early Access Date/Time:
+                            </th>
+                        </aura:if>
+                         <aura:if isTrue="{!v.selectedColumns.erlyAccCost}">
+                            <th style="width: 30%;" onclick="{!c.sortContractor}" id="serlyAccCost" class="{!v.sortingColumn=='serlyAccCost'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                              	 Early Access Cost:                              
+                            </th>
+                        </aura:if>
+                        <!-- Start of BK - 2876-->
+                        <aura:if isTrue="{!v.selectedColumns.comphone}">
+                            <th style="width: 30%;" onclick="{!c.sortContractor}" id="contractorPhone" class="{!v.sortingColumn=='contractorPhone'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                              	 CONTRACTOR MOBILE NUMBER:                              
+                            </th>
+                        </aura:if> 
+                        <aura:if isTrue="{!v.selectedColumns.exhopCon}">
+                            <th style="width: 30%;" onclick="{!c.sortContractor}" id="exhibOpeartionCon" class="{!v.sortingColumn=='exhibOpeartionCon'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                              	 EXHIBITOR OPERATION CONTACT:                              
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.exhopEmail}">
+                            <th style="width: 30%;" onclick="{!c.sortContractor}" id="exhibOpeartionEmail" class="{!v.sortingColumn=='exhibOpeartionEmail'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                              	 EXHIBITOR OPERATIONS EMAIL:                              
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.exhopConMobile}">
+                            <th style="width: 30%;" onclick="{!c.sortContractor}" id="exhibOpeartionMobile" class="{!v.sortingColumn=='exhibOpeartionMobile'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                              	 EXHIBITOR OPERATIONS MOBILE No:                              
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.exhopConTel}">
+                            <th style="width: 30%;" onclick="{!c.sortContractor}" id="exhibOpeartionTel" class="{!v.sortingColumn=='exhibOpeartionTel'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                              	 EXHIBITOR OPERATIONS TEL:                              
+                            </th>
+                        </aura:if>  
+                        <aura:if isTrue="{!v.selectedColumns.contContName}"> 
+                            <th style="width: 30%;" onclick="{!c.sortContractor}" id="contContactName" class="{!v.sortingColumn=='contContactName'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                              	 CONTRACTOR CONTACT NAME:                              
+                            </th>
+                        </aura:if>
+                        <!-- BK-3544 Start - Change the Label of TEL and MOBILE -->
+                        <aura:if isTrue="{!v.selectedColumns.contContMobile}">
+                            <th style="width: 30%;" onclick="{!c.sortContractor}" id="contContactMobile" class="{!v.sortingColumn=='contContactMobile'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                              	 CONTRACTOR CONTACT TEL :                              
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.contContTel}">
+                            <th style="width: 30%;" onclick="{!c.sortContractor}" id="contContactTel" class="{!v.sortingColumn=='contContactTel'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                              	 CONTRACTOR CONTACT MOBILE:                              
+                            </th>
+                        </aura:if>
+                        <!-- BK-3544 End -->
+                        <aura:if isTrue="{!v.selectedColumns.contContEmail}">
+                            <th style="width: 30%;" onclick="{!c.sortContractor}" id="contContactEmail" class="{!v.sortingColumn=='contContactEmail'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                              	 CONTRACTOR CONTACT EMAIL:                              
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.exhUsname}">
+                            <th style="width: 30%;" onclick="{!c.sortContractor}" id="usernameexh" class="{!v.sortingColumn=='usernameexh'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                              	 EXHIBITOR USERNAME:                              
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.contusrname}">
+                            <th style="width: 30%;" onclick="{!c.sortContractor}" id="contractorUsername" class="{!v.sortingColumn=='contractorUsername'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                              	 CONTRACTOR USERNAME:                              
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.bostand}">
+                            <th style="width: 30%;" onclick="{!c.sortContractor}" id="boolStdHgt" class="{!v.sortingColumn=='boolStdHgt'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                              	 STAND HEIGHT:                              
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!v.selectedColumns.borigg}">
+                            <th style="width: 30%;" onclick="{!c.sortContractor}" id="boolRigHgt" class="{!v.sortingColumn=='boolRigHgt'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                              	 RIGGING HEIGHT:                              
+                            </th>
+                        </aura:if>
+                        
+                       <aura:if isTrue="{!v.selectedColumns.blen}">
+                            <th style="width: 30%;" onclick="{!c.sortContractor}" id="boothLenght" class="{!v.sortingColumn=='boothLenght'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                              	 LENGTH:                              
+                            </th>
+                        </aura:if>
+                         <aura:if isTrue="{!v.selectedColumns.bwdt}">
+                            <th style="width: 30%;" onclick="{!c.sortContractor}" id="boothWidth" class="{!v.sortingColumn=='boothWidth'?v.sortingOrder+' tabHeader':'tabHeader both'}">
+                              	 WIDTH:                              
+                            </th>
+                        </aura:if>
+                       <!-- End of BK - 2876-->
+                       
+                        <!-- <th class="tabHeader"><aura:unescapedHtml value="{!$Label.c.Submitted_to_venue_on}" /></th> -->
+                    </tr> 
+                </thead>
+                <tbody class="content" id="viewTableContent">
+                    <aura:iteration items="{!v.wrapperList}" var="con"> 
+                        <tr class="slds-hint-parent ">                   
+                            <td>
+                                
+                                <span class="temp"> <!--internal_share-->
+                                    <lightning:buttonIcon value="{!con.sId}" onclick="{!c.showConfirmModal}"  size="small" iconName="utility:preview" variant="bare" alternativeText="View" />                                                            
+                                </span>
+                                <span class="temp"><!--Delete Stand Design And Stand Details-->
+                                    &nbsp;<lightning:buttonIcon value="{!con.sId}" onclick="{!c.showModalDeleteStandDetailsDesign}"  size="small" iconName="utility:close" variant="bare" alternativeText="Remove Details/ Design" />                                                            
+                                </span>
+                                <span class="temp"><!--Delete Stand Contarctor and it's Stand Design & Stand Details-->
+                                    &nbsp;<lightning:buttonIcon value="{!con.sId}" onclick="{!c.showModalDeleteStandContractor}"  size="small" iconName="utility:delete" variant="bare" alternativeText="Delete" />                                                            
+                                </span>
+                            </td>
+                            <aura:if isTrue="{!v.selectedColumns.exh}">
+                                <td><span class="temp">{!con.strExhibitor}</span></td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.usrType}">
+                                <td><span class="temp">{!con.userType}</span></td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.exhName}">
+                                <td>
+                                    <span class="temp">
+                                    	<aura:if isTrue="{!con.exhibitingName}">
+                                                {!con.exhibitingName}
+                                            <aura:set attribute="else">
+                                                {!con.strExhibitor}
+                                            </aura:set>
+                                        </aura:if>
+                                    
+                                    </span> 
+                            </td> 
+                            </aura:if>   
+                            <aura:if isTrue="{!v.selectedColumns.agntName}">
+                                <td><span class="temp">{!con.agentName}</span></td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.booth}">
+                               <td style="padding-left:5;">
+                                    <aura:if isTrue="{!con.isManagedbyAgent}">
+                                        <!-- <lightning:button value="{!con.agentAccountID}" variant="brand" label="View All" onclick="{!c.showModalViewAll}"/>  -->
+                                        <a href="" target="" data-name ="{!con.exhibitingName}" data-id="{!con.agentAccountID}"  onclick = "{!c.showModalViewAll}">View All</a>
+                                        <aura:set attribute="else">
+                                            {!con.strBooth}
+                                        </aura:set>    
+                                    </aura:if>
+                                </td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.boothType}"> 
+                                <td style="padding-left:5;">{!con.boothProductType}</td>
+                            </aura:if> 
+                            <aura:if isTrue="{!v.selectedColumns.comp}">
+                                <td  style="padding-left:5;">       
+                                    <aura:if isTrue="{!con.isSelfManaged}">
+                                        ({!$Label.c.Self_Managed})
+                                        <aura:set attribute="else">
+                                            {!con.contractorCompany}
+                                        </aura:set>
+                                    </aura:if> 
+                                </td>      
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.prfbnd}">
+                                <td><span class="temp"><ui:outputCheckbox value="{!con.isReceived}"/></span></td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.prfAmt}">
+                                <td><span class="temp">{!con.performanceBondAmount}</span></td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.rig}">
+                                <td><span class="temp"><ui:outputCheckbox value="{!con.boolRigging}"/></span></td>
+                            </aura:if> 
+                            <aura:if isTrue="{!v.selectedColumns.doub}">
+                                <td><span class="temp"><ui:outputCheckbox value="{!con.boolDblDckr}"/></span></td>
+                            </aura:if> 
+                            <aura:if isTrue="{!v.selectedColumns.heavy}">
+                                <td><span class="temp"><ui:outputCheckbox value="{!con.boolHevyMachin}"/></span></td>
+                            </aura:if> 
+                             <aura:if isTrue="{!v.selectedColumns.bvech}">
+                                <td><span class="temp"><ui:outputCheckbox value="{!con.boolVehicle}"/></span></td>
+                            </aura:if>
+                            <!--<aura:if isTrue="{!v.selectedColumns.bvech}"> 
+                                <td >{!con.boolVehicle}</td>
+                            </aura:if>-->
+                            <aura:if isTrue="{!v.selectedColumns.sub}">
+                                <td><span class="temp"><ui:outputDate format="MM-DD-YYYY" value="{!con.dBoothDsnSbmttdOn}"/></span></td>                                
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.ca}">
+                                <td><span class="temp"><ui:outputCheckbox value="{!con.boolCA}"/></span></td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.sts}">
+                                <td style="padding-left:5;">{!con.sBoothStatus}</td>      
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.desig}">
+                                <td style="padding-left:5;">{!con.sContrctorStatus}</td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.note}">
+                                <td class="slds-cell-wrap">
+                                    <div class="slds-grid" style="width: 100%;">
+                                        <div class="slds-cell-wrap">
+                                            <div class="slds-cell-wrap" >{!con.sRcntNote}</div>
+                                        </div>
+                                    </div>   
+                                </td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.reqErlyAcc}">
+                                <td ><span class="temp"><ui:outputCheckbox value="{!con.sreqErlyAcc}"/></span></td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.erlyaccDte_Time}">
+                                <td ><span class="temp"><ui:outputDateTime value="{!con.serlyaccDte_Time}" 
+                                 /></span>
+                                </td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.erlyAccCost}">
+                                <td >{!con.serlyAccCost}</td>
+                            </aura:if>
+                            <!-- Start of BK - 2876-->
+                            <aura:if isTrue="{!v.selectedColumns.comphone}">
+                                <td >{!con.contractorPhone}</td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.exhopCon}"> 
+                                <td >{!con.exhibOpeartionCon}</td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.exhopEmail}"> 
+                                <td >{!con.exhibOpeartionEmail}</td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.exhopConMobile}"> 
+                                <td >{!con.exhibOpeartionMobile}</td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.exhopConTel}"> 
+                                <td >{!con.exhibOpeartionTel}</td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.contContName}"> 
+                                <td >{!con.contContactName}</td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.contContMobile}"> 
+                                <td >{!con.contContactMobile}</td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.contContTel}"> 
+                                <td >{!con.contContactTel}</td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.contContEmail}"> 
+                                <td >{!con.contContactEmail}</td>
+                            </aura:if>
+                             <aura:if isTrue="{!v.selectedColumns.exhUsname}"> 
+                                <td >{!con.usernameexh}</td>
+                            </aura:if>
+                             <aura:if isTrue="{!v.selectedColumns.contusrname}"> 
+                                <td >{!con.contractorUsername}</td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.bostand}"> 
+                                <td >{!con.boolStdHgt}</td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.borigg}"> 
+                                <td >{!con.boolRigHgt}</td>
+                            </aura:if>
+                             <aura:if isTrue="{!v.selectedColumns.blen}"> 
+                                <td >{!con.boothLenght}</td>
+                            </aura:if>
+                            <aura:if isTrue="{!v.selectedColumns.bwdt}"> 
+                                <td >{!con.boothWidth}</td>
+                            </aura:if>
+                            <!-- End of BK - 2876-->
+                          
+                       
+                            <!-- <td><span class="temp"><ui:outputDate value="{!con.SubToVenueOn}"/></span></td> -->
+                        </tr>
+                    </aura:iteration>
+                </tbody>       
+            </table>
+        </lightning:layoutItem>
+        <!-- [CCEN-589] -->
+        <lightning:layoutItem size="12" class="{!v.wrapperList.length==0?'slds-hide':''}">
+            <div class="slds-float_left slds-m-vertical_small">
+                <ui:inputSelect aura:id="pageSize" label="Display Records Per Page: " change="{!c.onSelectChange}">
+                    <!-- <ui:inputSelectOption text="10" label="10" />
+                    <ui:inputSelectOption text="20" label="20"/>
+                    <ui:inputSelectOption text="30" label="30"/>
+                    <ui:inputSelectOption text="40" label="40"/> -->
+                    <ui:inputSelectOption text="25" label="25" />
+                    <ui:inputSelectOption text="50" label="50" value="true"/>
+                    <ui:inputSelectOption text="100" label="100"/>
+                    <ui:inputSelectOption text="10000" label="200+"/>
+                </ui:inputSelect>
+            </div>
+            <!-- <div class="slds-float_right slds-m-vertical_small"> -->
+             <div class="slds-float_left slds-m-vertical_small paginationAllCon">  <!-- [CCEN-730] -->
+                <span class="slds-m-right_small">{!v.RecordStart}-{!v.RecordEnd} of {!v.TotalRecords} | Page {!v.PageNumber} of {!v.TotalPages}</span>
+                <lightning:button iconPosition="left" iconName="utility:chevronleft" disabled="{!v.PageNumber == 1}" variant="brand" aura:id="prevPage" label="Prev" onclick="{!c.handlePrev}" />            
+                <lightning:button iconPosition="right" iconName="utility:chevronright"  disabled="{!v.PageNumber == v.TotalPages}" aura:id="nextPage" variant="brand" label="Next" onclick="{!c.handleNext}"/>
+            </div>
+        </lightning:layoutItem>
+    </lightning:layout>
+    <center>
+    <div aria-hidden="false" id="confirm" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+        <div class="slds-modal__container slds-align_absolute-center " id="confirmModal" style=" width: 90% !important; max-width: none !important; min-width: 80% !important;">
+            
+            <div class="div-body"> 
+                <div class="div-body-head">                                   
+                <aura:if isTrue="{!v.singleBooth[0].IsManagedbyAgent__c}">
+                        <b>{!v.singleBooth[0].Agent_Contact__r.Account.Name}&nbsp;-&nbsp;Stand&nbsp;#: Agent Pavilion Space (multiple stands)</b> 
+                    <aura:set attribute="else">
+                        <b>{!v.singleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Account.Name}&nbsp;-&nbsp;Stand&nbsp;#: {!v.singleBooth[0].Opp_Booth_Mapping__r.Booth_Number__c}</b> 
+                    </aura:set>
+                </aura:if>   
+                <span class="closebtn" onclick="{!c.hideConfirmModal}">X</span> 
+                <!-- <span><button class="slds-button slds-float_right" id="maxButton" style="margin-top: -10px;color:red;margin-right: 20px;"  onclick="{!c.showModal}"><b>Maximize</b></button></span> -->
+                </div>
+                <lightning:tabset onselect="{!c.tabSelected}" variant="default" selectedTabId="{!v.selTabId}">
+                    <lightning:tab aura:id="tab1" tabindex="1" id="tab1" onactive="{!c.handleActive }" label="Customer / Contractor Details">
+                        <c:ExhibitorAndContractorDetails childsingleBooth="{!v.singleBooth}" ChildBoothMapID="{!v.singleBooth[0].Id}"/>
+                    </lightning:tab>
+                    <lightning:tab aura:id="tab2" tabindex="2" id="tab2" onactive="{!c.handleActive }" label="{!$Label.c.Stand_Details}"  >
+                        <c:StandDetails AccountId="{!v.clonePrntAccountId}" EventEditionID="{!v.PrntEventEditionId}" PopUpClosed="{!v.PrntPopupclosed}" BoothID="{!v.PrntBoothId}" childsingleBooth="{!v.singleBooth}" selTabId="{!v.selTabId}"/>
+                    </lightning:tab>
+                    <!--<lightning:tab aura:id="tab3" tabindex="3" id="tab3" onactive="{!c.handleActive }" label="Stand Design(s)" >
+                        <c:StandDesign AccountId="{!v.clonePrntAccountId}"
+                        PopUpClosed="{!v.PrntPopupclosed}"
+                        BoothID="{!v.PrntBoothId}"/> 
+                    </lightning:tab>-->
+                    <lightning:tab aura:id="tab4" tabindex="4" id="tab4" onactive="{!c.handleActive }" label="{!$Label.c.Stand_Designs}">
+                        <c:StandDesignStatus AccountId="{!v.clonePrntAccountId}" EventEditionID="{!v.PrntEventEditionId}"  PopUpClosed="{!v.PrntPopupclosed}" BoothID="{!v.PrntBoothId}" childsingleBooth="{!v.singleBooth}"/>
+                    </lightning:tab>
+                    <lightning:tab aura:id="tab5" tabindex="5" id="tab5" onactive="{!c.handleActive }" label="Subcontractors">
+                        <c:ViewSubContractor eventId="{!v.PrntEventEditionId}" boothMapId="{!v.singleBooth[0].Id}"/>
+                    </lightning:tab> 
+                    <lightning:tab aura:id="tab6" tabindex="6" id="tab6" onactive="{!c.handleActive }" label="Messages">
+                        <c:StandDesignMessages selTabId="{!v.selTabId}" AccountId="{!v.clonePrntAccountId}"  childsingleBooth="{!v.singleBooth}"  PopUpClosed="{!v.PrntPopupclosed}"/>
+                    </lightning:tab>
+                    <lightning:tab aura:id="tab7" tabindex="7" id="tab7" onactive="{!c.handleActive }" label="Notes">
+                       <c:Notes AccountId="{!v.clonePrntAccountId}" BoothID="{!v.PrntBoothId}" PopUpClosed="{!v.PrntPopupclosed}" childsingleBooth="{!v.singleBooth}"/>
+                    </lightning:tab>
+                </lightning:tabset>                                  
+            </div>
+        </div>
+    </div>
+
+    <div aria-hidden="false" id="modalTableSet" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+        <div class="slds-modal__container slds-align_absolute-center" style=" width: 90% !important; height: 636px; max-width: none !important; min-width: 80% !important;">
+            <div class="div-body tabset"  > 
+                <div class="div-body-head"><b>Table Settings</b>
+                    <span class="closebtn" onclick="{!c.hideTableSettings}">X</span> 
+                </div>
+                <div class="slds-scrollable" style="overflow-y: scroll;height: 50vh;">
+                    <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                        <thead>
+                            <tr class="slds-text-title_caps">
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Column"><b>Column</b></div>
+                                </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Visible"><b>Visible</b></div>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration items="{!v.tableColumns}" var="col">
+                                <tr>
+                                    <th>
+                                        <div class="slds-truncate">{!col.column}</div>
+                                    </th>
+                                    <td>
+                                        <div class="slds-truncate" >
+                                            <ui:inputCheckbox label="" value="{!col.visible}" />
+                                        </div>
+                                    </td>
+                                </tr>
+                            </aura:iteration> 
+                        </tbody>
+                    </table>
+                    </div>
+                    <div class="slds-m-top_medium slds-text-align_right">
+                        <lightning:button variant="brand" label="Apply" iconName="utility:check" iconPosition="left" onclick="{!c.applySettings}" />
+                        <lightning:button variant="brand" label="Cancel" iconName="utility:close" iconPosition="left" onclick="{!c.hideTableSettings}" />
+                    </div>
+            </div>
+        </div> 
+    </div>
+
+    </center>  
+
+<!--Confirm Delete Satnd Contractor Model-->  
+    <div aria-hidden="false" id="modalDeleteStandContractor" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container" style=" width: 50% !important;height: 30% !important; max-width: none !important; min-width: 60% !important;min-height: 50% !important;">
+                    <div class="div-body" align="center">
+                        <div class="div-body-head"><b>Are you Sure,You wish to delete Stand Contractor?</b>
+                            <span class="closebtn" onclick="{!c.hideModalDeleteStandContractor}">X</span>
+                        </div>  
+                        <div  style="color:red; display:none; font-size: larger;" id="reasonForDontWantToCancel">Please remove any text in the reason field if you don’t want to  cancel.</div>
+                        <div  style="color:red; display:none; font-size: larger; " id="reasonForCancel">Please provide a reason for cancellation.</div>
+                        <div class="div-body" align="center">
+                        	<lightning:textarea aura:id="rject" name="input1" label="If Yes,Please provide a cancellation Reason" value="{!v.RejectionReason}"/>
+                        </div>      
+                        <div style="margin-top: 20px;">
+                            <lightning:button variant="brand" label="{!$Label.c.Yes}" onclick="{!c.removeStandContractor}"/>
+                            <lightning:button variant="brand" label="{!$Label.c.No}" onclick="{!c.checkModalThenClose}"/>
+                        </div>
+                    </div>
+                </div>
+            </section>	 
+        </div>
+<!--END-->
+<!--Confirm Delete Satnd Design & Details for Contractor  Model-->  
+<div aria-hidden="false" id="modalDeleteStandDetailsDesign" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container" style=" width: 50% !important;height: 30% !important; max-width: none !important; min-width: 60% !important;min-height: 50% !important;">
+                <div class="div-body" align="center">
+                    <div class="div-body-head"><b>Are you Sure,You wish to delete Stand Details And Stand Design for the contractor?</b>
+                        <span class="closebtn" onclick="{!c.hideModalDeleteStandDetailsDesign}">X</span>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <lightning:button variant="brand" label="{!$Label.c.Yes}" onclick="{!c.removeStandDetailsDesign}"/>
+                        <lightning:button variant="brand" label="{!$Label.c.No}" onclick="{!c.hideModalDeleteStandDetailsDesign}"/>
+                    </div>
+                </div>
+            </div>
+        </section>	 
+    </div>
+<!--END-->
+
+<div aria-hidden="false" id="Agent_Exhibitormodel" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container" style="display: block; width: 60% !important;min-height: 50% !important;top:10px;">
+                <div class="div-body" >
+                    <div align="center" class="div-body-head"><b> {!v.CurrentAgent.Name} : Pavilion Space Exhibitors </b>
+                        <span class="closebtn" onclick="{!c.hideViewAll}">X</span>
+                    </div>
+                    <div class ="body" style="max-height: 70vh;overflow-y: scroll;">
+                        <lightning:input class="optionWidth" aura:id="Mysearch" type="search" onchange="{!c.onfilterExhibitor}" placeholder="Keyword Search" label="Search Keyword" value="{!v.searchText}" variant="label-hidden"/>
+                            <p class="slds-m-bottom_xx-large slds-align_absolute-center"><br/><br/>
+                                <table class="newcomtable  slds-m-top_large">
+                                        <tr>
+                                            <th>Exhibitor</th>
+                                            <th>Stand Number</th>
+                                        </tr> 
+                                        <aura:iteration items="{!v.AgentsExhibitors}" var="exh">
+                                            <tr>
+                                                <td>{!exh.Opportunity__r.Account.Name}</td>
+                                                <td>{!exh.Booth_Number__c}</td>
+                                                <!-- <td>Test</td>
+                                                <td>B60</td> -->
+                                            </tr>
+                                        </aura:iteration>
+                                        
+                                </table>
+                            </p>		
+                    </div>
+                    <div  align="center" style="margin-top: 20px;">
+                        <lightning:button variant="brand" label="Cancel" onclick="{!c.hideViewAll}"/>
+                        <!-- <lightning:button variant="brand" label="{!$Label.c.No}" onclick="{!c.hideViewAll}"/> -->
+                    </div>
+                </div>
+            </div>
+        </section>	 
+    </div>
+<!--View all Exhibitors For Agent-->
+
+<!--End-->  
+<!--hidden Element-->
+<div id="container789" style="display:none;"></div>
+
+</aura:component>

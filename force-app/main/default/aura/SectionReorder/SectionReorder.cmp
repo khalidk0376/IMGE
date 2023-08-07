@@ -1,0 +1,33 @@
+<aura:component controller="AddQuestionInSectionCtr">
+    <ltng:require scripts="{!join(',', $Resource.resources + '/jquery/jquery-3.0.0.js', 
+                           $Resource.resources + '/jquery/jquery-ui-1.12.1.js')}" afterScriptsLoaded="{!c.scriptsLoaded2}"/>
+    <aura:attribute name="lstQuestnGroup" type="Question_Group__c[]" />
+    <aura:attribute name="qstnQnaireObject" type="Question_Questionnaire__c" />
+    <aura:attribute name="selTabId" type="String" />
+    <aura:attribute name="QnaireId" type="String" />
+    <aura:attribute name="showConfirmModal" type="boolean" default="false" />
+    <aura:handler name="init" action="{!c.doInit}" value="{!this}"></aura:handler>
+    
+    <div class="demo-only" style="height: 640px;">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon iconName="utility:close" onclick="{!c.hideModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" />
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Reorder Sections</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <ul id="sortable">
+                        <aura:iteration items="{!v.lstQuestnGroup}" var="QuesGroup" indexVar="0">
+                            <li class="slds-box_link section ui-state-default">{!QuesGroup.Name}</li>
+                        </aura:iteration>  
+                    </ul>
+                </div>
+                <footer class="slds-modal__footer">
+                   <lightning:button label="Cancel" onclick="{!c.hideModal}" />
+                   <lightning:button class="slds-button_brand" label="Save" onclick="{!c.saveSortedSection}" />
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </div>
+</aura:component>

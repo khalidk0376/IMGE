@@ -1,0 +1,421 @@
+<!--
+    ************ Modification Log  **************
+    * Modified by : Girikon(Ashish)[CCEN-430] Dec 16 2018,[Girikon(Ashish) CCEN-591(May 31 2019), Aishwarya [BK-10223] 23 Dec 2020], 
+                    Aishwarya [BK-15225] 30 Apr 2021]
+-->
+<aura:component implements="flexipage:availableForAllPageTypes" controller="ApproveContractorCtrl">
+    <ltng:require scripts="{!$Resource.CustomerCenterWS11 +'/CustomerCenterWS11/js/jszip.js'}" />
+    <ltng:require scripts="{!$Resource.CustomerCenterWS11 +'/CustomerCenterWS11/js/jquery-1.7.1.min.js?v=149'}" />
+    <aura:attribute name="AccountId" type="String" />
+    <aura:attribute name="BoothID" type="String" />
+    <aura:attribute name="Baseurl" type="String" />
+    <aura:attribute name="sfdcBaseurl" type="String" />
+    <aura:attribute name="NoAttachment" type="Boolean" default="false" />
+    <aura:attribute name="uploadAllowed" type="Boolean" default="false" />
+    <aura:attribute name="hasStand_Type" type="Boolean" default="false" />
+    <aura:attribute name="EventEditionID" type="String" />
+    <aura:attribute name="designtype" type="String" default="" />
+    <aura:attribute name="uploadfiletype" type="String" />
+    <aura:attribute name="message" type="string" />
+    <aura:attribute name="StandDesign" type="Stand_Design__c[]" />
+    <aura:attribute name="EventSetting" type="Event_Settings__c" />
+    <aura:attribute name="StandDetail" type="Stand_Detail__c[]" />
+    <aura:attribute name="StatusList" type="List" />
+    <aura:attribute name="selectedValue" type="String" default="All" />
+    <aura:attribute name="childsingleBooth" type="BoothContractorMapping__c[]" />
+    <aura:attribute name="EmailTempName1" type="string" />
+    <aura:attribute name="ccEmail" type="string" />
+    <aura:attribute name="ccStatusSubject" type="string" />
+    <aura:attribute name="EmailContent1" type="object" />
+    <aura:attribute name="BoothContractorMapping" type="BoothContractorMapping__c[]" />
+    <aura:attribute name="standDesignAttachments" type="Stand_Design_Attachments__c[]" />
+    <aura:attribute name="standDesignAttachmentsList" type="Stand_Design_Attachments__c[]" />
+    <aura:attribute name="PopUpClosed" type="Boolean" />
+    <aura:attribute name="objEditor" type="object" />
+    <aura:attribute name="attachmentBody" type="object" />
+    <aura:handler name="init" value="{!this}" action="{!c.onLoad}" />
+    <aura:handler name="change" value="{!v.PopUpClosed}" action="{!c.PopUpClosedChanges}" />
+    <aura:handler name="change" value="{!v.AccountId}" action="{!c.AccountIdChanges}" />
+    <aura:handler event="aura:waiting" action="{!c.waiting}" />
+    <aura:handler event="aura:doneWaiting" action="{!c.doneWaiting}" />
+    <aura:attribute name="isSpinner" type="Boolean" default="false" />
+    <aura:attribute name="customSpinner" type="Boolean" default="false" />
+    <aura:attribute name="showReject" type="Boolean" default="false" />
+    <aura:attribute name="toRejectVal" type="string" default="" />
+    <aura:attribute name="imageUrl" type="string" default="" />
+    <aura:attribute name="viewSource" type="Boolean" />
+    <aura:attribute name="renderedComponent" type="Boolean" default="true" />
+    <aura:attribute name="standDesignId" type="string"  />
+    <aura:attribute name="fileTitle" type="string"  />
+
+    <aura:if isTrue="{!v.isSpinner}">
+        <lightning:spinner class="position" size="large" variant="brand" />
+    </aura:if>
+    <aura:if isTrue="{!v.customSpinner}">
+        <lightning:spinner class="position" size="large" variant="brand" />
+    </aura:if>
+
+    <div class="slds-scrollable" style="overflow-y: scroll;height: 60vh;">
+        <div class="div-body">
+            <table class="slds-table slds-table_bordered slds-max-medium-table--stacked-horizontal slds-scrollable"
+                role="grid" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th class="tabHeader slds-size_1-of-14"
+                            style="background-color: #ccc !important; color: #000 !important; text-transform: none;">
+
+                        </th>
+                        <th class="tabHeader slds-size_3-of-7"
+                            style="background-color: #ccc !important; color: #000 !important; text-transform: none;">
+                            {!$Label.c.FILE} &nbsp;&nbsp;&nbsp;&nbsp;
+                            <lightning:button variant="brand" aura:id="dwnld" class="button" label="Download All"
+                                onclick="{! c.DownloadAll }" disabled="{!v.NoAttachment}" />
+                        </th>
+                        <th class="tabHeader slds-size_1-of-7"
+                            style="background-color: #ccc !important; color: #000 !important; text-transform: none;">
+                            {!$Label.c.Design_Attachment}
+                        </th>
+                        <th class="tabHeader slds-size_3-of-7"
+                            style="background-color: #ccc !important; color: #000 !important; text-transform: none;">
+                            {!$Label.c.Category}
+                        </th>
+                        <th class="tabHeader slds-size_3-of-7"
+                            style="background-color: #ccc !important; color: #000 !important; text-transform: none;">
+                            {!$Label.c.Submitted}&nbsp;{!$Label.c.Date}
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <aura:iteration items="{!v.StandDesign}" var="StndDsn">
+                        <!-- <aura:if isTrue="{!and(StndDsn.Booth_Design_Status__c !='Contractor Resubmit (Incomplete)', StndDsn.Booth_Design_Status__c !='Cancelled',StndDsn!=null)}">    -->
+                        <aura:if isTrue="{!StndDsn!=null}">
+                            <aura:iteration items="{!StndDsn.DesignAttachmentTypes__r}" var="Attchmnt">
+                                <tr class="slds-hint-parent">
+                                    <aura:if isTrue="{!and(Attchmnt.IsRejected__c == true, v.showReject == true)}">
+                                        <td></td>
+                                        <td>
+                                            <div style="color:red;"> <a href="" target=""
+                                                    data-id="{!Attchmnt.AttachmentId__c}" onclick="{!c.download}"
+                                                    style="color:red;">{!Attchmnt.File_Name__c}</a>&nbsp;(Rejected)
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <ui:outputText value="{!Attchmnt.File_Type__c}" />
+                                        </td>
+                                        <td>
+                                            <ui:outputText value="{!StndDsn.Stand_Type__c}" />
+                                        </td>
+                                        <td>
+                                            <!-- <ui:outputDate format="MM-DD-YYYY" value="{!StndDsn.Booth_Design_Submitted_On__c}"/> -->
+                                            <ui:outputDate format="MM-DD-YYYY" value="{!Attchmnt.CreatedDate}" />
+                                        </td>
+                                    </aura:if>
+                                    <aura:if isTrue="{!and(Attchmnt.IsRejected__c == false, v.showReject == false)}">
+                                        <!-- <td> <span class="temp">Reject Stand Design -->
+                                        <!-- &nbsp;<lightning:buttonIcon value="{!Attchmnt.AttachmentId__c}" onclick="{!c.showModalRejectStandDesign}"  size="small" iconName="utility:close" variant="bare" alternativeText="Reject Stand Design" />                                                            
+                                </span> </td> -->
+                                        <td>
+                                            <span class="temp">
+                                                <!--internal_share-->
+                                                <lightning:buttonIcon value="{!Attchmnt.AttachmentId__c}"
+                                                    onclick="{!c.download}" size="small" iconName="utility:preview"
+                                                    variant="bare" alternativeText="View" />
+                                            </span>
+                                            <span>
+                                                &nbsp;
+                                                <lightning:buttonIcon value="{!Attchmnt.AttachmentId__c}"
+                                                    onclick="{!c.rejectStandDesign}" size="small"
+                                                    iconName="utility:delete" variant="bare" alternativeText="Delete" />
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div> <a href="" target="" data-id="{!Attchmnt.AttachmentId__c}"
+                                                    onclick="{!c.download}">{!Attchmnt.File_Name__c}</a></div>
+                                        </td>
+                                        <td>
+                                            <ui:outputText value="{!Attchmnt.File_Type__c}" />
+                                        </td>
+                                        <td>
+                                            <ui:outputText value="{!StndDsn.Stand_Type__c}" />
+                                        </td>
+                                        <td>
+                                            <!-- <ui:outputDate format="MM-DD-YYYY" value="{!StndDsn.Booth_Design_Submitted_On__c}"/> -->
+                                            <ui:outputDate format="MM-DD-YYYY" value="{!Attchmnt.CreatedDate}" />
+                                        </td>
+                                    </aura:if>
+                                </tr>
+                            </aura:iteration>
+                        </aura:if>
+                    </aura:iteration>
+                </tbody>
+            </table>
+            <div class="slds-grid slds-gutters">
+                <div class="slds-col slds-size_1-of-10">
+                    <span>
+                        <lightning:button variant="brand" aura:id="button" class="button" label="Upload"
+                            onclick="{! c.showUploadModal }" /></span>
+                </div>&nbsp;
+                <div class="slds-m-top_small">Show Rejected</div>
+                <div class="slds-col slds-size_1-of-10" style="margin-top:10px;">
+
+                    <span><label class="slds-checkbox_toggle slds-grid">
+                            <!-- <span class="slds-form-element__label slds-m-bottom_none"></span> -->
+                            <ui:inputCheckbox aura:id="devid" change="{!c.selectRejected}" />
+                            <span id="toggle-desc" class="slds-checkbox_faux_container" aria-live="assertive">
+                                <span class="slds-checkbox_faux"></span>
+                                <!-- <span class="slds-checkbox_on">Show</span>
+            <span class="slds-checkbox_off">Hide</span> -->
+                            </span>
+                        </label></span>
+                </div>
+            </div>
+            <!-- <div align="left" style="display:inline">
+            <lightning:button variant="brand" aura:id="button" class="button" label="Upload" onclick="{! c.showUploadModal }" />
+             <lightning:input name="toggle" label="Show Rejected" type="toggle" checked="" onchange=""> 
+            <div class="slds-form-element">
+            <label class="slds-checkbox_toggle slds-grid">
+              <span class="slds-form-element__label slds-m-bottom_none">Show Rejected</span>
+               <ui:inputCheckbox aura:id="devid" change="{!c.selectRejected}"/>
+              <span id="toggle-desc" class="slds-checkbox_faux_container" aria-live="assertive">
+                <span class="slds-checkbox_faux"></span>
+                <span class="slds-checkbox_on">Show</span>
+                <span class="slds-checkbox_off">Hide</span>
+              </span>
+            </label>
+          </div>
+    
+     -->
+            <table border="0" class="slds-table slds-table_bordered slds-table_cell-buffer" role="grid" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th scope="col" class="tabHeader slds-size_1-of-7"
+                            style="background-color: #ccc !important; color: #000 !important; text-transform: none;">
+                            <div class="slds-truncate"> {!$Label.c.Current_Status}:</div>
+                        </th>
+                        <th class="slds-size_6-of-7"
+                            style="background-color: #ccc !important; color: #000 !important; text-transform: none;">
+                            <div class="slds-truncate">{!v.StandDesign[0].Booth_Design_Status__c}</div>
+                        </th>
+                        <th class="tabHeader slds-size_2-of-5"
+                            style=" background-color: #ccc !important; color: #000 !important; text-transform: none;">
+                            <div class="slds-truncate">{!$Label.c.Updated_Status}: </div>
+                        </th>
+                        <th class="slds-size_3-of-5" style="background-color: #ccc !important; color: #000 !important;">
+                            <lightning:select name="mySelect" label="" aura:id="mySelect" value="{!v.selectedValue}"
+                                onchange="{!c.HandleChange}" disabled="{!v.NoAttachment}">
+                                <aura:iteration items="{!v.StatusList}" var="item">
+                                    <option text="{!item.label}" value="{!item.value}" selected="{!item.selected}" />
+                                </aura:iteration>
+                            </lightning:select>
+                        </th>
+                        <!-- <th class="tabHeader slds-size_2-of-7" style="background-color: #ccc !important; color: #000 !important; text-transform: none;">
+                </th> -->
+                    </tr>
+                </thead>
+                <tr>
+                    <!-- <td>&nbsp;</td>
+                <td>&nbsp;</td> -->
+                    <td>
+                        <strong>Subject :</strong>
+                    </td>
+                    <td>
+                        <ui:inputText class="slds-input" aura:id="emailSubject" value="{!v.ccStatusSubject}" />
+                        <!-- [CCEN-591] -->
+                    </td>
+
+                    <td>
+                        <strong>{!$Label.c.Email_Template}:</strong>
+                    </td>
+                    <td>
+                        <ui:outputText value="{!v.EmailTempName1}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <strong>CC:</strong>
+                    </td>
+                    <td>
+                        <ui:inputEmail class="slds-input" aura:id="emailcc" value="{!v.ccEmail}" />
+                    </td>
+                    <td>
+                        <strong>{!$Label.c.Send_to}:</strong>
+
+                    </td>
+                    <td>
+                        <aura:iteration items="{!v.BoothContractorMapping}" var="item" indexVar="index">
+                            <aura:if isTrue="{!index}">
+                                ,<br />{!item.Contact__r.Name}
+                                <aura:set attribute="else">
+                                    {!item.Contact__r.Name}
+                                </aura:set>
+                            </aura:if>
+                            <aura:if isTrue="{!item.Contact__r.Email!=null}">
+                                {!' ('+item.Contact__r.Email+')'}
+                                <aura:set attribute="else">
+                                    {!item.Contact__r.Email}
+                                </aura:set>
+                            </aura:if>
+                        </aura:iteration>
+                    </td>
+                </tr>
+            </table>
+            <div>
+            <!-- <textarea name="editor1" id="editor1" value="{!v.EmailContent1}" onkeyup="{!c.emailTemplateChange}"
+                class="txtarea">
+            </textarea> -->
+            <aura:if isTrue="{!v.renderedComponent}">
+                <lightning:inputRichText class="txtareawidth" aura:id="contentEditor" value="{!v.EmailContent1}"
+                    disabled="false">
+                    <lightning:insertImageButton/>
+                </lightning:inputRichText>
+            </aura:if>
+            </div>
+        </div>
+    </div>
+    <div style=" float: left; margin-top: 20px;">
+        <lightning:button variant="brand" label="{!$Label.c.Save_Status_and_Send_Email_to_Contractor}"
+            onclick="{! c.showModal }" />
+    </div>
+
+    <div aria-hidden="false" id="DisclaimerBlock" style="display:none;" role="dialog"
+        class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+            aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container"
+                style=" width: 50% !important;height: 30% !important; max-width: none !important; min-width: 80% !important;min-height: 50% !important;">
+
+                <div class="div-body">
+                    <div class="div-body-head"><b>{!$Label.c.Do_you_want_to_continue}</b>
+                        <!--<span class="closebtn" onclick="{!c.hideModal}">X</span> -->
+                    </div>
+                    <div style=" float: left; margin-top: 20px;">
+                        <lightning:button variant="brand" label="{!$Label.c.I_Agree}" onclick="{!c.handleClick}" />
+                    </div>
+                    <div style=" float: left; margin-top: 20px; margin-left: 10px;">
+                        <lightning:button variant="brand" label="{!$Label.c.Cancel}" onclick="{!c.hideModal}" />
+                    </div>
+                    <div style=" float: left; margin-top: 20px; margin-left: 10px;">
+                        <p>By Clicking "I Agree!", an email will be sent to customer, are you sure you wish to continue?
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+
+    <!--  File upload Part Model   -->
+
+    <div aria-hidden="false" id="UploadArea" role="dialog"
+        class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" style="display:none;">
+        <div class="slds-modal__container" style="width : 65% ">
+
+
+            <div class="div-body">
+                <div class="div-body-head"><b>{!$Label.c.Upload_your_stand_design}</b>
+                    <span class="closebtn" onclick="{!c.hideUploadModal}">X</span>
+                </div>
+
+
+                <div align="left" style="padding: 2%;">
+                    <div class="row">
+                        <ui:inputSelect class="slds-select" aura:id="Stand_Type" value="{!v.designtype}"
+                            disabled="{!v.hasStand_Type}" change="{!c.Stand_TypeChange}" />
+                    </div>
+
+                    <div class="col-sm-12">
+                        <p>{!$Label.c.Upload_Design_Title}</p>
+                    </div>
+
+                    <aura:iteration items="{!v.standDesignAttachments}" var="fileType" indexVar="index">
+                        <label class="radio inline">
+                            <input type="radio" name="standDesign" id="{!'standDesign'+index}" value="{!fileType.Name}"
+                                onclick="{!c.getuploadfiletype}" />&nbsp;&nbsp;
+                            <span>{!fileType.Name}</span>
+                        </label> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    </aura:iteration>
+                    <div class="modal-body">
+                    <!-- HTML file input commented
+                        <span class="inputfile"><input type="file" aura:id="inputFile" class="file" /></span>
+                        <p class="f-black slds-m-top_small">File size must not exceed 4.25mb</p>
+                    -->
+                        <div class="modal-body">
+                           <!-- <aura:if isTrue="{!v.uploadfiletype !=null}"> -->
+
+                            <lightning:fileUpload id='uploadFileInput'
+                                name="fileUploader"
+                                multiple="false"
+                                accept="['.pdf']"
+                                disabled="{!v.standDesignId == null}"
+                                recordId="{!v.standDesignId}" onuploadfinished="{!c.handleUploadFinished}"
+                             />
+                          <!--   <aura:set attribute="else"> 
+                                    <lightning:fileUpload 
+                                    name="fileUploader"
+                                    multiple="false"
+                                    accept="['.pdf']" 
+                                    disabled="true"
+                                    recordId="{!v.standDesignId}" onuploadfinished="{!c.handleUploadFinished}"
+                                 />
+                             </aura:set>
+                            </aura:if> -->
+                        </div>
+
+                    </div>
+                    <aura:if isTrue="{!v.message}">
+                        <div class="col-sm-12 msgbackground">
+                            <p style="color:red;">{!v.message}</p>
+                        </div>
+                    </aura:if>
+                    <!-- commented as part of notes & attachment update
+                    <div>
+                        <lightning:button variant="brand" aura:id="button" class="button" label="Upload"
+                            onclick="{!c.saveAttcahment}" disabled="{!v.uploadAllowed}" />
+                        <lightning:button variant="brand" aura:id="button" class="button" label="Cancel"
+                            onclick="{!c.hideUploadModal}" />
+                    </div>
+                    -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <div aura:id="downloadlink" style="display:none"></div>
+
+    <div aria-hidden="false" id="errorMessage" style="display:none;" role="dialog"
+        class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+            aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container"
+                style=" width: 50% !important;height: 30% !important; max-width: none !important; min-width: 80% !important;min-height: 50% !important;">
+
+                <div class="div-body">
+                    <div class="div-body-head"><b>Please fill the Stand Details First.</b>
+                    </div>
+                    <div class="slds-p-around--medium">
+                        <div class="slds-theme--default">
+                            <button class="slds-button slds-button--brand" onclick="{!c.closeMessage}">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!--Confirm Reject Stand Design Model 
+     <div aria-hidden="false" id="modalRejectStandDesign" style="display:none;" role="dialog" class="slds-modal slds-modal-large slds-fade-in-open slds-backdrop" >
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container" style=" width: 50% !important;height: 30% !important; max-width: none !important; min-width: 60% !important;min-height: 50% !important;">
+                    <div class="div-body" align="center">
+                        <div class="div-body-head"><b>Are you Sure,You wish to Reject this Stand Design?</b>
+                            <span class="closebtn" onclick="{!c.hideModalRejectStandDesign}">X</span>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <lightning:button variant="brand" label="{!$Label.c.Yes}" onclick="{!c.rejectStandDesign}"/>
+                            <lightning:button variant="brand" label="{!$Label.c.No}" onclick="{!c.hideModalRejectStandDesign}"/>
+                        </div>
+                    </div>
+                </div>
+            </section>	 
+        </div> -->
+    <!--END-->
+</aura:component>

@@ -1,0 +1,9 @@
+.THIS .combo-box{cursor:pointer;}
+.THIS .slds-text-heading_small{
+    font-size: 13px;
+}
+.THIS .slds-card:first-child
+{   
+    background: #f3f2f2;
+    box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.1);
+}

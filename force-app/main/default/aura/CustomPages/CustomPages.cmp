@@ -1,0 +1,61 @@
+<!--
+    ************ Modification Log  ************
+    * Modified by : Girikon(Prashant)[CCEN-547 (Feb 19 2019), [Aishwarya 21 sep 2020 BK-9045]] 
+-->
+<aura:component implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes" access="global"
+    controller="CustomPagesCtrl">
+    <aura:handler name="init" value="{!this}" action="{!c.OnloadData}" />
+    <aura:attribute name="eventcode" type="String" default="" />
+    <aura:attribute name="customPageName" type="String" default="" />
+    <aura:attribute name="Custom_Setting" type="Custom_Setting_CC__c" default="{'sobjectType': 'Custom_Setting_CC__c',
+                         'Left_Panel__c': '',
+                         'Right_Panel__c': ''
+                       }" />
+    <aura:attribute name="Event_Setting" type="Event_Settings__c" />
+    <div class="container" style="height:auto;display: flex;">
+        <div class="row">
+            <div class="wca-breadcrumbs">
+                <lightning:breadcrumbs>
+                    <aura:if isTrue="{!or(v.customPageName=='Custom Page 1',v.customPageName=='custompage1')}">
+                        <lightning:breadcrumb label="Home" onclick="{!c.gotohome}">
+                        </lightning:breadcrumb>
+                        <lightning:breadcrumb label="{!v.Event_Setting.Custom_1_Title__c}" >
+                        </lightning:breadcrumb>
+                    </aura:if>
+                    <aura:if isTrue="{!or(v.customPageName=='Custom Page 2',v.customPageName=='custompage2')}">
+                        <lightning:breadcrumb label="Home" onclick="{!c.gotohome}">
+                        </lightning:breadcrumb>
+                        <lightning:breadcrumb label="{!v.Event_Setting.Custom_2_Title__c}" >
+                        </lightning:breadcrumb>
+                    </aura:if>
+                    <aura:if isTrue="{!or(v.customPageName=='Custom Page 3',v.customPageName=='custompage3')}">
+                        <lightning:breadcrumb label="Home" onclick="{!c.gotohome}">
+                        </lightning:breadcrumb>
+                        <lightning:breadcrumb label="{!v.Event_Setting.Custom_3_Title__c}" >
+                        </lightning:breadcrumb>
+                    </aura:if>
+                </lightning:breadcrumbs>
+            </div>
+            <!-- <br /> -->
+            <h1 class="bold-Heading">
+                <aura:if isTrue="{!or(v.customPageName=='Custom Page 1',v.customPageName=='custompage1')}">
+                    {!v.Event_Setting.Custom_1_Title__c}
+                </aura:if>
+                <aura:if isTrue="{!or(v.customPageName=='Custom Page 2',v.customPageName=='custompage2')}">
+                    {!v.Event_Setting.Custom_2_Title__c}
+                </aura:if>
+                <aura:if isTrue="{!or(v.customPageName=='Custom Page 3',v.customPageName =='custompage3')}">
+                    {!v.Event_Setting.Custom_3_Title__c}
+                </aura:if>
+            </h1>
+            <!-- <br /> -->
+            <div class="col-sm-8 slds-p-right_medium panelfont">
+                <aura:unescapedHtml value="{!v.Custom_Setting.Left_Panel__c}" />
+            </div>
+            <div class="col-sm-4 panelfont">
+                <aura:unescapedHtml value="{!v.Custom_Setting.Right_Panel__c}" />
+            </div>
+        </div>
+    </div>
+
+</aura:component>

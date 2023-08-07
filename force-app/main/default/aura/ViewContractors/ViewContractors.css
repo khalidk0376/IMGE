@@ -1,0 +1,61 @@
+.THIS .title{color:#666}
+.THIS .tabHeader {color: #024886 !important;background-color: #f2f2f2!important;text-transform: uppercase;font-weight: bold !important;}
+.THIS .temp{color:#024886}
+.THIS .slds-table{color: #000000 !important;}
+.THIS .exists{color:#666;}
+.THIS .div-body{	margin:0px auto; background-color:#fff; padding:20px;}
+.THIS .div-body p{ font-size:14px; line-height:18px; color:#666;padding: 10px 0px;}
+.THIS .div-body-head{ border-bottom:3px solid #b7b7b7; font-size:16px; line-height:14px; color:#000; padding-bottom:10px;}
+.THIS .div-left{ float:left; width:35%;}
+.THIS .div-right{ float:left; width:65%;}
+.THIS .clear{ clear:both;}
+.THIS .body{ margin-top:2%;}
+.THIS .text-align{ text-align:center;}
+.THIS .color{ color:#666;}
+.THIS .existingColor{ color:#bfbfbf;}
+.THIS .newColor{ color:#000;}
+.THIS .closebtn{float:right;color:black;font-weight:bold;cursor: pointer;}
+.THIS .div-body{ width:100%;}
+.THIS .floatLeft{float:left;} 
+
+.THIS .width100{width:100%;}
+.THIS .slds-tabs--default__item {text-transform: none !important;}
+.THIS .filtertable {border-spacing: 0px;border-collapse: separate;}
+.THIS .filtertable td{padding: 0px;}
+.THIS .filtertable span{float: left;margin-right: 3px;}
+.THIS .filtertable .slds-form-element{display: inline-flex;}
+.THIS .filterChk{ margin-top: 3px !important;}
+.THIS .slds-modal__container{max-height:100vh !important;padding:0px}
+.THIS .tabset{width: 40%;}
+.THIS .brand-color{color:#0070d2;font-weight: 400} 
+.THIS .separator{border-right: 2px solid rgb(217, 219, 221);}
+.THIS .optionWidth{padding-left: 22px;padding-right: 6px;}
+.THIS th{cursor: pointer}
+.THIS .pointer{cursor: pointer}
+.THIS .slds-table thead th{padding-right: 20px;}
+.THIS th.asc{background-image: url(/projRes/ui-force-components/img/arrowup_0070D2.svg);
+    opacity: 1;position: relative;background-repeat: no-repeat;background-position: right;
+    background-size: 12px;
+}
+.THIS th.desc{background-image: url(/projRes/ui-force-components/img/arrowdown_0070D2.svg);
+    opacity: 1;position: relative;background-repeat: no-repeat;background-position: right;
+    background-size: 12px;
+}
+.THIS th.both{cursor:pointer;background-color:#f9f9f9;background-image: url(/projRes/ui-force-components/img/arrowup_0070D2.svg);
+    position: relative;background-repeat: no-repeat;background-position: right;
+    background-size: 12px;
+}
+.THIS .slds-dropdown-trigger {display: block;}
+.THIS .slds-picklist__label .slds-icon{right: 4px;}
+.THIS label{padding: 0px;}
+.THIS label:hover{padding: 0px;margin: 0px;} 
+.THIS input:checked + label {margin: 0px;} 
+.THIS .sticky {
+  position: fixed;
+  top: 0;
+  width: inherit;
+  z-index: 99;
+}
+.THIS .paginationAllCon{margin-left: 1%;}
+.THIS .dStatus .cccc{width: 240px;}
+.THIS .mSearch .nnnn{width: 240px;padding-top: 0.75rem}

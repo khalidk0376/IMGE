@@ -1,0 +1,255 @@
+.THIS {
+}
+.THIS .slds-form-element{margin-bottom: .15rem;}
+/*.THIS h2 p{display: inline;}*/
+.THIS .ql-editor{color: #333}
+.THIS .uiLabel,.THIS .uiLegend{display: none!important;}
+.THIS .gkn-radio-field legend{display: none;}
+.THIS .slds-checkbox_toggle .slds-form-element__label {
+    display: none;
+}
+.cNewPreview .currency-symbal{z-index:100;top:17px;position: relative;top: 26px;left: 12px;}
+.cNewPreview .currency-val-padd input{padding-left:22px;}
+
+.cNewPreview.border h2,.THIS label abbr{
+    display: none!important;
+}
+.THIS .dropSection{
+	border:1px solid rgba(0, 161, 223, 0);
+}
+/*.NewPreview fieldset label{display: none!important;}*/
+
+.cNewPreview.border span.slds-text-heading--small {
+    display: none;
+}
+.THIS ::-moz-selection {
+    background: token(colorBrand);
+    color:#fff;
+}
+.THIS ::selection {
+    background: token(colorBrand);
+    color:#fff;
+}
+.THIS .slds-has-error .slds-form-element__label {
+    color: red;
+}
+.THIS span.slds-form-element__label.slds-m-bottom--none{display: none!important}
+
+.THIS .widthDiv{
+    position: relative;
+    float: left;
+}
+.THIS .widthDiv90{
+    width: 85%;
+    position: relative;
+    float: left;
+    margin-bottom: 2px;
+    margin-top: -20px;
+}
+.THIS .slds-slider-label__range{
+    display:none;
+}
+.THIS  .slds-slider__value{
+    display:none;
+}
+.THIS .sortableArea{
+    overflow: visible;
+}
+.THIS .dropSectionHighlight{
+	border:1px solid rgb(0, 161, 223);
+    border-style: dashed;
+    box-shadow: 0px 0px 8px rgb(0, 161, 223);
+
+}
+.THIS .ui-state-highlight{
+    border:1px solid rgb(0, 161, 223);
+    border-style: dashed;
+    height:100px;
+   box-shadow: inset 0 0 8px rgb(0, 161, 223);
+    
+}
+.THIS .selecttableField{
+	z-index:99999999;
+	display: block;
+}
+.THIS .hideModalCSS{
+	display: none !important;
+}
+.THIS .showModal{
+	display:block;
+}
+
+.THIS .icn .slds-icon-text-default {
+    fill: rgb(255, 255, 255);
+}
+.THIS .toggle {
+   display: none;
+ }
+.THIS .slds-modal{
+    top:68px;
+}
+.THIS .slds-text-heading_small{
+    font-size: 13px;
+}
+.THIS .qstnBuilderContent 
+{
+    padding:3px !important;
+}
+ .THIS #asteric
+{
+    color: red;
+    font-size: 15px;
+    padding-right: 3px;
+} 
+.THIS .dropSection{
+    min-height: 510px;
+}
+.THIS .ui-draggable-helper {
+
+}
+.THIS .border0{
+    border:0;
+}
+.THIS .selecttableField .slds-box{
+    padding:0;
+}
+.THIS .marginT5 {
+    margin-top:5px;
+}
+.THIS .dragable-box .slds-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+.THIS .dragable-box .slds-media__figure{
+        margin-right: 0.25rem;
+        min-width: 2rem;
+    	fill: rgb(0, 112, 210);
+}
+
+.THIS .paddingR0{
+        padding-right:0;
+}
+.THIS .paddingL0{
+        padding-left:16px;
+}
+.THIS .marginB12 .slds-button__icon{
+    margin-bottom: 12px
+} 
+.THIS .slds-card:first-child {
+    background: #f3f2f2;
+    box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.1);
+}
+.THIS .align-self{align-self:auto;}
+.THIS .qf-text-justify p{text-align: justify;}
+.THIS .qf-text h1, .THIS .qf-text h2, .THIS .qf-text h3, .THIS .qf-text h4{float: left !important;} 
+.THIS .qf-box{boroder:transparent; 
+    word-wrap: break-word;}
+.THIS .qf-box{border:1px solid rgba(0, 161, 223, 0);
+	/*-moz-box-shadow:    inset 0 0 5px #ccc;
+   -webkit-box-shadow: inset 0 0 5px #ccc;
+   box-shadow:         inset 0 0 5px #ccc;*/
+}
+/*.THIS .qf-box:hover{border:1px solid rgb(0, 161, 223);}*/
+
+.THIS .qf-edit-delete{visibility: hidden;}
+.THIS .qf-box:hover .qf-edit-delete{visibility: visible;}
+.THIS .qf-button-box{
+	    background-color: #727272;
+    color: #fff;
+    z-index:10000;
+}
+.THIS .qf-cursor{cursor: move;}
+.THIS .qf-button-box .slds-icon-text-default{
+
+    fill: rgb(255, 255, 255);
+}
+.THIS #question-builder-panel{ z-index:100;}
+.THIS .qf-left-panel{z-index:100;}
+.THIS .qf-hide-label .slds-form-element__label{display:none;}
+.THIS .marginB5{margin-bottom: .5rem;}
+.THIS .qf-information-section{/*background: #f1f1f1; border-radius: 5xp;*/}
+.THIS .slds-file-selector__dropzone{padding:0;}
+.THIS .slds-form--inline .slds-form-element__control{display:block;}
+.THIS .slds-form--inline label{display:none;}
+.THIS .marginT5{margin-top:5px;}
+.THIS .slds-file-selector__dropzone {
+    /*padding: .125rem;*/
+    border: 0px dashed rgb(221, 219, 218); 
+    border-radius: .25rem;
+}
+.THIS .slds-medium-show {
+    display: none;
+}
+.THIS .hideHelpIcon{
+    display:none;
+}
+.THIS .qf-section-name .slds-text-heading_small{
+    font-size: 1.3em;
+}
+.THIS .helptextIcon{display: -webkit-box; margin-left:-17px;margin-bottom: -17px;}
+.THIS .helptextIconAll{display: -webkit-box; margin-left:2px;}
+.THIS .hidehelptextIcon{display: none!important;}
+.THIS .score{text-align:center;}
+.THIS .checkbx{display: inline-grid;padding-left: 5px;}
+.THIS .slider-output-value{
+    clear: both;
+    margin-top: 1%;
+    float: left;
+    border: 1px #ccc solid;
+    border-radius: 15px;
+    padding: 5px 15px;
+}
+.THIS .publishCntn{
+    font-size: 15px;
+    font-weight: 700;
+    color: black;
+}
+
+.THIS .slds-card__header{width:100%;}
+.THIS .qf-remove-header .slds-grid{display:none;}
+.THIS .slds-panel__section{padding-top: 0px; padding-bottom: 0px;}
+
+.THIS .currencyIcon {
+    width: 1.875rem; 
+}
+.THIS .slds-col  ul {
+    list-style:disc !important;
+    padding-left: 2rem  !important; 
+    padding-bottom: 1rem  !important; 
+}
+.THIS .slds-grid  ul {
+    list-style:disc !important; 
+    padding-left: 1rem  !important;  
+    padding-bottom: 1rem  !important; 
+}
+.THIS .slds-col  ol {
+    list-style:decimal;
+    padding-left: 2rem  !important; 
+    padding-bottom: 1rem  !important; 
+}
+.THIS .slds-grid  ol {
+    list-style:decimal;  
+    padding-left:1rem  !important; 
+    padding-bottom: 1rem  !important; 
+}
+/* .THIS .slds-checkbox {
+
+    position: relative;
+
+    margin-top: -74px;
+    
+    margin-bottom: 3rem;
+} */
+@media (max-width: 479px)
+{
+  .THIS .slds-size--4-of-12,.THIS .slds-size--6-of-12,.THIS .slds-size--3-of-12{
+    width: 100%;
+  }
+  .THIS .slds-panel__section,.THIS .slds-p-right--small,.THIS .slds-p-left--small{
+    padding-left:0px;
+    padding-right:0px;
+  }
+}
+.THIS .slds-panel{
+    overflow-y: unset; 
+}

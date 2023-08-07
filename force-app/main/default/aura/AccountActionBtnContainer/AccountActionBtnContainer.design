@@ -1,0 +1,4 @@
+<design:component label="Account Detail Page Actions">
+	<!-- added on 04/09/2019 by Mukesh to make action buttons postion dynamic from top-->
+	<design:attribute name="top" label="Position from top"/>
+</design:component>

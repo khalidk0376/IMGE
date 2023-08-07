@@ -1,0 +1,87 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId" access="global" controller="DeclarationDocAttachment_class">
+     <aura:handler event="force:refreshView" action="{!c.reloaddataAtt}" />
+    <aura:handler event="force:navigateToSObject" action="{!c.navigateToRecord}"/>
+    <aura:attribute name="Attachments" type="Attachment[]" />
+    <aura:attribute name="PageNumber" type="integer" default="1"/>
+    <aura:attribute name="TotalPages" type="integer" default="0"/>
+    <aura:attribute name="TotalRecords" type="integer" default="0"/>
+    <aura:attribute name="RecordStart" type="integer" default="0"/>
+    <aura:attribute name="RecordEnd" type="integer" default="0"/>
+    <aura:attribute name="isEnableProfile" type="Boolean" default="false"/>
+    <aura:attribute name="options" type="List" default="[{'label': '10', 'value': '10'},{'label': '15', 'value': '15'},{'label': '20', 'value': '20'},]"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:registerEvent name="DeleteRowEvt" type="c:DeleteRowEvt"/> 
+    <div> 
+        <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+        	<b>Declaration Document Attachment</b>
+        </div>
+        
+        <div class="slds-float_right">
+                <lightning:combobox aura:id="pageSize" label="Display Records Per Page: " value="10" options="{!v.options }" onchange="{!c.onSelectChange}"/>
+            <br/>
+        </div>
+    </div>
+    <table class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout">
+        <thead>
+            <tr class="slds-text-heading_label">
+                <!-- <th scope="col"><div class="slds-truncate" title="ID">ID</div></th> -->
+                <th scope="col"><div class="slds-truncate" title="ViewFile">View File</div></th>
+                <th scope="col"><div class="slds-truncate" title="Delete">Delete</div></th>
+                <th scope="col"><div class="slds-truncate" title="Title">File Name</div></th>
+                <!--<th scope="col"><div class="slds-truncate" title="PathOnClient">Content Type</div></th>
+                <th scope="col"><div class="slds-truncate" title="Private">Private</div></th>-->
+                <th scope="col"><div class="slds-truncate" title="CreatedById">Created By Id</div></th>
+                <th scope="col"><div class="slds-truncate" title="CreatedDate">Created Date</div></th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Use the Apex model and controller to fetch server side data -->
+            <aura:iteration items="{!v.Attachments}" var="attachment">
+                <tr>
+                    <td>
+                        <a href="{!'/sfc/servlet.shepherd/version/download/'+attachment.Id}" target="_blank" styleClass="btn"><lightning:icon iconName="doctype:image" alternativeText="Doc image"/></a>
+                        <input type="hidden" value="{!attachment.Id}" class="attachmentView" />
+                    </td>
+                    <td>
+                        <input type="hidden" value="{!attachment.ContentDocumentId}" class="attachmentId" />
+                        <aura:if isTrue="{!(v.isEnableProfile == true)}">
+                        	<lightning:button iconName="utility:delete" variant="destructive" label="Delete" title="Destructive action" onclick="{! c.deleteAttachment }"/>
+                    	</aura:if>
+                    </td>
+                    <td><div class="slds-truncate" title="{!attachment.Name}">{!attachment.Title}</div></td>
+                    <!--<td><div class="slds-truncate" title="{!attachment.ContentType}">{!attachment.ContentType}</div></td>
+                    <td><div class="slds-truncate" title="{!attachment.Private}"> -->
+                        <!--{!attachment.IsPrivate}
+                        <lightning:input type="checkbox" aura:id="output" value="{!attachment.IsPrivate}" disabled="true"/>
+                        </div></td> -->
+                    <td><a href="{!'/_ui/core/userprofile/UserProfilePage?u='+attachment.OwnerId}" target = "_blank" ><div class="slds-truncate" title="{!attachment.OwnerId}">{!attachment.Owner.Name}</div> </a></td>
+                    <td><div class="slds-truncate" title="{!attachment.CreatedDate}"> <lightning:formattedDateTime aura:id="dt" value="{!attachment.CreatedDate}"
+                                                                                                                   month="short"
+                                                                                                                   day="numeric"
+                                                                                                                   year="numeric"
+                                                                                                                   hour="2-digit"
+                                                                                                                   minute="2-digit"
+                                                                                                                   second="2-digit"
+                                                                                                                   hour12="true"
+                                                                                                                   timeZone="{!$Locale.timezone}"/></div></td>
+                    
+                </tr>
+            </aura:iteration>
+        </tbody>
+    </table>
+    
+    <aura:if isTrue="{!v.Attachments.length > 0}">
+        <div class="slds-clearfix">
+            <div class="slds-page-header" role="banner">
+                <div class="slds-float_right">            
+                    <lightning:button disabled="{!v.PageNumber == 1}" variant="brand" aura:id="prevPage" label="Prev" onclick="{!c.handlePrev}" />            
+                    <lightning:button disabled="{!v.PageNumber == v.TotalPages}" aura:id="nextPage" variant="brand" label="Next" onclick="{!c.handleNext}"/>
+                </div>
+                <p class="slds-page-header__title">{!v.RecordStart}-{!v.RecordEnd} of {!v.TotalRecords} | Page {!v.PageNumber} of {!v.TotalPages}</p>
+            </div>
+        </div>
+        <aura:set attribute="else">
+            <center><p style = "margin-top:2%;"><b>No Declaration Document</b></p></center>
+        </aura:set>
+    </aura:if>
+</aura:component>

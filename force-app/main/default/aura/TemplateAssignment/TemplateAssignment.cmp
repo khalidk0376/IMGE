@@ -1,0 +1,199 @@
+<!-- Updating Api Version for ticket no: EMEA-200 -->
+<aura:component controller="TemplateAssignment">
+    <aura:attribute name="startSearch" type="boolean" default="false" />
+    <aura:attribute name="showNextButton" type="boolean" default="false" />
+    <aura:attribute name="showBackButton" type="boolean" default="false" />
+    <aura:attribute name="showSearchBar" type="boolean" default="true" />
+    <aura:attribute name="tempNameWithId" type="String" />
+    <aura:attribute name="templateId" type="String" />
+    <aura:attribute name="searchValue" type="String" />
+    <aura:attribute name="lstLocations" type="list" default="[]"/>
+    <aura:attribute name="lstLocationsIds" type="String[]" />
+    <aura:attribute name="showSaveButton" type="boolean" default="false" />
+    <aura:attribute name="NoIncludeChildren" type="boolean" default="false" />
+    <aura:attribute name="selectedLocations" type="list" default="[]"/>
+    <aura:attribute name="selectedParentLocations" type="list" default="[]"/>
+    <aura:attribute name="allPages" type="object" />
+    <aura:attribute name="CurrentPage" type="Integer" default="0" />
+    <aura:attribute name="itemsSelected" type="Integer" default="0"/>
+    <aura:attribute name="includeChildrenIds" type="String[]" />
+    <!-- Start event handlers -->
+    <aura:handler name="init" action="{!c.doInit}" value="{!this}"/>
+    <!-- End event handlers -->
+    <div class="demo-only" style="height: 740px;">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_large">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon iconName="utility:close" onclick="{!c.hideModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" />
+                    <h2 id="id-of-modalheader-h2" class="slds-text-heading_medium">Add Location</h2>
+                    <p class="slds-m-top_x-small">Template: {!v.tempNameWithId}</p>
+                </header>
+                <div class="slds-modal__content" id="modal-content-id-1">
+                    <div class="slds-grid slds-grid_vertical slds-size_12-of-12">
+                        
+                        <div class="slds-p-vertical_x-small slds-p-horizontal_large slds-shrink-none slds-theme_shade slds-border_bottom">
+                            <aura:if isTrue="{!v.showSearchBar==true}">
+                                <div class="slds-form-element qf-search-elements">
+                                    <label class="slds-form-element__label slds-assistive-text" for="combobox-unique-id-8">Search</label>
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-grid slds-gutters slds-m-top_x-small ">
+                                            <div class="slds-col slds-m-right_x-small  slds-size_11-of-12">
+                                                <div class="slds-form-element" onkeypress="{!c.searchLocationOnEnter}">
+                                                    <lightning:input placeholder="Type here" type="text" label="Search Location" value="{!v.searchValue}" />
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="slds-col slds-m-left_x-small  slds-size_1-of-12">
+                                                <div class="slds-form-element slds-m-right_x-small">
+                                                    <!--                                            <label class="slds-form-element__label" for="text-input-id-1">Input Label</label>-->
+                                                    <div class="slds-form-element__control slds-float_right" style="margin-top: 20px;">
+                                                        <button class="slds-button slds-button_brand qf-location-search-btn" onclick="{!c.searchLocation}">Search</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </aura:if> 
+                            <div class="slds-text-title slds-m-top_x-small" aria-live="polite">{!v.itemsSelected} Item(s) Selected</div>
+                        </div>
+                        
+                        <aura:if isTrue="{!v.startSearch==true}">
+                            <div class="slds-scrollable slds-grow qf-location-search-result">
+                                <div class="slds-table--header-fixed_container" style="height:310px; border: 1px #ccc solid;">
+                                    <div class="slds-scrollable_y" style="height:100%;">
+                                        <table role="grid" class="slds-table slds-table_fixed-layout slds-table--header-fixed slds-table_bordered slds-table_resizable-cols slds-no-row-hover slds-scrollable_none">
+                                            <thead>
+                                                <tr class="slds-line-height_reset">
+                                                    <th scope="col" style="width: 3.75rem;"></th>
+                                                    <th aria-label="Name" aria-sort="none" class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
+                                                        <div class="slds-truncate slds-cell-fixed">
+                                                            <a class="slds-th__action slds-text-link_reset" href="javascript:void(0);" role="button" tabindex="-1">
+                                                                <span class="slds-assistive-text">Sort by: </span>
+                                                                <span class="slds-truncate" title="Name">User Type</span>
+                                                                <div class="slds-icon_container">
+                                                                    <lightning:icon iconName="utility:arrowup"  size="xx-small" alternativeText="Descending" />
+                                                                    <lightning:icon iconName="utility:arrowdown"  size="xx-small" alternativeText="Ascending" />
+                                                                </div>
+                                                            </a>
+                                                            <span class="slds-assistive-text" aria-live="assertive" aria-atomic="true">Sorted none</span>
+                                                            <div class="slds-resizable">
+                                                                <input min="20" max="1000" aria-label="Name column width" class="slds-resizable__input slds-assistive-text" id="cell-resize-handle-5" tabindex="-1" type="range" />
+                                                                <span class="slds-resizable__handle">
+                                                                    <span class="slds-resizable__divider"></span>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </th>
+                                                    <th style="width: 200px; text-align: center;" aria-label="Product Code" aria-sort="none" class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
+                                                        <div class="slds-truncate slds-cell-fixed">
+                                                            <a class="slds-th__action slds-text-link_reset" href="javascript:void(0);" role="button" tabindex="-1">
+                                                                <span class="slds-assistive-text">Sort by: </span>
+                                                                <span class="slds-truncate" title="Include children">Include children</span>
+                                                                <div class="slds-icon_container">
+                                                                    <lightning:icon iconName="utility:arrowup"  size="xx-small" alternativeText="Descending" />
+                                                                    <lightning:icon iconName="utility:arrowdown"  size="xx-small" alternativeText="Ascending" />
+                                                                </div>
+                                                            </a>
+                                                            <span class="slds-assistive-text" aria-live="assertive" aria-atomic="true">Sorted none</span>
+                                                            <div class="slds-resizable">
+                                                                <input min="20" max="1000" aria-label="Product Code column width" class="slds-resizable__input slds-assistive-text" id="cell-resize-handle-6" tabindex="-1" type="range" />
+                                                                <span class="slds-resizable__handle">
+                                                                    <span class="slds-resizable__divider"></span>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </th>
+                                                    
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <aura:if isTrue="{!!v.NoIncludeChildren}">
+                                                    <aura:iteration items="{!v.lstLocations}" var="location" indexVar="LocIndex">
+                                                        <tr class="slds-hint-parent">
+                                                            <td role="gridcell" tabindex="0" class="slds-text-align_right" style="width: 3.75rem;">
+                                                                <div class="slds-checkbox_add-button ">
+                                                                    <input class="slds-assistive-text " id="{!location.Id}" tabindex="-1" value="{!LocIndex}" type="checkbox" onclick="{!c.getSelectId}" checked="{!location.isSelected}"/>
+                                                                    <label for="{!location.Id}" class="slds-checkbox_faux">
+                                                                        <span class="slds-assistive-text">{!location.Name}</span>
+                                                                    </label>
+                                                                </div>
+                                                            </td>
+                                                            <th scope="row">
+                                                                <div class="slds-truncate" title="Analytics">{!location.Name}</div>
+                                                            </th>
+                                                            <td role="gridcell">
+                                                                <div class="slds-form-element slds-m-bottom_x-small">
+                                                                    <div class="slds-form-element__control">
+                                                                        <span class="slds-checkbox">
+                                                                            <lightning:input type="checkbox" name="{!location.Id}" variant="label-hidden" onchange="{!c.includeChildren}" checked="{!location.includeChildren}"/>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </aura:iteration>
+                                                </aura:if>
+                                                <aura:if isTrue="{!v.NoIncludeChildren}">
+                                                    <aura:iteration items="{!v.selectedLocations}" var="location" indexVar="DelIndex">
+                                                        <tr class="slds-hint-parent">
+                                                            <td role="gridcell" tabindex="0" class="slds-text-align_right" style="width: 3.75rem;">
+                                                                <lightning:buttonIcon iconName="utility:delete" alternativeText="delete" class="deleteLoc" onclick="{!c.deleteLocation}" value="{!DelIndex}"/>
+                                                            </td>
+                                                            <th scope="row">
+                                                                <div class="slds-truncate" title="Analytics">{!location.Name}</div>
+                                                            </th>
+                                                            <td role="gridcell">
+                                                                <div class="slds-form-element slds-m-bottom_x-small">
+                                                                    <div class="slds-form-element__control">
+                                                                        <span class="slds-checkbox">
+                                                                            <!--<lightning:input type="checkbox" name="{!'sel_'+location.Id}" variant="label-hidden"/>-->
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </aura:iteration>
+                                                </aura:if>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </aura:if>   
+                        <aura:if isTrue="{!v.startSearch==false}">
+                            <div class="slds-size_12-of-12 slds-align_absolute-center qf-search-indicator">
+                                <ul >
+                                    <li class="slds-text-align_cente slds-align_absolute-center">
+                                        <lightning:icon iconName="utility:search" alternativeText="search" class="slds-button__icon slds-button__icon_large qf-large-icon"/>
+                                        
+                                    </li>
+                                    <li class=" slds-align_absolute-center">
+                                        <div class="slds-text-heading_large">Start Your Search</div>
+                                    </li>
+                                    <li class=" slds-align_absolute-center">Use the fields to begin to add locations to your template.</li>
+                                </ul>
+                            </div>
+                        </aura:if> 
+                    </div>
+                </div>
+                <footer class="slds-modal__footer slds-modal__footer_directional">
+                    <aura:if isTrue="{!v.showBackButton==true}">
+                        <button class="slds-button slds-button_neutral" onclick="{!c.showPreviousLocations}">Back</button>
+                    </aura:if>
+                    <aura:if isTrue="{!v.showBackButton==false}">
+                        <button class="slds-button slds-button_neutral" onclick="{!c.hideModal}">Cancel</button>
+                    </aura:if>
+                    <aura:if isTrue="{!v.showNextButton==true}">
+                        <button class="slds-button slds-button_brand" onclick="{!c.showSelectedLocations}">Next</button>
+                    </aura:if>
+                    <aura:if isTrue="{!v.showSaveButton==true}">
+                        <button class="slds-button slds-button_brand" onclick="{!c.saveSelectedLocations}">save</button>
+                    </aura:if>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </div>
+</aura:component>

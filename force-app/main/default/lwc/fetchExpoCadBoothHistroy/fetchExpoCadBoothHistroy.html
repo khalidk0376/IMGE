@@ -1,0 +1,26 @@
+<!--
+    Created By		: Girikon( Palla Kishore )
+    Created On		: 03/13/2023
+    @description 	: This component is used to show the ExpocadBooth History in opportunity Booth Tab.
+    Modified By		: 
+-->
+
+<template>
+    <lightning-card  title="ExpocadBooth History">
+        <lightning-layout class="slds-m-bottom_small common-table" multiple-rows="true">
+            <template if:true={isShowTable}>
+                <lightning-layout-item size="12">
+                    <lightning-datatable data={finalTableData} columns={columns} key-field="Id" hide-checkbox-column="true">
+                    </lightning-datatable>
+                </lightning-layout-item>
+            </template>
+            <template if:true={isShowMSG}>
+                <lightning-layout-item size="12">
+                    <div class="slds-align_absolute-center" style="height: 5rem;">
+                        No Expocad Booth History data to display.
+                    </div>
+                </lightning-layout-item>
+            </template>
+        </lightning-layout>
+    </lightning-card>
+</template>

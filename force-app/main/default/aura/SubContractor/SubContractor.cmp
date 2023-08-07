@@ -1,0 +1,370 @@
+<!--
+    ************ Modification Log  ************
+    * Modified by : Girikon(Sunil[CCEN-592 Jan 22 2019]) ,    
+-->
+<aura:component implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes" access="global"
+ controller="SubContractorCtrl">
+	<aura:handler event="aura:waiting" action="{!c.showSpinner}" />
+	<aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}" />
+	<aura:attribute name="Spinner" type="boolean" default="false" />
+	<aura:attribute name="eventcode" type="String" default="" />
+	<ltng:require scripts="{!$Resource.CustomerCenterWS11 +'/CustomerCenterWS11/js/jquery-1.7.1.min.js?v=149'}"
+	 afterScriptsLoaded="{!c.scriptsLoaded}" />
+	<aura:attribute name="Event_Setting" type="Event_Settings__c" />
+	<aura:attribute name="message" type="string" />
+	<aura:handler name="init" value="{!this}" action="{!c.cartOnloadData}" />
+	<aura:attribute name="newContact" type="contact" default="{'FirstName':'','LastName':'',MobilePhone:'','Phone':'','Ext':'','AccountName':'','Fax':'','Email':'','AccountId':'','TempAccountId':''}" />
+	<aura:attribute name="lstStatus" type="List" />
+	<aura:attribute name="services" type="ContractorService__c[]" />
+	<aura:attribute name="selectedBooth" type="ExpocadBooth__c" default="{'Id':'','Booth_Number__c':''}" />
+	<aura:attribute name="BoothNumber" type="string" />
+	<aura:attribute name="AccountName" type="string" />
+	<aura:attribute name="lstbooths" type="List" />
+	<aura:attribute name="editSubCont" type="BoothContractorMapping__c" />
+	<aura:attribute name="MappingId" type="string" />
+	<aura:attribute name="boothmap" type="List" />
+	<aura:attribute name="firstName" type="string" />
+	<aura:attribute name="lastName" type="string" />
+	<aura:attribute name="Phone" type="string" />
+	<aura:attribute name="MobilePhone" type="string" />
+	<aura:attribute name="Country" type="string" />
+	<aura:attribute name="Email" type="string" />
+	<aura:attribute name="sTempCon" type="string" />
+	<aura:attribute name="sTempAcc" type="string" />
+	<section>
+        <div class="container">
+                <div class="row">
+                    <div class="col-sm-12">
+                            <lightning:breadcrumbs>
+                                    <lightning:breadcrumb label="Home" onclick="{!c.goToHome}">
+                                    </lightning:breadcrumb>
+                                     <lightning:breadcrumb label="{!v.Event_Setting.Subcontractor_Title__c}">
+                                    </lightning:breadcrumb> 
+                                  </lightning:breadcrumbs>
+                                  <br />
+                    <h1 class="top-h1-heading">{!v.Event_Setting.Subcontractor_Title__c}</h1> 
+                        <p class="text-normal slds-text-longform">
+                            <aura:unescapedHtml value="{!v.Event_Setting.Welcome_Sub_Contractor__c}" />
+                        </p>
+                    </div>
+                </div>
+            </div>
+		<div class="clearfix"></div>
+		<div class="container mainsection">
+			<div class="row">
+				<div class="col-sm-12" style="margin-bottom:20px ">
+					<table class="required-table" cellspacing="0">
+						<thead>
+							<tr>
+								<th></th>
+								<th>{!$Label.c.Booth}</th>
+								<th>
+									<div class="pull-left">{!$Label.c.Exhibitor}</div>
+								</th>
+								<th style="width:25%">
+									<div class="pull-left">{!$Label.c.Subcontractor}&nbsp;{!$Label.c.Company}</div>
+									<div class="pull-right">
+										<lightning:buttonIcon aura:id="downIconName" iconName="utility:up" variant="bare" alternativeText="Asc"
+										 iconClass="dark" class="slds-button" />
+										<lightning:buttonIcon aura:id="upIconName" iconName="utility:down" variant="bare" alternativeText="Desc"
+										 iconClass="dark" class="slds-button fa-down-position-2" />
+									</div>
+								</th>
+								<th style="width:12%">
+									<div class="pull-left">{!$Label.c.Contact}</div>
+									<div class="pull-right">
+										<lightning:buttonIcon aura:id="downIconName" iconName="utility:up" variant="bare" alternativeText="Asc"
+										 iconClass="dark" class="slds-button" />
+										<lightning:buttonIcon aura:id="upIconName" iconName="utility:down" variant="bare" alternativeText="Desc"
+										 iconClass="dark" class="slds-button fa-down-position-2" />
+									</div>
+								</th>
+								<aura:if isTrue="{!!v.Event_Setting.Disable_this_information__c}">
+									<th>
+										<div class="pull-left">{!$Label.c.Services}</div>
+										<div class="pull-right">
+											<lightning:buttonIcon aura:id="downIconName" iconName="utility:up" variant="bare" alternativeText="Asc"
+											 iconClass="dark" class="slds-button" />
+											<lightning:buttonIcon aura:id="upIconName" iconName="utility:down" variant="bare" alternativeText="Desc"
+											 iconClass="dark" class="slds-button fa-down-position-2" />
+										</div>
+									</th>
+								</aura:if>
+
+								<th style="width:75px">
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							<aura:iteration items="{!v.lstbooths}" var="bth">
+								<aura:if isTrue="{!bth.value.length}">
+									<aura:iteration items="{!bth.value}" var="bthMaps">
+										<tr>
+											<aura:if isTrue="{!bthMaps.tot}">
+												<aura:if isTrue="{!bthMaps.TempContact__r.Is_SubContractors_Available__c}">
+													<td rowspan="{!bthMaps.tot}" class="black-bold valigntop">
+														<button type="button" data-id="{!'A__'+bthMaps.boothId}" value="{!bthMaps.Opp_Booth_Mapping__r.Id}" name="{!bthMaps.booth}"
+														 class="primary-btn tooltip" onclick="{!c.showAddContractor}" style="{!'margin-right:6px;padding:5px;background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+															 class="fa fa-user-plus"></i>
+															<span class="tooltiptext" id="{!'A__'+bthMaps.boothId}">Add another Subcontractor for this booth</span>
+														</button>
+
+													</td>
+													<aura:set attribute="else">
+														<td></td>
+													</aura:set>
+												</aura:if>
+											</aura:if>
+											<td class="black-bold">{!bthMaps.Opp_Booth_Mapping__r.Booth_Number__c}</td>
+											<aura:if isTrue="{!bthMaps.ExpocadBooth__r.Display_Name__c}">
+												<td><span class="exhibitor">{!bthMaps.Opp_Booth_Mapping__r.Display_Name__c}</span></td>
+												<aura:set attribute="else">
+													<td>
+														<span class="exhibitor">{!bthMaps.Opp_Booth_Mapping__r.Opportunity__r.Account.Name}</span>
+													</td>
+												</aura:set>
+											</aura:if>
+											<td>
+												<aura:if isTrue="{!!bthMaps.TempContact__r.Is_SubContractors_Available__c}">
+													<button type="button" data-id="{!'A__'+bthMaps.boothId}" value="{!bthMaps.Opp_Booth_Mapping__r.Id}" name="{!bthMaps.booth}"
+													 class="primary-btn tooltip" onclick="{!c.showAddContractor}" style="{!'margin-right:6px;padding:5px;background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+														 class="fa fa-user-plus"></i>&nbsp;Add New Subcontractor
+														<span class="tooltiptext" id="{!'A__'+bthMaps.boothId}">Add Subcontractor for this booth</span>
+													</button>
+													<aura:set attribute="else">
+														<span class="exhibitor">{!bthMaps.TempContact__r.TempAccount__r.Name}</span>
+													</aura:set>
+												</aura:if>
+											</td>
+											<aura:if isTrue="{!bthMaps.TempContact__r.Is_SubContractors_Available__c==false}">
+												<td>
+													<span class="exhibitor"></span>
+												</td>
+												<aura:set attribute="else">
+													<td>
+														<span class="exhibitor">{!bthMaps.TempContact__r.Name__c}</span>
+													</td>
+												</aura:set>
+											</aura:if>
+
+											<aura:if isTrue="{!!v.Event_Setting.Disable_this_information__c}">
+												<td>
+													<aura:if isTrue="{!bthMaps.TempContact__r.Is_SubContractors_Available__c}">
+														<div>
+															<aura:iteration items="{!bthMaps.CustomerContractorServices__r}" var="ser" indexVar="index">
+																<aura:if isTrue="{!index}">
+																	{!', '+ser.ContractorService__r.Contractor_Service__c}
+																	<aura:set attribute="else">
+																		{!ser.ContractorService__r.Contractor_Service__c}
+																	</aura:set>
+																</aura:if>
+															</aura:iteration>
+														</div>
+													</aura:if>
+												</td>
+											</aura:if>
+
+											<td>
+												<aura:if isTrue="{!!bthMaps.TempContact__r.Is_SubContractors_Available__c==false}">
+													<button type="button" data-mid="{!bthMaps.Id}" data-id="{!'E__'+bthMaps.boothId}" onclick="{!c.showUpdateContractor}"
+													 value="{!bthMaps.Id}" class="primary-btn tooltip" style="{!'margin-right:6px;padding:3px;background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+														 class="fa fa-pencil"></i>
+														<span class="tooltiptext" id="{!'E__'+bthMaps.boothId}">Edit info for this Subcontractor</span>
+													</button>
+													<button type="button" data-id="{!'C__'+bthMaps.boothId}" onclick="{!c.deleteCon}" value="{!bthMaps.Id}"
+													 name="{!bthMaps.Contact__r.Name}" class="primary-btn tooltip" style="padding:3px;background:#4e4e4e"><i
+														 class="fa fa-close"></i>
+														<span class="tooltiptext" id="{!'C__'+bthMaps.boothId}">Cancel this Subcontractor</span>
+													</button>
+												</aura:if>
+											</td>
+										</tr>
+									</aura:iteration>
+								</aura:if>
+							</aura:iteration>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		<div class="clearfix"></div>
+	</section>
+	<!-- Contact success modal -->
+	<div id="modalContactSuccess" class="modal">
+		<div class="modal-content">
+			<div class="modal-header"> <span onclick="{!c.hideConSuccessModal}" class="close">&times;</span>
+				<h2>{!$Label.c.ThankYou}!</h2>
+			</div>
+			<div class="modal-body bodycomapny">
+				<p> <i class="fa fa-check fa-padding-5 success" aria-hidden="true"></i>Thank you for your submission. SubContractor
+					have been created.</p>
+			</div>
+			<div class="clearfix"></div>
+			<br></br><br></br>
+			<button type="button" onclick="{!c.hideConSuccessModal}" class="primary-btn marginleft" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+				 class="fa fa-close fa-padding-5"></i>{!$Label.c.Close_Window}</button>
+		</div>
+	</div>
+	<div id="modalCont" class="modal">
+		<div class="modal-content">
+			<div class="modal-header"> <span onclick="{!c.hideAddContactModal}" class="close">&times;</span>
+				
+				<h2>Add SubContractor</h2>
+			</div>
+			<div class="modal-body bodycontact">
+				<aura:if isTrue="{!v.message}">
+					<div class="col-sm-12 alreadyExists">
+						<i class="fa fa-exclamation-circle fa-padding-5"></i>{!v.message}</div>
+				</aura:if>
+				<div class="col-sm-12">
+					<div class="form-group">
+						<label class="form-group-label-1" style="width:11.5%">{!$Label.c.Company_Name}<span class="slds-required">*</span>:
+						</label>
+						<ui:inputText value="{!v.AccountName}" class="label-text-11" />
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="form-group">
+						<label class="form-group-label-1">{!$Label.c.FirstName}<span class="slds-required">*</span>: </label>
+						<ui:inputText value="{!v.newContact.FirstName}" class="label-text-1" />
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="form-group">
+						<label class="form-group-label-1">{!$Label.c.LastName}<span class="slds-required">*</span>: </label>
+						<ui:inputText value="{!v.newContact.LastName}" class="label-text-1" required="true" />
+					</div>
+				</div>
+				<div class="clearfix"></div>
+				<div class="col-sm-6">
+					<div class="form-group">
+						<label class="form-group-label-1">{!$Label.c.Mobile}:<span class="slds-required">*</span></label>
+						<ui:inputText value="{!v.newContact.MobilePhone}" class="label-text-1" />
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="form-group">
+						<label class="form-group-label-1">{!$Label.c.Country}:<span class="slds-required">*</span></label>
+						<ui:inputSelect class="search-style-1" aura:id="billingCountry" value="{!v.Country}" />
+					</div>
+				</div>
+				<div class="clearfix"></div>
+				<div class="col-sm-6">
+					<div class="form-group">
+						<label class="form-group-label-1">{!$Label.c.Email} 1<span class="slds-required">*</span>: </label>
+						<ui:inputText value="{!v.newContact.Email}" class="label-text-1" />
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="form-group">
+						<label class="form-group-label-1">{!$Label.c.Email} 2<span class="slds-required"></span>: </label>
+						<ui:inputText value="" class="label-text-1" />
+					</div>
+				</div>
+			</div>
+			<div class="clearfix" style="margin-top: -3%;"></div>
+			<div class="height-30"></div>
+			<aura:if isTrue="{!!v.Event_Setting.Disable_this_information__c}">
+				<div class="col-sm-7">
+					<span class="text-bold">{!$Label.c.Select_Services_you_d_like_this_contractor_to_perform}</span><br />
+					<aura:iteration items="{!v.services}" var="ser">
+						<div class="col-sm-6">
+							<div class="procatlabel">
+								<input id="{!ser.Id}" class="chkbxs" type="checkbox" />
+								{!ser.Contractor_Service__c}
+							</div>
+						</div>
+					</aura:iteration>
+				</div>
+			</aura:if>
+			<div class="clearfix"></div>
+			<br></br>
+			<button type="button" onclick="{!c.inviteContact}" class="primary-btn" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+				 class="fa fa-paper-plane fa-padding-5"></i>{!$Label.c.Save}</button>
+			<button type="button" onclick="{!c.hideAddContactModal}" class="primary-btn marginleft" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+				 class="fa fa-close fa-padding-5"></i>{!$Label.c.Cancel}</button>
+		</div>
+
+	</div>
+
+	<div id="EditmodalCont" class="modal">
+		<div class="modal-content">
+			<div class="modal-header"> <span onclick="{!c.hideAddContactModal}" class="close">&times;</span>
+				<h2>Edit Subcontractor</h2>
+			</div>
+			<div class="modal-body bodycontact">
+				<aura:if isTrue="{!v.message}">
+					<div class="col-sm-12 alreadyExists">
+						<i class="fa fa-exclamation-circle fa-padding-5"></i>{!v.message}</div>
+				</aura:if>
+				<div class="col-sm-12">
+					<div class="form-group">
+						<label class="form-group-label-1" style="width:11.5%">{!$Label.c.Company_Name}<span class="slds-required">*</span>:
+						</label>
+						<ui:inputText value="{!v.AccountName}" class="label-text-11" />
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="form-group">
+						<label class="form-group-label-1">{!$Label.c.FirstName}<span class="slds-required">*</span>: </label>
+						<ui:inputText value="{!v.firstName}" class="label-text-1" />
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="form-group">
+						<label class="form-group-label-1">{!$Label.c.LastName}<span class="slds-required">*</span>: </label>
+						<ui:inputText value="{!v.lastName}" class="label-text-1" required="true" />
+					</div>
+				</div>
+				<div class="clearfix"></div>
+				<div class="col-sm-6">
+					<div class="form-group">
+						<label class="form-group-label-1">{!$Label.c.Mobile}<span class="slds-required">*</span>:</label>
+						<ui:inputText value="{!v.MobilePhone}" class="label-text-1" />
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="form-group">
+						<label class="form-group-label-1">{!$Label.c.Country}<span class="slds-required">*</span>:</label>
+						<ui:inputSelect class="search-style-1" aura:id="billingCountryUp" value="{!v.Country}" />
+					</div>
+				</div>
+				<div class="clearfix"></div>
+				<div class="col-sm-6">
+					<div class="form-group">
+						<label class="form-group-label-1">{!$Label.c.Email} 1<span class="slds-required">*</span>: </label>
+						<ui:inputText value="{!v.Email}" class="label-text-1" />
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="form-group">
+						<label class="form-group-label-1">{!$Label.c.Email} 2: </label>
+						<ui:inputText value="" class="label-text-1" />
+					</div>
+				</div>
+			</div>
+			<div class="clearfix"></div>
+			<div class="height-30"></div>
+			<aura:if isTrue="{!!v.Event_Setting.Disable_this_information__c}">
+				<div class="col-sm-7">
+					<span class="text-bold">{!$Label.c.Select_Services_you_d_like_this_contractor_to_perform}</span><br />
+					<aura:iteration items="{!v.services}" var="ser">
+						<div class="col-sm-6">
+							<div class="procatlabel">
+								<input id="{!ser.Id}" class="chkServices" type="checkbox" />
+								{!ser.Contractor_Service__c}
+							</div>
+						</div>
+					</aura:iteration>
+				</div>
+			</aura:if>
+			<div class="clearfix"></div>
+			<br></br>
+			<button type="button" onclick="{!c.UpdateSuContractor}" class="primary-btn" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+				 class="fa fa-paper-plane fa-padding-5"></i>{!$Label.c.Save}</button>
+			<button type="button" onclick="{!c.hideAddContactModal}" class="primary-btn marginleft" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+				 class="fa fa-close fa-padding-5"></i>{!$Label.c.Cancel}</button>
+		</div>
+
+	</div>
+</aura:component>

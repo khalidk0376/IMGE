@@ -1,0 +1,28 @@
+<aura:component controller="SyncEventEdition" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" 
+                access="global" >
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/> 
+    <aura:attribute name="Spinner" default = "false" type = "Boolean" />
+    <aura:html tag="style">
+        .slds-modal__container{
+        background-color: transparent;
+        display : none!important; 
+        }
+        .uiButton--brand{
+        display:none!important;
+        }
+        .slds-modal__footer{
+        height:10%;
+        }
+    </aura:html>
+    <aura:if isTrue = "{!v.Spinner}">
+        <div class="demo-only" style="height:100rem;width:100rem">
+            <div class="slds-spinner_container">
+                <div role="status" class="slds-spinner slds-spinner_medium slds-spinner_inverse slds-spinner_brand">
+                    <span class="slds-assistive-text">Loading</span>
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                </div>
+            </div>
+        </div>
+    </aura:if>
+</aura:component>

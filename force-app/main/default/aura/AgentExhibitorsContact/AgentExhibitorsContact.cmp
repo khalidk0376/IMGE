@@ -1,0 +1,58 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes" access="global" controller="AgentOwnExhibitorsCtrl" >
+        <aura:handler name="init" value="{!this}" action="{!c.onLoad}"/>
+        <aura:attribute name="eventId" type="string"/>
+        <aura:attribute name="exhibitorContacts" type="object[]"/>
+        <aura:attribute name="exhCon" type="object"/>
+        <table class="slds-table slds-table_bordered slds-max-medium-table--stacked-horizontal " role="grid" cellspacing="0">
+            <thead>
+                <tr>
+                    <th class="tabHeader">Agent Company</th>
+                    <th class="tabHeader">Agent Name</th>
+                    <th class="tabHeader">Exhibitor Company</th>
+                    <th class="tabHeader">Exhibitor Name</th>
+                    <th class="tabHeader">User Created</th>
+                    <th class="tabHeader"></th>
+                </tr>
+            </thead>
+            <aura:iteration items="{!v.exhibitorContacts}" var="exhCon">
+                <tr>
+                    <td>
+                        {!exhCon.AgentContactId__r.Account.Name}
+                    </td>
+                    <td>
+                        {!exhCon.AgentContactId__r.Name}
+                    </td>
+                    <td> 
+                        {!exhCon.ExhibitorContactId__r.Account.Name}
+                    </td>
+                    <td>
+                        {!exhCon.ExhibitorContactId__r.Name} 
+                    </td>
+                    <td> 
+                        {!exhCon.IsUserCreated__c} 
+                    </td>
+                    <td>
+                        <button data-id="{!exhCon.Id}" disabled="{!exhCon.IsUserCreated__c}"  data-cid="{!exhCon.ExhibitorContactId__c}" data-aid="{!exhCon.AgentContactId__c}" onclick="{!c.InviteContact}" class="slds-button slds-button_brand">Invite</button>
+                    </td>
+                </tr>
+            </aura:iteration>   
+        </table>   
+
+        <div aria-hidden="false" id="Confirm" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+            <div class="slds-modal__container">
+                <div class="div-body">
+                <div class="div-body-head"><b>Alert</b></div>
+                    <div>
+                        <p>
+                            Welcome email has been send successfully
+                        </p>
+                    </div>
+                    <div class="text-align slds-m-top_medium">
+                        <button type="button" class="slds-button slds-button_brand" onclick="{!c.hideConfirm}">{!$Label.c.Close}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+</aura:component>

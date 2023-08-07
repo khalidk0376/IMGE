@@ -1,0 +1,678 @@
+<!--
+* Modification Log	:
+* Modified by   	:	Girikon(Sunil [CCEN-533 Dec 20 2018,CCEN-642 Jan 29 2019,CCEN-643 Feb 13 2019], Prashant[CCEN-737 April 3 2019], Aishwarya[BK-2982 Nov 28 2019]) 
+-->
+<aura:component implements="flexipage:availableForAllPageTypes" controller="CreateBadgesOpsCtrl" >
+
+<ltng:require scripts="{!$Resource.CustomerCenterWS11 +'/CustomerCenterWS11/js/jquery-1.7.1.min.js?v=149'}" afterScriptsLoaded="{!c.scriptsLoaded}" />
+
+<!--AccountId and EventId are received from Skuid_Page-->
+<aura:attribute name="accountId" type="string"/>
+<aura:attribute name="eventId" type="string"/>
+<aura:attribute name="eventCode" type="string"/>   
+<!--CCEN-533-->  
+<aura:attribute name="uType" type="string"/>    
+<aura:attribute name="boothLimits" type="object[]"/>
+<aura:attribute name="nationalityPicklist" type="list" default="[]"/>
+<aura:attribute name="ageBracketPicklist" type="list" default="[]"/>
+<aura:attribute name="countryPicklist" type="list" default="[]"/>  
+<aura:attribute name="countryCodePicklist" type="list" default="[]"/>  
+<aura:attribute name="boothAggreResult" type="object" default="null"/>
+<aura:attribute name="selectedBadge" type="Exhibitor_Badge__c" default="{sobjectType:'Exhibitor_Badge__c'}"/>
+<aura:attribute name="isViewDetail" type="Boolean" default="false"/>
+<aura:attribute name="isSpinner" type="Boolean" default="false"/>
+<aura:attribute name="isEditBadge" type="Boolean" default="false"/>
+<aura:attribute name="isConfirm" type="Boolean" default="false"/>
+<aura:attribute name="boothSummary" type="object"/>
+<aura:attribute name="allBoothSummary" type="object"/>
+<aura:attribute name="allBoothIds" type="string[]"/>
+<aura:attribute name="allBooths" type="object[]"/>
+<aura:attribute name="eventSettings" type="object"/> 
+<aura:attribute name="message" type="string"/>
+<aura:attribute name="boothBadgeLimits" type="object"/>
+<aura:attribute name="isSaveandNew" type="Boolean" default="false"/>
+<aura:attribute name="newBadge" type="Exhibitor_Badge__c" default="{'Account__c':'','Address__c':'','Age_Bracket__c':'','Booth_Size__c':'','City__c':'','Country__c':'','Email__c':'','Event_Edition__c':'','Exhibitor_Name__c':'', 'ExpocadBooth__c':'','Opp_Booth_Mapping__c':'','First_Name__c':'','Job_Title__c':'','Last_Name__c':'','Country_Code__c':'','Mobile_Number__c':'','Nationality__c':'','State__c':'','Status__c':'Approved','MatchMaking__c':''}"/>
+<aura:handler name="init" value="{!this}" action="{!c.OnloadData}" />
+<aura:attribute name="medOptions" type="List" default="[
+                                                        {'label': 'Yes', 'value': 'Yes'},
+                                                        {'label': 'No', 'value': 'No'}
+                                                        ]" />
+<aura:attribute name="medValues" type="String" />
+<aura:if isTrue="{!v.isSpinner}">
+	<lightning:spinner size="small" variant="brand"/>
+</aura:if>
+
+<div class="slds-box">
+	<div class="slds-grid slds-wrap"> 
+		<div class="slds-size_4-of-5">
+			<div class="slds-m-around_x-small"> 
+				<div class="slds-grid slds-wrap"> 
+					<div class="slds-size_1-of-4">  
+						<div class="slds-text-heading_medium"><b>{!$Label.c.Badge_Information_For}: </b></div>   
+					</div>
+					<div class="slds-size_1-of-4">
+						<ui:inputSelect class="slds-select" aura:id="boothDimensions" change="{!c.boothOnchange}" /> 
+					</div>
+					<div class="slds-size_1-of-4">  
+						<!-- <a id="linkBadgeRule" onclick="{!c.showModalBoothLimit}" class="slds-m-left_medium slds-m-top_x-small" style="float: left;"> <b>{!$Label.c.View_Badge_Rules}</b> </a> -->
+						<lightning:button variant="base" label="{!$Label.c.View_Badge_Rules}" title="{!$Label.c.View_Badge_Rules}" class="btnBoothLimit" onclick="{!c.showModalBoothLimit }"/>
+					</div>
+				</div>
+				<div class="slds-grid slds-wrap slds-m-top_x-large">
+					<div class="slds-size_1-of-5 slds-text-heading_small">
+						<b>{!$Label.c.Total}&nbsp;{!v.allBoothSummary.unitType} : </b> {!v.boothSummary.totArea}
+					</div>
+					<div class="slds-size_1-of-5 slds-text-heading_small">
+						<b>{!$Label.c.Badge_Allotment} : </b>  {!v.boothSummary.totBadgesAllotment}
+					</div>
+					<div class="slds-size_1-of-5 slds-text-heading_small">
+						<b>{!$Label.c.Badge_Created} : </b>   {!v.boothSummary.totBadgesUsed}
+					</div>
+					<div class="slds-size_1-of-5 slds-text-heading_small">
+						<b>{!$Label.c.Total_Remaining}  : </b>   {!v.boothSummary.totBadgesRemaining}
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="slds-size_1-of-5 slds-text-align_right">
+			<div>
+				<lightning:button onclick="{!c.showModalCreateBadge}" variant="brand" class="btn"  iconName="utility:adduser" label="{!$Label.c.Create_Single_Badge}"/>
+			</div>
+			<div class="slds-m-vertical_xx-small">
+				<lightning:button onclick="{!c.showModalImportBadge}" variant="brand" class="btn" iconName="utility:groups"  label="{!$Label.c.Import_Multiple_Badges}"/>
+			</div> 
+			<div>
+				<lightning:button onclick="{!c.showModalIncreaseLimit}" variant="brand" class="btn" iconName="utility:new" label="{!$Label.c.Increase_Badge_Allotment}"/>
+			</div>
+		</div> 
+	</div>
+</div>
+
+<lightning:layout multipleRows="true" class="slds-p-top_medium">
+	<lightning:layoutItem size="12">
+		<lightning:button onclick="{!c.export}" iconName="utility:download" iconPosition="left" label="{!$Label.c.Export}"/>
+	</lightning:layoutItem>
+	<lightning:layoutItem size="12" class="slds-p-top_small">
+		<table class="slds-table slds-table_bordered slds-table_cell-buffer">
+			<thead>
+				<tr class="slds-text-title_caps">
+					<th scope="col" width="30px">
+						<div class="slds-truncate" title="Filter">#</div>
+					</th>
+					<th scope="col" width="45%">
+						<div class="slds-truncate" title="Company">Company</div>
+					</th>
+					<th scope="col">
+						<div class="slds-truncate" title="Submitted">Submitted</div>
+					</th>
+					<th scope="col">
+						<div class="slds-truncate" title="Approved">Approved</div>
+					</th>
+					<th scope="col">
+						<div class="slds-truncate" title="Total Allocated Field">Total Allocated Field</div>
+					</th>
+				</tr>
+			</thead>
+			<aura:if isTrue="{!v.boothAggreResult!=null}">
+				<tbody>
+					<tr>
+						<td>
+							<lightning:buttonIcon iconName="utility:filterList" variant="bare" size="small" alternativeText="View More" onclick="{!c.openModal}"/>
+						</td>
+						<td>{!v.boothAggreResult.companyName}</td>
+						<td>{!v.boothAggreResult.submitted}</td>
+						<td>{!v.boothAggreResult.approved}</td>
+						<td>{!v.boothAggreResult.totalBadgesAllowed}</td>
+					</tr>
+				</tbody>
+			</aura:if>
+		</table>
+	</lightning:layoutItem>
+</lightning:layout>
+
+<!-- Display all badges -->
+<aura:if isTrue="{!v.isViewDetail}">
+	<div aria-hidden="false" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+		<div class="slds-modal__container slds-align_absolute-center" style=" width: 90% !important; height: 636px; max-width: none !important; min-width: 80% !important;">
+			<div class="div-body" > 
+				<div class="div-body-head"><b>{!v.boothAggreResult.companyName+' - Submitted Badges'}</b>
+					<span class="closebtn" onclick="{!c.hideModal}">X</span> 
+				</div>
+				<div class="slds-scrollable" style="overflow-y: auto;height: 40vh;">
+					<table class="slds-table slds-table_bordered slds-table_cell-buffer">
+						<thead>
+							<tr>
+								<td style="width:6%;"></td>
+								<td style="width:13%;">#</td>
+								<td>Name</td>
+								<td>Booth</td>
+								<td>Status</td>
+							</tr>
+						</thead>
+						<tbody>
+							<aura:iteration items="{!v.boothAggreResult.exhibitorBadgeList}" var="item">
+								<tr>
+									<td>
+										<lightning:buttonIcon value="{!item.Id}" iconName="utility:share" size="small"   onclick="{! c.openBadgeEditModal }" variant="bare" alternativeText="View More" />
+									</td>
+									<td>
+										<!-- <lightning:input aura:id="badge_row" value="{!item.Id}" type="checkbox" checked="false" label="row" variant="label-hidden" /> -->
+										<aura:if isTrue="{!item.Is_VIP__c}">
+											<lightning:input class="vipCheck" aura:id="badge_row" value="{!item.Id}" type="checkbox" checked="false" label="row" variant="label-hidden" />
+											<span class="vip"><b>(VIP)</b></span>
+											<aura:set attribute="else">
+												<lightning:input aura:id="badge_row" value="{!item.Id}" type="checkbox" checked="false" label="row" variant="label-hidden" />
+											</aura:set>
+										</aura:if>
+									</td>
+									<td>{!item.First_Name__c+' '+item.Last_Name__c}</td>
+									<td>{!item.Opp_Booth_Mapping__r.Booth_Number__c}</td>
+									<td>{!item.Status__c}</td>
+								</tr>
+							</aura:iteration>
+						</tbody>
+					</table>
+				</div> 
+				<div class="slds-m-top_medium slds-text-align_left">                    
+					<lightning:button variant="brand" label="{!$Label.c.Approve}" iconName="utility:check" iconPosition="left" onclick="{!c.approveBadge}"/>
+					<lightning:button variant="destructive" label="{!$Label.c.Reject}" iconName="utility:close" iconPosition="left" onclick="{!c.rejectBadge}" />
+					<lightning:button label="{!$Label.c.Cancel}" iconName="utility:close" iconPosition="left" onclick="{!c.hideModal}" />
+				</div>
+			</div>
+		</div>
+	</div>
+</aura:if>
+<!-- open Badge in Edit Mode-->
+<aura:if isTrue="{!v.isEditBadge}">
+	<div aria-hidden="false" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+		<div class="slds-modal__container slds-align_absolute-center" style=" width: 90% !important; height: 636px; max-width: none !important; min-width: 80% !important;">
+			<div class="div-body" > 
+				<div class="div-body-head"><b>{!$Label.c.View_Record_Details} - {!v.selectedBadge.First_Name__c+' '+v.selectedBadge.First_Last__c}</b>
+					<span class="closebtn" onclick="{!c.hideBadgeEditModal}">X</span> 
+				</div>
+				<div class="slds-scrollable" style="overflow-y: auto;height: 40vh;">
+					<aura:if isTrue="{!v.isConfirm}">
+						<table class="slds-table slds-table_bordered slds-table_cell-buffer">                            
+							<tbody>
+								<!-- Added For CCEN -652 -->
+								 <aura:if isTrue="{!v.eventSettings.Allow_VIP_Badges__c}">
+								<tr>
+									<td>
+										<span class="vipSpan" style="font-weight: bold;
+										color: red;">Is this Person VIP ?</span>
+									</td>
+									<td>
+										<lightning:input aura:id="vip" checked="{!v.selectedBadge.Is_VIP__c}" type="checkbox" label="row" variant="label-hidden" />
+										<span style=" font-style: italic;"> <b>Please Note,</b> VIP badges are only for C-Level executives and subject to an approval process. All other individuals will have their badge rejected and a new badge submission will be required for entry into the venue</span>
+									</td>
+								</tr>  
+							</aura:if>
+							<aura:if isTrue="{!v.eventSettings.Company_Name_on_Badge__c}">
+								<tr>
+									<td>Company Name on Badge </td>
+									<td>
+										<lightning:input type="text" value="{!v.selectedBadge.Exhibitor_Name__c}" label="Company Name on Badge" variant="label-hidden"/>
+									</td>
+								</tr>
+								</aura:if>
+								<aura:if isTrue="{!v.eventSettings.Badge_First_Name__c}">                                 
+								<tr>
+									<td>First Name</td>
+									<td>
+										<lightning:input type="text" value="{!v.selectedBadge.First_Name__c}" label="First Name" variant="label-hidden"/>
+									</td>
+								</tr>
+								</aura:if>
+								<aura:if isTrue="{!v.eventSettings.Badge_Last_Name__c}">
+								<tr>
+									<td>Last Name</td>
+									<td>
+										<lightning:input type="text" value="{!v.selectedBadge.Last_Name__c}" label="Last Name" variant="label-hidden"/>
+									</td>
+								</tr>
+								</aura:if>
+								<aura:if isTrue="{!v.eventSettings.Badge_Job_Title__c}">
+								<tr>
+									<td>Job Title</td>
+									<td>
+										<lightning:input type="text" value="{!v.selectedBadge.Job_Title__c}" label="Job Title" variant="label-hidden"/>
+									</td>
+								</tr>								
+								</aura:if>
+								<aura:if isTrue="{!v.eventSettings.Badge_Country__c}">
+								<tr>
+									<td>Country</td>
+									<td>
+										<lightning:select value="{!v.selectedBadge.Country__c}" label="Country" variant="label-hidden">
+											<aura:iteration items="{!v.countryPicklist}" var="option">
+												<option text="{!option.label}" value="{!option.value}"/>
+											</aura:iteration>
+										</lightning:select>
+									</td>
+								</tr>
+								</aura:if>
+								<aura:if isTrue="{!v.eventSettings.Badge_Nationality__c}">
+								<tr>
+									<td>Nationality</td>
+									<td>
+										<lightning:select  value="{!v.selectedBadge.Nationality__c}" label="Nationality" variant="label-hidden">
+											<aura:iteration items="{!v.nationalityPicklist}" var="option">
+												<option text="{!option.label}" value="{!option.value}"/>
+											</aura:iteration>
+										</lightning:select>
+									</td>
+								</tr>
+								</aura:if>
+								<aura:if isTrue="{!v.eventSettings.Badge_Address__c}">
+								<tr>
+									<td>Address</td>
+									<td>
+										<lightning:input type="text" value="{!v.selectedBadge.Address__c}" label="Address" variant="label-hidden"/>
+									</td>
+								</tr>
+								</aura:if>
+								<aura:if isTrue="{!v.eventSettings.Badge_City__c}">
+								<tr>
+									<td>City</td>
+									<td>
+										<lightning:input type="text" value="{!v.selectedBadge.City__c}" label="City" variant="label-hidden"/>
+									</td>
+								</tr>
+								</aura:if>
+								<aura:if isTrue="{!v.eventSettings.Badge_State__c}">
+								<tr>
+									<td>State</td>
+									<td>
+										<lightning:input type="text" value="{!v.selectedBadge.State__c}" label="State" variant="label-hidden"/>
+									</td>
+								</tr>
+								</aura:if>
+								<aura:if isTrue="{!v.eventSettings.Badge_Age_Bracket__c}">
+								<tr>
+									<td>Age Bracket</td>
+									<td>
+										<lightning:select label="Age Bracket" variant="label-hidden" 
+														  value="{!v.selectedBadge.Age_Bracket__c}">
+											<aura:iteration items="{!v.ageBracketPicklist}" var="option">
+												<option text="{!option.label}" value="{!option.value}"/>
+											</aura:iteration>
+										</lightning:select>
+									</td>
+								</tr>
+								</aura:if>
+								<aura:if isTrue="{!v.eventSettings.Badge_Mobile_Number__c}">
+								<tr>
+									<td>Mobile</td>
+									<td>
+										<div class="slds-grid slds-wrap">
+											<div class="slds-size_2-of-12">
+												<lightning:select  value="{!v.selectedBadge.Country_Code__c}" label="Country Code" variant="label-hidden" >
+													<aura:iteration items="{!v.countryCodePicklist}" var="option">
+														<option text="{!option.label}" value="{!option.value}"/>
+													</aura:iteration>
+												</lightning:select>
+											</div>
+											<div class="slds-size_10-of-12">
+												<lightning:input type="text" style="margin-left: 1%;" value="{!v.selectedBadge.Mobile_Number__c}" required="true" label="Mobile" variant="label-hidden"/>
+											</div>
+										</div>
+									</td>
+								</tr>
+								</aura:if>                        
+								<aura:if isTrue="{!v.eventSettings.Badge_Email__c}">
+								<tr>
+									<td>Email</td>
+									<td>
+										<lightning:input type="text" value="{!v.selectedBadge.Email__c}" label="Email" variant="label-hidden"/>
+									</td>
+								</tr>
+								</aura:if>
+								<aura:if isTrue="{!v.eventSettings.Badges_MatchMaking__c}">
+								<tr>
+									<!--BK-2982-->
+									<td>{!$Label.c.Matchmaking}</td>
+									<td>
+									<lightning:radioGroup name="goMed2MedVal" aura:id="" label="" options="{!v.medOptions}"
+											value="{!v.selectedBadge.MatchMaking__c}" type="radio" />
+									</td>
+								</tr>
+                        		</aura:if>
+							</tbody>
+						</table>
+						<aura:set attribute="else">
+							<aura:if isTrue="{!v.selectedBadge.Status__c=='Approved'}">
+								<div style="padding:20px;background-color:lightgreen;font-size:1.25rem;">This badge has been approved. Would you like to make changes?</div>
+								<aura:set attribute="else">
+									<div style="padding:20px;background-color:red;font-size:1.25rem;">This badge has been rejected. Would you like to make changes?</div>
+								</aura:set>
+							</aura:if>
+							
+						</aura:set>
+					</aura:if>
+				</div> 
+				<div class="slds-m-top_medium slds-text-align_left">  
+						<aura:if isTrue="{!v.message}">
+								<span class="error">{!v.message}</span>
+						</aura:if>                  
+					<aura:if isTrue="{!v.isConfirm}">
+						<lightning:button variant="brand" label="{!$Label.c.Approve}" iconName="utility:check" iconPosition="left" onclick="{!c.approveEditBadge}"/>
+						<lightning:button variant="destructive" label="{!$Label.c.Reject}" iconName="utility:close" iconPosition="left" onclick="{!c.rejectEditBadge}" />
+						<lightning:button label="{!$Label.c.Cancel}" iconName="utility:close" iconPosition="left" onclick="{!c.hideBadgeEditModal}" />
+						
+						<aura:set attribute="else">
+							<lightning:button label="Yes" iconName="utility:check" iconPosition="left" onclick="{!c.confirmEdit}" variant="brand" />
+							<lightning:button label="No" iconName="utility:close" iconPosition="left" onclick="{!c.hideBadgeEditModal}" variant="destructive"/>
+						</aura:set>
+					</aura:if>
+				</div>
+			</div>
+		</div>
+	</div>
+</aura:if>
+
+<!-- Increase badge limit modal--> 
+<div aria-hidden="false" id="modalIncreaseLimit" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+	<div class="slds-modal__container slds-align_absolute-center" style=" width: 90% !important; height: 636px; max-width: none !important; min-width: 80% !important;">
+		<div class="div-body" > 
+			<div class="div-body-head"><b>{!$Label.c.Increase_badge_allotment_for}&nbsp;{!v.boothSummary.accountName}</b>
+				<span class="closebtn" onclick="{!c.hideModalIncreaseLimit}">X</span> 
+			</div>
+			<div class="slds-scrollable" style="overflow-y: scroll;height: 40vh;">
+				<div class="slds-grid slds-wrap slds-m-top_small">
+					<div class="slds-size_1-of-3">
+						{!$Label.c.Total}&nbsp;  {!v.allBoothSummary.unitType}
+					</div>
+					<div class="slds-size_1-of-3">
+						{!v.allBoothSummary.totArea}
+					</div>
+					<div class="slds-size_1-of-3"> 
+						
+					</div>
+				</div>
+				<div class="slds-grid slds-wrap">
+					<div class="slds-size_1-of-3">
+						{!$Label.c.Current_Badge_Allotment}
+					</div>
+					<div class="slds-size_1-of-3">
+						{!v.allBoothSummary.totBadgesAllotment}
+					</div>
+					<div class="slds-size_1-of-3"> 
+						
+					</div>
+				</div>
+				<div class="slds-grid slds-wrap slds-m-top_small">
+					<div class="slds-size_1-of-1">
+						<div class="slds-text-heading_small"><b>How many additional badges would you like to add?</b></div>
+					</div>
+				</div>
+				<div class="slds-grid slds-wrap slds-m-top_small">
+					<aura:iteration items="{!v.allBooths}" var="booth" indexVar="index">
+						<div class="slds-col">
+							<span>{!$Label.c.Stand}#: {!booth.boothNumber} </span>
+							<div>({!booth.dimensions}&nbsp;{!booth.unitType})</div>
+							<div>
+								<input class="newlimit" data-booth="{!booth.boothNumber}" data-tot="{!booth.totBadgesAllotment}" data-prev="{!booth.badgeLimit}" id="{!booth.id}" type="text"  onkeypress="{!c.validateNumber}" onkeyup="{!c.onLimitChange}"/>
+							</div>
+						</div>
+					</aura:iteration> 
+				</div>
+				<div class="slds-grid slds-wrap slds-m-top_small">
+					<div class="slds-size_1-of-1">  
+						<div class="slds-text-heading_medium"><b>{!$Label.c.New}&nbsp;{!$Label.c.Total}: {!v.allBoothSummary.totBadges}</b></div>
+					</div>
+				</div>
+			</div> 
+			<div class="slds-m-top_medium slds-text-align_left">
+				<aura:if isTrue="{!v.message}">
+					<span class="error">{!v.message}</span>
+				</aura:if>
+				<lightning:button variant="brand" label="{!$Label.c.Save}" iconName="utility:check" iconPosition="left" onclick="{!c.saveLimit}" />
+				<lightning:button variant="brand" label="{!$Label.c.Cancel}" iconName="utility:close" iconPosition="left" onclick="{!c.hideModalIncreaseLimit}" />
+			</div>
+		</div>
+	</div>
+</div>
+<!-- End--> 
+<!-- Badge allotment rule modal--><!--Badge allotment rule by booth size-->
+<div aria-hidden="false" id="modalBoothLimit" style="display:none;z-index: 99999;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+	<div class="slds-modal__container slds-align_absolute-center" style=" width: 90% !important; height: 636px; max-width: none !important; min-width: 80% !important;">
+		<div class="div-body" > 
+			<div class="div-body-head"><b>{!$Label.c.Badge_Allotment_Rules}</b>
+				<span class="closebtn" onclick="{!c.hideModalBoothLimit}">X</span> 
+			</div>
+			<div class="slds-scrollable" style="overflow-y: scroll;height: 40vh;">
+				<p>{!$Label.c.Badge_Allotment_Rules_Title}</p>
+				<table class="slds-table slds-table_bordered slds-table_cell-buffer">
+					<thead>
+						<tr class="slds-text-title_caps">
+							<th scope="col">
+								<div class="slds-truncate" title="Column"><b>{!$Label.c.Dimensions}</b></div>
+							</th>
+							<th scope="col">
+								<div class="slds-truncate" title="Visible"><b>{!$Label.c.Allotment}</b></div>
+							</th>
+						</tr>
+					</thead>
+					<tbody> 
+						<aura:iteration items="{!v.boothLimits}" var="boothLimit">
+							<tr>
+								<th>
+									<div class="slds-truncate">{!boothLimit.Booth_Size_From__c} - {!boothLimit.Booth_Size_To__c}</div>
+								</th>
+								<td>
+									<div class="slds-truncate" >
+										<div class="slds-truncate">{!boothLimit.Badges_Allowed__c}</div>
+									</div>
+								</td>
+							</tr>
+						</aura:iteration>
+					</tbody>
+				</table>
+			</div>
+			<div class="slds-m-top_medium slds-text-align_left">
+				<lightning:button variant="brand" label="Cancel" iconName="utility:close" iconPosition="left" onclick="{!c.hideModalBoothLimit}" />
+			</div>
+		</div>
+	</div>
+</div>
+<!-- End-->
+<!--Badge allotment rule by booth type-->
+<div aria-hidden="false" id="modalBoothLimitByType" style="display:none;z-index: 99999;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+	<div class="slds-modal__container slds-align_absolute-center" style=" width: 90% !important; height: 636px; max-width: none !important; min-width: 80% !important;">
+		<div class="div-body" > 
+			<div class="div-body-head"><b>{!$Label.c.Badge_Allotment_Rules}</b>
+				<span class="closebtn" onclick="{!c.hideModalBoothLimit}">X</span> 
+			</div>
+			<div class="slds-scrollable" style="overflow-y: scroll;height: 40vh;">
+				<p>{!$Label.c.Badge_Allotment_Rules_Title}</p>
+				<table class="slds-table slds-table_bordered slds-table_cell-buffer">
+					<thead>
+						<tr class="slds-text-title_caps">
+							<th scope="col">
+								<div class="slds-truncate" title="Column"><b>MATCHED PRODUCT NAME</b></div>
+							</th>
+							<th scope="col">
+								<div class="slds-truncate" title="Visible"><b>{!$Label.c.Allotment}</b></div>
+							</th>
+						</tr>
+					</thead>
+					<tbody> 
+						<aura:iteration   items="{!v.boothLimits}" var="boothLimit">
+							<tr>
+								<th>
+									<div class="slds-truncate"  >{!boothLimit.Booth_Type__c}</div>
+								</th>
+								<td>
+									<div class="slds-truncate" >
+										<div class="slds-truncate"  >{!boothLimit.CheckBadgesAllotmentByBoothType__c}</div>
+									</div>
+								</td>
+							</tr>
+						</aura:iteration>
+					</tbody>
+				</table>
+			</div>
+			<div class="slds-m-top_medium slds-text-align_left">
+				<lightning:button variant="brand" label="Cancel" iconName="utility:close" iconPosition="left" onclick="{!c.hideModalBoothLimit}" />
+			</div>
+		</div>
+	</div>
+</div>
+<!--End-->
+<!-- Create Badge modal--> 
+<div aria-hidden="false" id="modalCreateBadge" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+	<div class="slds-modal__container slds-align_absolute-center" style=" width: 90% !important; height: 636px; max-width: none !important; min-width: 80% !important;">
+		<div class="div-body" > 
+			<div class="div-body-head"><b>{!$Label.c.Add_New_Exhibitor_Badge}</b>
+				<span class="closebtn" onclick="{!c.hideModalCreateBadge}">X</span> 
+			</div>
+			<div class="slds-scrollable" style="overflow-y: auto;height: 40vh;">
+				
+				<table class="tblCreateBadge">
+					<tr>
+						<!-- Added Opp_Booth_Mapping__c for [CCEN-737]-->
+						<td>{!$Label.c.Booth_Size} :</td> 
+						<td><ui:inputSelect class="slds-select" value="{!v.newBadge.Opp_Booth_Mapping__c}" change="{!c.boothSizeOnchange}"  aura:id="selectBooths" /></td>
+					</tr>
+
+					<!-- Added For CCEN -652 -->
+					<aura:if isTrue="{!v.eventSettings.Allow_VIP_Badges__c}">
+						<tr>
+							<td>
+								<span class="vipSpan" style="font-weight: bold;
+								color: red;">Is this Person VIP ?</span>
+							</td>
+							<td>
+								<lightning:input aura:id="vip" checked="{!v.newBadge.Is_VIP__c}" type="checkbox" label="row" variant="label-hidden" />
+								<span style=" font-style: italic;"> <b>Please Note,</b> VIP badges are only for C-Level executives and subject to an approval process. All other individuals will have their badge rejected and a new badge submission will be required for entry into the venue</span>
+							</td>
+						</tr>
+					</aura:if>
+					<aura:if isTrue="{!v.eventSettings.Company_Name_on_Badge__c}">
+						<tr>
+							<td>{!$Label.c.Company_Name_on_Badge} <abbr class="slds-required" title="required">*</abbr>:</td> 
+							<td><ui:inputText class="slds-input" value="{!v.newBadge.Exhibitor_Name__c}"/></td>
+						</tr>
+					</aura:if>
+					<aura:if isTrue="{!v.eventSettings.Badge_First_Name__c}">
+						<tr>
+							<td>{!$Label.c.FirstName} <abbr class="slds-required" title="required">*</abbr>:</td> 
+							<td><ui:inputText class="slds-input" value="{!v.newBadge.First_Name__c}"/></td>
+						</tr>
+					</aura:if>
+					<aura:if isTrue="{!v.eventSettings.Badge_Last_Name__c}">
+						<tr>
+							<td>{!$Label.c.LastName} <abbr class="slds-required" title="required">*</abbr>:</td> 
+							<td><ui:inputText class="slds-input" value="{!v.newBadge.Last_Name__c}"/></td>
+						</tr>
+					</aura:if>
+					<aura:if isTrue="{!v.eventSettings.Badge_Job_Title__c}">
+						<tr>
+							<td>{!$Label.c.Job_Title} <abbr class="slds-required" title="required">*</abbr>:</td> 
+							<td><ui:inputText class="slds-input" value="{!v.newBadge.Job_Title__c}"/></td>
+						</tr>
+					</aura:if>
+					<aura:if isTrue="{!v.eventSettings.Badge_Nationality__c}">
+						<tr>
+							<td>{!$Label.c.Nationality}  <abbr class="slds-required" title="required">*</abbr>:</td> 
+							<td><ui:inputSelect class="slds-select" value="{!v.newBadge.Nationality__c}" aura:id="selectNation" /></td> 
+						</tr>
+					</aura:if>
+					<aura:if isTrue="{!v.eventSettings.Badge_Country__c}">
+						<tr>
+							<td>{!$Label.c.Country}  <abbr class="slds-required" title="required">*</abbr>:</td> 
+							<td><ui:inputSelect class="slds-select" value="{!v.newBadge.Country__c}"  aura:id="selectCountry"/></td>
+						</tr>
+					</aura:if>
+					<aura:if isTrue="{!v.eventSettings.Badge_State__c}">
+						<tr>
+							<td>{!$Label.c.State} <abbr class="slds-required" title="required">*</abbr>:</td> 
+							<td><ui:inputText class="slds-input" value="{!v.newBadge.State__c}"/></td>
+						</tr>
+					</aura:if>
+					<aura:if isTrue="{!v.eventSettings.Badge_City__c}">
+						<tr>
+							<td>{!$Label.c.City} <abbr class="slds-required" title="required">*</abbr>:</td> 
+							<td><ui:inputText class="slds-input" value="{!v.newBadge.City__c}"/></td>
+						</tr>
+					</aura:if>
+					<aura:if isTrue="{!v.eventSettings.Badge_Address__c}">
+						<tr>
+							<td>{!$Label.c.Address} <abbr class="slds-required" title="required">*</abbr>:</td> 
+							<td><ui:inputText class="slds-input" value="{!v.newBadge.Address__c}"/></td>
+						</tr>
+					</aura:if>
+					<aura:if isTrue="{!v.eventSettings.Badge_Mobile_Number__c}">
+						<tr>                  
+							<td>{!$Label.c.Mobile}&nbsp;{!$Label.c.Number}  <abbr class="slds-required" title="required">*</abbr>:</td>
+							<td>
+								<div class="slds-grid slds-wrap">
+									<div class="slds-size_2-of-12">
+										<ui:inputSelect class="slds-select" value="{!v.newBadge.Country_Code__c}"  aura:id="selectCountryCode"/>
+									</div>
+									<div class="slds-size_10-of-12">
+										<ui:inputText class="slds-input"  value="{!v.newBadge.Mobile_Number__c}"/>
+									</div>
+								</div>
+							</td>
+						</tr>
+					</aura:if>
+					
+					<aura:if isTrue="{!v.eventSettings.Badge_Email__c}">
+						<tr>
+							<td>{!$Label.c.Email} <abbr class="slds-required" title="required">*</abbr>:</td> 
+							<td><ui:inputText class="slds-input" value="{!v.newBadge.Email__c}" /></td>
+						</tr>
+					</aura:if>
+					<aura:if isTrue="{!v.eventSettings.Badge_Age_Bracket__c}">
+						<tr>
+							<td>{!$Label.c.Age_Bracket} <abbr class="slds-required" title="required">*</abbr>:</td> 
+							<td><ui:inputSelect class="slds-select" value="{!v.newBadge.Age_Bracket__c}"  aura:id="selectAgeBracket"/></td>
+						</tr>
+					</aura:if>
+
+					<aura:if isTrue="{!v.eventSettings.Badges_MatchMaking__c}">
+						<tr>
+							<!--BK-2982-->
+							<td>{!$Label.c.Matchmaking} <abbr class="slds-required" title="required">*</abbr>:</td>
+							<td>
+							<lightning:radioGroup name="goMed2MedVal" aura:id="" label="" options="{!v.medOptions}"
+									value="{!v.newBadge.MatchMaking__c}" type="radio" class="customRadioCls" />
+							</td>
+						</tr>
+					</aura:if>
+				</table>
+			</div>
+			<div class="slds-m-top_medium slds-text-align_left slds-float_left">                        
+				<aura:if isTrue="{!v.message}">
+					<span class="error">{!v.message}</span>
+				</aura:if>
+				<lightning:button variant="brand" label="Save" iconName="utility:check" iconPosition="left" onclick="{!c.createBadge}" aura:id="btnCreateBadge" />
+				<lightning:button variant="brand" label="Cancel" iconName="utility:close" iconPosition="left" onclick="{!c.hideModalCreateBadge}" />
+			</div>
+			<div class="slds-m-top_medium slds-text-align_right slds-float_right">
+				<lightning:input type="checkbox" label="Save and create new badge" checked="{!v.isSaveandNew}" onchange="{!c.onCheckChange}"/>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- End--> 
+<!-- Import badge modal--> 
+<div aria-hidden="false" id="modalImportBadge" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+	<div class="slds-modal__container slds-align_absolute-center" style=" width: 90% !important; height: 636px; max-width: none !important; min-width: 80% !important;">
+		<div class="div-body" > 
+			<div class="div-body-head"><b>{!$Label.c.Import_Multiple_Badges}</b>
+				<span class="closebtn" onclick="{!c.hideModalImportBadge}">X</span> 
+			</div>
+			<p>
+				<iframe id="uploadBadgeIframe" width="100%" height="280px" frameborder="0" ></iframe>
+			</p>
+			<!-- <div class="slds-m-top_medium slds-text-align_left">
+						<lightning:button variant="brand" label="Cancel" iconName="utility:close" iconPosition="left" onclick="{!c.hideModalImportBadge}" />
+					</div> -->
+		</div>
+	</div>
+</div>
+
+<!-- End--> 
+</aura:component>

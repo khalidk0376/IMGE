@@ -1,0 +1,66 @@
+<aura:component controller="LightningTableController" implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:appHostable" access="global">
+    <ltng:require scripts="{!$Resource.LtngUtility}"/>
+    <aura:attribute name="isViewFile" type="Boolean" default="false"/>
+    <aura:attribute name="fileId" type="String" default=""/>
+    
+    <aura:attribute name="profile" type="String" default=""/>
+    <aura:attribute name="selectedItems" type="list" default="[]"/>
+    <aura:attribute name="isEnableEditAction" type="Boolean" default="false"/>
+    <aura:attribute name="isOpenNewContactModal" type="Boolean" default="false"/>
+    <aura:attribute name="selectedId" type="String" default=""/>
+    <aura:attribute name="contactObj" type="Object"/>
+    <!-- Added by Palla Kishore for the ticket BK-24718 -->
+    <aura:attribute name="isBrasilConUpdateUser" type="Boolean" default="false" />
+    <!--Set object and fields to create datatable-->
+    <aura:attribute name="object" type="string" default="Lead" />
+    <aura:attribute name="fields" type="String" default="Id,Name" />   
+    <aura:attribute name="whereField" type="String" default=""/>
+    <aura:attribute name="whereValue" type="String" default=""/>
+    <aura:attribute name="show_page_view" type="String" default="0" />   
+    
+    <aura:attribute name="operator" type="String" default="AND" />   
+    
+    <!-- Datatable column Sorting attributes-->
+    <aura:attribute name="sortedBy" type="string" default="Name" />
+    <aura:attribute name="sortedDirection" type="string" default="asc" />
+    
+    <!--Attribute which hold datas and table columns (label,type,...other properties)-->
+    <aura:attribute name="mydata" type="list" default="[]"/>
+    <aura:attribute name="mycolumn" type="List" default="[{label: 'Id', fieldName: 'Id', type: 'text', sortable: true},
+                                                         {label: 'Name', fieldName: 'Name', type: 'url', sortable: true,typeAttributes: { label: { fieldName: 'Name' },name: { fieldName: 'Id' }, target: '_blank' }},
+                                                         {label: 'Action', type: 'button', typeAttributes: {label: 'Detail', name: 'view_details', title: 'Click to View Details',iconName:'utility:preview'}}]"/>
+    
+    <!--Pagination attribute-->
+    <aura:attribute name="pagesize" type="integer" default="10"/>
+    <aura:attribute name="totalrows" type="integer" default="0"/>    
+    <aura:attribute name="offset" type="integer" default="0"/>     
+    <aura:attribute name="next" type="boolean" default="0"/>
+    <aura:attribute name="prev" type="boolean" default="0"/>
+    
+    <!--<aura:handler action="{!c.changePageSize}" event="mukeshgupta:DataTableEvent"/>-->
+    <aura:attribute name="inlineEditable" type="Boolean" default="false"/>
+    <aura:attribute name="errors" type="Object" default="[]"/>
+    <aura:attribute name="draftValues" type="Object" default="[]"/>
+	
+    <!--Init action-->
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+    <aura:handler event="c:refreshEvent" action="{!c.init}" />  
+    
+    <lightning:spinner variant="brand" size="small" aura:id="gkn_spinner" title="Loading..."/>
+    
+    <aura:if isTrue="{!v.isOpenNewContactModal}">
+    	<c:NewContactModal contactObj="{!v.contactObj}" isOpenModal="{!v.isOpenNewContactModal}" accountId="{!v.contactObj.AccountId}" isRedirect="false"/>
+    </aura:if>
+    
+	<lightning:datatable data="{!v.mydata}" columns="{!v.mycolumn}" hideCheckboxColumn="true"
+                         onsort="{!c.updateColumnSorting}" sortedBy="{!v.sortedBy}" onrowaction="{! c.handleRowAction }"
+                     	 sortedDirection="{!v.sortedDirection}" keyField="Id" errors="{! v.errors }"
+            draftValues="{! v.draftValues }"
+            onsave="{! c.handleSaveEdition }"/>
+    
+    <footer class="slds-card__footer">    
+        Showing {!v.show_page_view} of {!v.totalrows} &nbsp;             
+        <lightning:button variant="brand" iconPosition="left" iconName="utility:chevronleft" onclick="{!c.previousDatas}" label="Previous" disabled="{!v.prev}" />
+        <lightning:button variant="brand" iconPosition="right" iconName="utility:chevronright" onclick="{!c.nextDatas}" label="Next" disabled="{!v.next}"/>
+    </footer>
+</aura:component>

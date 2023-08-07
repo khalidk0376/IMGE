@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AuraDefinitionBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>53.0</apiVersion>
+    <description>Will be used on &quot;Customer centre setting&quot;--&gt;&quot;customer List&quot;--&gt;&quot;View Reports&quot;</description>
+</AuraDefinitionBundle>

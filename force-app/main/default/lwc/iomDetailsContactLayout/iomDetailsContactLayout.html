@@ -1,0 +1,131 @@
+<template>
+    <!-- Spinner Start -->
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+    </template>
+    <!-- Spinner End   -->
+
+    <!-- ***************** Contact RECORD VIEW ***************  -->
+    <template if:false={isEditMode}>
+
+        <!-- Default Mode with Edit buttons -->
+        <template if:false={isReadOnly}> 
+            <div class="c-container slds-is-relative containerDiv">
+                <lightning-record-view-form record-id={recordId} object-api-name="Contact">
+    
+                    <lightning-accordion class="custom-accordion" allow-multiple-sections-open  active-section-name={activeSections}>
+    
+                        <lightning-accordion-section style="display:contents !important;" name="A" label="Sync Details">                        
+                                <lightning-layout  multiple-rows="true">
+                                    <lightning-layout-item class="slds-p-right_small" size="6">
+                                        <div class ="slds-border_bottom">
+                                            <lightning-output-field variant="label-inline" ondblclick={editRecord} field-name="IOM_Contact_No__c">
+                                                <lightning-button-icon icon-name="utility:edit" onclick={editRecord}   icon-class="slds-button__icon_hint" variant="bare"  alternative-text="Edit"   class="edit" title="Edit"></lightning-button-icon>
+                                            </lightning-output-field>
+                                        </div>
+                                    </lightning-layout-item>
+    
+                                    <lightning-layout-item class="slds-p-right_small" size="6">
+                                        <div class ="slds-border_bottom">   
+                                            <lightning-output-field variant="label-inline"  ondblclick={editRecord} field-name="IOM_Sync_Error_Message__c">
+                                                <lightning-button-icon icon-name="utility:edit" onclick={editRecord}  icon-class="slds-button__icon_hint" variant="bare"  alternative-text="Edit"   class="edit" title="Edit"></lightning-button-icon>
+                                            </lightning-output-field>
+                                        </div>
+                                    </lightning-layout-item>
+    
+                                    <lightning-layout-item class="slds-p-right_small" size="6">
+                                        <div class ="slds-border_bottom">
+                                            <lightning-output-field variant="label-inline"  ondblclick={editRecord} field-name="IOM_Sync_Status__c">
+                                            <lightning-button-icon icon-name="utility:edit" onclick={editRecord}  icon-class="slds-button__icon_hint"  variant="bare"  alternative-text="Edit"   class="edit" title="Edit"></lightning-button-icon>
+                                        </lightning-output-field>
+                                        </div>
+                                    </lightning-layout-item>                                   
+                            </lightning-layout> 
+                        </lightning-accordion-section>
+                    </lightning-accordion>     
+                </lightning-record-view-form> 
+            </div> 
+        </template>
+
+        <!-- Read Only Mode without Edit button-->
+        <template if:true={isReadOnly}>
+            <div class="c-container slds-is-relative containerDiv">
+                <lightning-record-view-form record-id={recordId} object-api-name="Contact">
+                    <lightning-accordion class="custom-accordion" allow-multiple-sections-open  active-section-name={activeSections}>    
+                        <lightning-accordion-section style="display:contents !important;" name="A" label="Sync Details">                        
+                                <lightning-layout  multiple-rows="true">
+
+                                    <lightning-layout-item class="slds-p-right_small" size="6">
+                                        <div class ="slds-border_bottom">
+                                            <lightning-output-field variant="label-inline" field-name="IOM_Contact_No__c">
+                                            </lightning-output-field>
+                                        </div>
+                                    </lightning-layout-item>
+    
+                                    <lightning-layout-item class="slds-p-right_small" size="6">
+                                        <div class ="slds-border_bottom">   
+                                            <lightning-output-field variant="label-inline"  field-name="IOM_Sync_Error_Message__c">
+                                            </lightning-output-field>
+                                        </div>
+                                    </lightning-layout-item>
+    
+                                    <lightning-layout-item class="slds-p-right_small" size="6">
+                                        <div class ="slds-border_bottom">
+                                            <lightning-output-field variant="label-inline"  field-name="IOM_Sync_Status__c">
+                                        </lightning-output-field>
+                                        </div>
+                                    </lightning-layout-item>                                    
+                            </lightning-layout> 
+                        </lightning-accordion-section>
+                    </lightning-accordion>     
+                </lightning-record-view-form> 
+            </div> 
+        </template>
+    </template>
+
+
+     <!-- ***************** Account RECORD EDIT ***************  -->
+     <template if:true={isEditMode}>
+        <div class="c-container slds-is-relative">
+            <lightning-record-edit-form record-id={recordId} object-api-name="Contact" onsuccess={handleSuccess} onsubmit={handleSubmit} onerror={handleError}>
+                <lightning-messages> </lightning-messages>
+                <lightning-accordion class="custom-accordion" allow-multiple-sections-open  active-section-name={activeSections}>
+    
+                    <lightning-accordion-section name="A" label="Sync Details">                        
+                            <lightning-layout  multiple-rows="true">
+                                <lightning-layout-item class="slds-p-right_small" size="6">
+                                    <div class ="slds-border_bottom">
+                                        <lightning-input-field variant="label-inline" field-name="IOM_Contact_No__c">              
+                                        </lightning-input-field>
+                                    </div>
+                                </lightning-layout-item>
+    
+                                <lightning-layout-item class="slds-p-right_small" size="6">
+                                    <div class ="slds-border_bottom">   
+                                        <lightning-input-field variant="label-inline" field-name="IOM_Sync_Error_Message__c">
+                                        </lightning-input-field>
+                                    </div>
+                                </lightning-layout-item>
+    
+                                <lightning-layout-item class="slds-p-right_small" size="6">
+                                    <div class ="slds-border_bottom">
+                                        <lightning-input-field variant="label-inline" field-name="IOM_Sync_Status__c">
+                                    </lightning-input-field>
+                                    </div>
+                                </lightning-layout-item>
+    
+                                
+                            </lightning-layout> 
+                    </lightning-accordion-section>
+                </lightning-accordion>
+    
+                <div class="slds-align_absolute-center">
+                    <lightning-button class="slds-m-top_small slds-m-right_x-small" variant="brand" onclick={handleCancel} label="Cancel"></lightning-button>
+                    <lightning-button class="slds-m-top_small slds-m-left_x-small" variant="brand" type="submit" name="update" label="Update" ></lightning-button>
+                </div>
+    
+            </lightning-record-edit-form> 
+        </div> 
+    </template>
+
+</template>

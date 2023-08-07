@@ -1,0 +1,458 @@
+<!--
+    ************ Modification Log  ************
+    * Modified by : Girikon(Sunil[CCEN-788 June 03 2019],Ashish[CCEN-421] March 14 2019),Mahesh [CCEN-310] March 15 2019,Prashant[CCEN-682] March 22 2019)
+-->
+<aura:component implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes" access="global" controller="ApproveContractorCtrl">
+		<ltng:require scripts="{!join(',',$Resource.CustomerCenterWS11 +'/CustomerCenterWS11/js/jquery-1.7.1.min.js?v=149',$Resource.FormTabUtility)}" afterScriptsLoaded="{!c.scriptsLoaded}" />
+		<ltng:require scripts="{!$Resource.CustomerCenterWS11 +'/CustomerCenterWS11/js/copytoClipboard.js'}"/>
+	<aura:attribute name="EventId" type="String"/>
+	<aura:attribute name="allContractorData" type="List"/>
+	<aura:attribute name="boothMap" type="BoothContractorMapping__c[]"/>
+	<aura:handler name="init" value="{!this}" action="{!c.onLoadData}"/>
+	<aura:attribute name="singleBooth" type="BoothContractorMapping__c[]"  />
+	<aura:attribute name="options" type="List" />
+	<aura:attribute name="selectedValue" type="String" default="New"/>
+	<aura:attribute name="StatusMSG" type="String" description="Will show the status message after approval"/>
+	<aura:handler event="aura:waiting" action="{!c.showSpinner}"/>
+	<aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}"/> 
+	<aura:attribute name="Spinner" type="boolean" default="false"/>
+	<aura:attribute name="selTabId2" type="String" default="tab1" />
+    <aura:attribute name="tabCssAtts" type="List"/>
+    <aura:attribute name="clickContact" type="Boolean" default="false"/>
+    <aura:attribute name="clickAccount" type="Boolean" default="false"/>
+    <aura:attribute name="newContact" type="contact" default="{'FirstName':'','LastName':'','Phone':'','PhoneCountryCode':'','PhoneStateCode':'','Ext':'','AccountName':'','MobilePhone':'','MobilePhoneCountryCode':'','MobilePhoneStateCode':'','Ext':'','Email':'','AccountId':'','TempAccountId':''}"/>
+    <aura:attribute name="dependentFieldMap" type="map" description="map to store dependent values with controlling value" />
+    <aura:attribute name="hasNoState" type="boolean" default="false" />
+    <aura:attribute name="existingAcc" type="account"/>
+	<aura:attribute name="existingCons" type="object"/> 
+	<aura:attribute name="message" type="string"/>
+
+	<aura:attribute name="sendRejectMail" type="boolean" default="true"/>
+	<aura:attribute name="AgentsExhibitors" type="object[]"/>
+    <aura:attribute name="CurrentAgent" type="object" />
+	<aura:attribute name="searchText" type="String" default=""/>
+	<aura:attribute name="RejectNote" type="String" />
+	
+     <!--Attribute using to pagination -->	
+    <aura:attribute name="exhibitorsData" type="object[]"/>
+    <aura:attribute name="offset" type="Integer" default="0"/>
+    <aura:attribute name="allData" type="List"/>
+    <aura:attribute name="currentPageNumber" type="Integer" default="1"/> 
+    <aura:attribute name="pageSize" type="Integer" default="10"/>
+    <aura:attribute name="totalPages" type="Integer" default="0"/>
+	<aura:attribute name="pageList" type="List" default="[]"/>
+	<aura:attribute name="scrollFunc" type="object" />
+	<aura:attribute name="isSandbox" type="boolean" default="true"/>
+	
+	
+	<!-- Sorting Attribute-->
+	<aura:attribute name="sortingColumn" type="String" default="Customer"/>
+	<aura:attribute name="sortingOrder" type="String" default="asc"/>
+	<aura:attribute name="mapColOdr" type="object"/>
+    
+    <!-- This attribute will hold the update records from data table-->
+	<aura:attribute name="updatedRecord" type="Object[]" />
+	<lightning:overlayLibrary aura:id="overlayLib"/>
+
+
+
+	{!v.body} <!-- To Show Body Of Another Components If Avaliable -->
+    
+	<aura:if isTrue="{!v.Spinner}">
+		<lightning:spinner size="large" variant="brand" />
+	</aura:if>
+
+	<!-- Data Tabel-->
+	<div>
+       	<p class="title">
+       	 <aura:unescapedHtml value="{!$Label.c.Approval_Welcome_Text}" />
+		</p>
+	</div>
+
+	   <table> 
+        <tr>           
+            <td align="right" style="width:86px"> 
+                   Filter List by:
+            </td>
+            <td style="width:200px">
+              
+               <lightning:select name="mySelect" label="" class="removemrgn" aura:id="mySelect" value="{!v.selectedValue}" onchange="{!c.onChangeFunction}">
+                   <aura:iteration items="{!v.options}" var="item" >
+                       <option text="{!item.label}" value="{!item.value}" selected="{!item.selected}"/>
+                   </aura:iteration>
+                </lightning:select>
+            </td>
+            <td><div style="float:right"> <lightning:button variant="brand" label="{!$Label.c.Export}" onclick="{!c.downloadCsv}"/> </div>
+    </td>
+        </tr> 
+          
+    </table> 
+	<br/>
+    <table id="exhTable" class="slds-table slds-table_bordered slds-max-medium-table--stacked-horizontal " role="grid" cellspacing="0">
+        <thead id="myHeader" >
+            <tr>
+            	<th id="aprvbtns" class="tabHeader"></th> <!--Added "Customer" [CCEN-430]-->
+				<th onclick="{!c.sortContractor}" id="Customer" class="{!v.sortingColumn=='Customer'?v.sortingOrder+' tabHeader':'tabHeader both'}">For Customer</th>
+				<th onclick="{!c.sortContractor}" id="Type" class="{!v.sortingColumn=='Type'?v.sortingOrder+' tabHeader':'tabHeader both'}">Type</th>			
+				<th onclick="{!c.sortContractor}" id="ExhibitingName" class="{!v.sortingColumn=='ExhibitingName'?v.sortingOrder+' tabHeader':'tabHeader both'}">Exhibiting Name</th>
+				<th onclick="{!c.sortContractor}" id="Booth" class="{!v.sortingColumn=='Booth'?v.sortingOrder+' tabHeader':'tabHeader both'}">Booth#</th>
+				<th onclick="{!c.sortContractor}" id="BoothProductType" class="{!v.sortingColumn=='BoothProductType'?v.sortingOrder+' tabHeader':'tabHeader both'}">Matched Product Name</th>
+				<th onclick="{!c.sortContractor}" id="ContractorCompany" class="{!v.sortingColumn=='ContractorCompany'?v.sortingOrder+' tabHeader':'tabHeader both'}">Contractor Company</th>
+				<th onclick="{!c.sortContractor}" id="Contact" class="{!v.sortingColumn=='Contact'?v.sortingOrder+' tabHeader':'tabHeader both'}">Contact</th>
+				<th onclick="{!c.sortContractor}" id="DateSubmitted" class="{!v.sortingColumn=='DateSubmitted'?v.sortingOrder+' tabHeader':'tabHeader both'}">Date submitted</th>
+				<th onclick="{!c.sortContractor}" id="DateApproved" class="{!v.sortingColumn=='DateApproved'?v.sortingOrder+' tabHeader':'tabHeader both'}">Date Approved</th>
+				<th onclick="{!c.sortContractor}" id="Status" class="{!v.sortingColumn=='Status'?v.sortingOrder+' tabHeader':'tabHeader both'}">Status</th>
+            </tr>
+		</thead>
+		<tbody id="tablecontent">
+			<aura:iteration items="{!v.allContractorData}" var="conData"  indexVar="index">
+				<tr>
+					<td id="aprvbt">
+						<span class="temp" >
+							<lightning:buttonIcon onclick="{!c.showApproveModal}" value="{!conData.Id}" size="small" iconName="utility:internal_share" variant="bare" alternativeText="Approve" disabled="{!conData.IsApproved}"/>                                                                      
+						</span>
+					</td>
+					<td id="Typ">
+						<span class="temp">{!conData.Customer}</span>	
+					</td>
+					<td id="ExhiName">
+						<span class="temp">{!conData.Type}</span>	
+					</td>
+					<td id="tdBooth">
+						<span class="temp">{!conData.ExhibitingName}</span>	
+					</td>
+					<td  id="AgentName">
+						<aura:if isTrue="{!conData.IsAgentManaged}">
+								<a href="" target="" data-name ="{!conData.AgentName}" data-id="{!conData.AgentAccId}"  onclick = "{!c.showModalViewAll}">View All</a>
+							<aura:set attribute="else">
+									<span class="temp">{!conData.Booth}</span>	
+							</aura:set>
+						</aura:if>						
+					</td>
+					<td id="BoothPrdctType" >
+						<span class="temp">{!conData.BoothProductType}</span>	
+					</td>
+					<td id="ContCompany" >
+							<aura:if isTrue="{!conData.IsTmpAcc}">
+										<span class="temp"><b>*&nbsp;{!conData.ContractorCompany}</b></span>
+									<aura:set attribute="else">
+										<span class="exists">{!conData.ContractorCompany}</span>
+									</aura:set>
+							</aura:if>
+						<!-- <span class="temp">{!conData.ContractorCompany}</span>	 -->
+					</td>
+					<td id="conData">
+						<aura:if isTrue="{!conData.IsTmpCon}">
+								<span class="temp"><b>*&nbsp;{!conData.Contact}</b></span>
+							<aura:set attribute="else">
+								<span class="exists">{!conData.Contact}</span>
+							</aura:set>
+						</aura:if>
+						<!-- <span class="temp">{!conData.Contact}</span>	 -->
+					</td>
+					<td id="DateSub">
+						<ui:outputDate format="MM-DD-YYYY hh:mm" value="{!conData.DateSubmitted}"/>
+						<!-- <span class="temp">{!conData.DateSubmitted}</span>	 -->
+					</td>
+					<td id="DateApprvd">
+						<ui:outputDate format="MM-DD-YYYY hh:mm" value="{!conData.DateApproved}"/>
+						<!-- <span class="temp">{!conData.}</span>	 -->
+					</td>
+					<td id="stus">
+						<span class="temp">{!conData.Status}</span>	
+					</td>
+				</tr>   
+			</aura:iteration>
+		</tbody>	 
+  	</table>
+	<br></br>
+	<p><b>*&nbsp;{!$Label.c.Does_not_already_exist_in_Salesforce}</b></p>
+	  
+	  <!--  Models  -->
+
+<!-- 	approveModal  	 -->
+	<div aria-hidden="false" id="approveModal" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+	    <div class="slds-modal__container">
+	    <div class="div-body">
+			<aura:if isTrue="{!and(v.singleBooth[0].Contact__c, v.singleBooth[0].Contact__r.Account.Name)}">
+				<div class="div-body-head"><b>Approve Contractor and Contact</b>
+					<span class="closebtn" onclick="{!c.hideApproveModal}">X</span> 
+				</div>
+				<div><p><b>{!v.singleBooth[0].CreatedBy.Contact.Account.Name}</b> has requested the following Contractor Company and Contact to be invited to Customer Center.
+					</p></div>
+				<div>
+					<div class="div-left existingColor"><strong>Existing Contractor Company:</strong></div>
+					<div class="div-right existingColor">{!v.singleBooth[0].Contact__r.Account.Name}<br></br>{!v.singleBooth[0].Contact__r.Account.BillingCity},{!v.singleBooth[0].Contact__r.Account.BillingState}<br></br>{!v.singleBooth[0].Contact__r.Account.BillingCountry},{!v.singleBooth[0].Contact__r.Account.BillingPostalCode}</div>                        
+					<div class="clear"></div>
+				</div>	
+				<div class="slds-m-top_medium">
+				<div class="div-left existingColor"><strong>Existing Contact</strong></div>
+				<div class="div-right existingColor">{!v.singleBooth[0].Contact__r.Name}</div>
+				<div class="clear"></div>
+				</div> 
+				<div class="text-align slds-m-top_medium">
+						<button type="button" class="slds-button slds-button_brand slds-m-right_small" onclick="{!c.showConfirm}">Approve</button>
+						<button type="button" class="slds-button slds-button_brand" value="{!v.singleBooth[0].Id}" onclick="{!c.rejectContractor}">Reject</button>
+				</div>
+				
+				<aura:set attribute="else">
+
+					<div class="div-body-head"><b>Approve Contractor and Contact</b>
+						<span class="closebtn" onclick="{!c.hideApproveModal}">X</span> 
+					</div>
+					<div class="slds-scrollable" style="overflow-y: scroll;height: 65vh;">
+					<aura:if isTrue="{!v.singleBooth[0].TempContact__r.Account__r.Name==null}">
+						<div><p><b>{!v.singleBooth[0].CreatedBy.Contact.Account.Name}</b> has requested the following Contractor Company and Contact to be invited to Customer Center. Approving this request will create a new Account and a new Contact in salesforce.</p></div>
+						<br></br>
+						<br></br> <!-- Added this functionality for editing and saving data from Ops Admin during approval process [CCEN-682] -->
+						<aura:if isTrue="{!v.existingAcc}">
+						<div class="col-sm-12 alreadyExists slds-m-bottom_medium">
+							<i class="fa fa-exclamation-circle fa-padding-5"></i>
+							Duplicate Account found in the system.<br></br>
+							<p>{!v.existingAcc.Name}</p>
+						</div>
+						</aura:if>
+						<aura:if isTrue="{!v.existingCons}">
+							<div class="col-sm-12 alreadyExists slds-m-bottom_medium">
+								<i class="fa fa-exclamation-circle fa-padding-5"></i>
+								Duplicate Contact found in the system.<br></br>
+								<ul>
+								<aura:iteration items="{!v.existingCons}" var="con">
+									<li><p>{!con.Name}</p></li>
+								</aura:iteration>
+								</ul>
+							</div>
+						</aura:if>
+						<br></br>
+						<br></br>
+						<div class="slds-grid slds-gutters">
+							<div class="slds-col slds-size_2-of-8">
+							  <span><strong>New Contractor Company: </strong></span>
+							</div>
+							<aura:if isTrue="{!!v.clickAccount}">
+							<div class="slds-col slds-size_1-of-10">
+							  <span><a href="" target="" data-id=""  onclick = "{!c.inputAccount}">edit</a></span>
+							</div>
+							</aura:if>
+							<div class="slds-col slds-size_2-of-8">
+								<aura:if isTrue="{!v.clickAccount}">
+									<lightning:input messageWhenValueMissing="Enter Company Name" aura:id ="editReqFeilds" name="input1" label="Company: " required="true" value = "{!v.singleBooth[0].TempContact__r.TempAccount__r.Name}"/>
+                                   	<div>
+                                    <lightning:input messageWhenValueMissing="Only 60 character" aura:id ="ediAddFeild" name="input1" label="Address: " required="true" value = "{!v.singleBooth[0].TempContact__r.TempAccount__r.Address__c}"/>
+                                    <span id="moreThen60" style="color:red; display:none;">Enter only 60 Characters</span>
+                                    </div>
+                                    <lightning:input  messageWhenValueMissing="Enter City" aura:id ="editReqFeilds" name="input2" label="City: " required="true" value = "{!v.singleBooth[0].TempContact__r.TempAccount__r.City__c}"/>
+									<span class="slds-required">*</span>Country:
+									<ui:inputSelect class="slds-select" aura:id="ctrlCountryField"  change="{!c.onCountryChange}" value="{!v.singleBooth[0].TempContact__r.TempAccount__r.Country__c}" />
+									State:
+									<ui:inputSelect class="slds-select" aura:id="dptStateField" value="{!v.singleBooth[0].TempContact__r.TempAccount__r.State__c}" disabled="{!v.hasNoState}" />
+									<lightning:input name="input5" label="P.O.Box: " value = "{!v.singleBooth[0].TempContact__r.TempAccount__r.Zip__c}"/>
+									<aura:set attribute="else">
+                                        <!-- Commented based on CCEN- 731 -->
+										{!v.singleBooth[0].TempContact__r.TempAccount__r.Name}<br></br>{!v.singleBooth[0].TempContact__r.TempAccount__r.City__c},{!v.singleBooth[0].TempContact__r.TempAccount__r.State__c}<br></br>{!v.singleBooth[0].TempContact__r.TempAccount__r.Country__c},{!v.singleBooth[0].TempContact__r.TempAccount__r.Zip__c}
+									</aura:set>
+								</aura:if>
+								<span></span>
+							</div>
+							<div class="slds-col slds-size_1-of-8">
+								<span><strong>Requested By:</strong></span>
+							</div>
+							<aura:if isTrue="{!v.singleBooth[0].IsManagedbyAgent__c}">
+								<div class="slds-col slds-size_2-of-8">
+									<strong>Account: </strong>{!v.singleBooth[0].Agent_Contact__r.Account.Name} <br></br> <strong>Contact Name: </strong>{!v.singleBooth[0].Agent_Contact__r.Name} <br></br> <strong>Contact Type: </strong>{!v.singleBooth[0].Agent_Contact__r.Contact_Type__c} <br></br> <strong>Phone: </strong>{!v.singleBooth[0].Agent_Contact__r.Phone} <br></br> <strong>Mobile: </strong>{!v.singleBooth[0].Agent_Contact__r.MobilePhone} <br></br> <strong>Email: </strong>{!v.singleBooth[0].Agent_Contact__r.Email}  <br></br> 
+								</div>
+								<aura:set attribute="else">
+									<div class="slds-col slds-size_2-of-8">
+									<strong>Account: </strong>{!v.singleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Account.Name} <br></br> <strong>Contact Name: </strong>{!v.singleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Name} <br></br> <strong>Contact Type: </strong>{!v.singleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Contact_Type__c} <br></br> <strong>Phone: </strong>{!v.singleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Phone} <br></br> <strong>Mobile: </strong>{!v.singleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.MobilePhone} <br></br> <strong>Email: </strong>{!v.singleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Email}  <br></br> 
+								</div>
+								</aura:set>
+							</aura:if>
+
+						  </div>
+						<aura:set attribute="else"> 
+							<div><p><b>{!v.singleBooth[0].CreatedBy.Contact.Account.Name}</b> has requested the following <b>contact</b> be created for existing company {!v.singleBooth[0].TempContact__r.Account__r.Name} and would like to be invited to Customer Center. Approving 
+								this request will create a new contact in Salesforce.</p></div>
+							<div>
+								
+							<aura:if isTrue="{!v.existingCons}">
+								<div class="col-sm-12 alreadyExists slds-m-bottom_medium">
+									<i class="fa fa-exclamation-circle fa-padding-5"></i>
+									{!$Label.c.Duplicate_Contact_Found}<br></br>
+									<ul>
+									<aura:iteration items="{!v.existingCons}" var="con">
+										<li><p>{!con.Name}</p></li>
+									</aura:iteration>
+									</ul>
+								</div>
+							</aura:if>
+							<br></br>
+								<br></br>
+									<div class="slds-grid slds-gutters">
+										<div class="slds-col slds-size_2-of-8 existingColor">
+											<span><strong>Existing Contractor Company: </strong></span>
+										</div>
+										<div class="slds-col slds-size_2-of-8 existingColor">
+											<span>{!v.singleBooth[0].TempContact__r.Account__r.Name}</span>
+										</div>
+										<div class="slds-col slds-size_1-of-8">
+											<span><strong>Requested By:</strong></span>
+										</div>
+										<aura:if isTrue="{!v.singleBooth[0].IsManagedbyAgent__c}">
+											<div class="slds-col slds-size_2-of-8">
+												<strong>Account: </strong>{!v.singleBooth[0].Agent_Contact__r.Account.Name} <br></br> <strong>Contact Name: </strong>{!v.singleBooth[0].Agent_Contact__r.Name} <br></br> <strong>Contact Type: </strong>{!v.singleBooth[0].Agent_Contact__r.Contact_Type__c} <br></br> <strong>Phone: </strong>{!v.singleBooth[0].Agent_Contact__r.Phone} <br></br> <strong>Mobile: </strong>{!v.singleBooth[0].Agent_Contact__r.MobilePhone} <br></br> <strong>Email: </strong>{!v.singleBooth[0].Agent_Contact__r.Email}  <br></br> 
+											</div>
+											<aura:set attribute="else">
+												<div class="slds-col slds-size_2-of-8">
+												<strong>Account: </strong>{!v.singleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Account.Name} <br></br> <strong>Contact Name: </strong>{!v.singleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Name} <br></br> <strong>Contact Type: </strong>{!v.singleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Contact_Type__c} <br></br> <strong>Phone: </strong>{!v.singleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Phone} <br></br> <strong>Mobile: </strong>{!v.singleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.MobilePhone} <br></br> <strong>Email: </strong>{!v.singleBooth[0].Opp_Booth_Mapping__r.Opportunity__r.Operations_Contact__r.Email}  <br></br> 
+											</div>
+											</aura:set>
+										</aura:if>
+									</div>
+								<!-- <div class="div-left existingColor"><strong>Existing Contractor Company:</strong></div>
+								<div class="div-right existingColor">{!v.singleBooth[0].TempContact__r.Account__r.Name}</div>
+								<div class="clear"></div> -->
+							</div>
+						</aura:set>
+					</aura:if>
+					<div class="slds-m-top_medium">
+						<div class="slds-grid slds-gutters">
+							<div class="slds-col slds-size_2-of-8">
+								<span><strong>New Contact</strong></span>
+							</div>
+							<aura:if isTrue="{!!v.clickContact}">
+							<div class="slds-col slds-size_1-of-10">
+								<span><a href="" target=""  onclick = "{!c.inputContact}">edit</a></span>
+							</div>
+							</aura:if>
+							<div class="slds-col slds-size_2-of-8">
+								<aura:if isTrue="{!v.clickContact}">
+									<lightning:input aura:id ="editReqFeilds" name="input1" label="First Name: " required="true" value = "{!v.singleBooth[0].TempContact__r.FirstName__c}"
+									messageWhenValueMissing="Enter First Name"/>
+									<lightning:input aura:id ="editReqFeilds" name="input1" label="Last Name: " required="true" value = "{!v.singleBooth[0].TempContact__r.LastName__c}"
+									messageWhenValueMissing="Enter last Name" />
+									<lightning:input type="tel" label="Mobile#: " name="phone3" value="{!v.singleBooth[0].TempContact__r.MobilePhone__c}" required="true" pattern="^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$" messageWhenValueMissing="Enter First Name" />
+									<lightning:input type="tel" label=" Phone#:  " name="mobilephone" value="{!v.singleBooth[0].TempContact__r.Phone__c}" pattern="^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$" />
+									<lightning:input aura:id ="editReqFeilds" type="email" label="Email:   " name="email1" required="true" pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$" value="{!v.singleBooth[0].TempContact__r.Email__c}" messageWhenValueMissing="Enter Email" />
+									<aura:set attribute="else">
+										{!v.singleBooth[0].TempContact__r.Name__c} <br></br> Mobile#: {!v.singleBooth[0].TempContact__r.MobilePhone__c}<br></br>Phone#: 	{!v.singleBooth[0].TempContact__r.Phone__c}<br></br>Email:  {!v.singleBooth[0].TempContact__r.Email__c}
+									</aura:set>
+								</aura:if>
+							</div>
+						</div>
+					</div>
+					<div class="clear"></div>
+					</div> 
+					<div class="text-align slds-m-top_medium">
+						<button type="button" id ="btnapprove" class="slds-button slds-button_brand slds-m-right_small" onclick="{!c.showConfirm}">Approve</button>
+						<button type="button" class="slds-button slds-button_brand" value="{!v.singleBooth[0].Id}" onclick="{!c.rejectContractor}">Reject</button>
+					</div>	
+				</aura:set>
+			</aura:if>			
+			</div>
+	    </div>
+	</div>
+<!-- 	approveModal  End	 -->
+	<div aria-hidden="false" id="Confirm" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+		<div class="slds-modal__container">
+			<div class="div-body">
+			<div class="div-body-head"><b>Confirm</b></div>
+			<div><p>Are you sure you wish to approve this Contractor? A record will be created in Salesforce and this Contractor will be added to the public list that all the Exhibitors will be able to select from.
+				</p></div>
+				<div class="text-align slds-m-top_medium">
+					<button type="button" class="slds-button slds-button_brand slds-m-right_small" onclick="{!c.approveContractor}" value="{!v.singleBooth[0].Id}">Yes, Create Contractor</button>
+					<button type="button" class="slds-button slds-button_brand" onclick="{!c.showConfirmClose}">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div aria-hidden="false" id="InfoMSG" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop">
+		<div class="slds-modal__container">
+			<div class="div-body" style="width:40%">
+			<div class="div-body-head"><b>Information!</b></div>
+			<div class="slds-align_absolute-center"><p>{!v.StatusMSG}</p>
+			</div>
+				<div class="text-align slds-m-top_medium">
+					<button type="button" class="slds-button slds-button_brand slds-m-right_small" onclick="{!c.hideMSGModal}">Ok</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!--View all Exhibitors For Agent-->
+<div aria-hidden="false" id="Agent_Exhibitormodel" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container" style=" width: 50% !important;max-width: none !important; min-width: 60% !important;min-height: 50% !important;">
+                <div class="div-body main" >
+                    <div align="center" class="div-body-head"><b> {!v.CurrentAgent.Name} : Pavilion Space Exhibitors </b>
+                        <span class="closebtn" onclick="{!c.hideViewAll}">X</span>
+                    </div>
+                    <div class ="body" style="max-height: 70vh;overflow-y: scroll;">
+                        <lightning:input class="optionWidth" aura:id="Mysearch" type="search" onchange="{!c.onfilterExhibitor}" placeholder="Keyword Search" label="Search Keyword" value="{!v.searchText}" variant="label-hidden"/>
+                            <p class="slds-m-bottom_xx-large slds-align_absolute-center"><br/><br/>
+                                <table class="newcomtable  slds-m-top_large">
+                                        <tr>
+                                            <th>Exhibitor</th>
+                                            <th>Stand Number</th>
+                                        </tr> 
+                                        <aura:iteration items="{!v.AgentsExhibitors}" var="exh">
+                                            <tr>
+                                                <td>{!exh.Opportunity__r.Account.Name}</td>
+                                                <td>{!exh.Booth_Number__c}</td>
+                                                <!-- <td>Test</td>
+                                                <td>B60</td> -->
+                                            </tr>
+                                        </aura:iteration>
+                                </table>
+                            </p>		
+                    </div>
+                    <div  align="center" style="margin-top: 20px;">
+                        <lightning:button variant="brand" label="Cancel" onclick="{!c.hideViewAll}"/>
+                        <!-- <lightning:button variant="brand" label="{!$Label.c.No}" onclick="{!c.hideViewAll}"/> -->
+                    </div>
+                </div>
+            </div>
+        </section>	 
+    </div>
+<!--End--> 
+<!-- CCEN-421 -->
+ <!--Reject Window  -->
+ 
+	<div aria-hidden="false" id="rejectionNoteModel" style="display:none;" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open slds-backdrop" >
+		<div class="slds-modal__container slds-align_absolute-center" style=" width: 40% !important; height: 636px; max-width: none !important;">
+			<div class="div-body" > 
+				<div class="div-body-head" align="center"><b>Reject Contractor</b>
+					<span class="closebtn" onclick="{!c.hideRejectConModal}">X</span> 
+				</div>                        
+				<div >  
+					<br/><p>
+						If you would like to notify the customer this contractor was rejected, check the box below . You will be able to write an optional message. Otherwise,click "Reject" to reject this contractor and NOT notify the customer.
+					</p><br/>					
+					<div class="slds-grid slds-gutters">
+						<div class="slds-col " style=" max-width: 40% !important;">
+							<span><b>Reject Contractor And Send E-Mail</b></span>
+						</div>
+						<div class="slds-col ">
+							<lightning:input type="checkbox" checked="{!v.sendRejectMail}" label=" " name="input1"/>
+						</div>
+					</div>
+					<aura:if isTrue="{!v.sendRejectMail}">						
+						<div class="slds-grid slds-gutters">
+							<div class="slds-col notelabel">
+								<span><b>Reject Note :</b> (Optional)</span>
+							</div>
+							<div class="slds-col ">
+								<lightning:textarea label=" " value="{!v.RejectNote}" name="myname" /><br/>
+							</div>
+						</div>
+					</aura:if>                        
+				</div> 
+				<div class="slds-m-top_medium slds-text-align_left slds-float_right">                    
+					<lightning:button variant="brand" label="Reject" iconName="utility:resource_absence" iconPosition="left"
+					onclick="{!c.RejectAndMail}" />
+					
+					<lightning:button variant="brand" label="{!$Label.c.Cancel}" iconName="utility:close" iconPosition="left" onclick="{!c.hideRejectConModal}" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+</aura:component>

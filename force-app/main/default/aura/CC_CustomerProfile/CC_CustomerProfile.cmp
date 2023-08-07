@@ -1,0 +1,136 @@
+<!--
+    ************ Creation Log  ************
+	* Created by :{Girikon(Prashant[C2E-16 August 22 2019],[STL-282 Oct 16 2019]}
+	* Modified by: Mukesh Gupta [STL-282], Prashant [STL-279], Prashant [STL-117]
+	* Modified Date: 16 Oct, 2019, 24 Oct 2019
+-->
+
+<aura:component controller="BoothPickListCtrl"
+    implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes" access="global">
+    <!-- <ltng:require styles="/resource/ltng_CustomerCenter_Girikon2/ltng_CustomerCenter_Girikon2/css/style.css?v=149"/>
+    <ltng:require styles="/resource/ltng_CustomerCenter_Girikon2/ltng_CustomerCenter_Girikon2/css/font-awesome.min.css?v=149" /> -->
+    <aura:handler name="init" value="{!this}" action="{!c.loadBoothValues}" />
+    <aura:attribute name="options" type="List" />
+    <aura:attribute name="boothId" type="String" />
+    <aura:attribute name="selectedValue" type="String" />
+    <aura:attribute name="exhAccountID" type="String" />
+    <aura:attribute name="eventId" type="String" />
+    <aura:attribute name="eventCode" type="String" />
+    <aura:attribute name="showMessage" type="Boolean" default="true" />
+    <aura:attribute name="noBooth" type="Boolean" default="false" />
+    <aura:attribute name="showAgentLastModified" type="Boolean" default="false" />
+    <aura:attribute name="isAgentManged" type="Boolean" default="false" />
+    <aura:attribute name="userType" type="ContactEventEditionMapping__c" />
+    <aura:attribute name="profileOptionVisibilty" type="Profile_Option_Visibility__c" />
+    <aura:attribute name="profilePackageSetting" type="Profile_Package_Setting__c" />
+    <aura:attribute name="isReadOnly" type="boolean" default="false" />
+
+
+    <div class="container mainsection">
+        <div class="row">
+            <div class="col-sm-12">
+            <aura:if isTrue="{!and(v.isAgentManged == false,v.userType.User_Type__r.Name == 'Agent')}">
+                <c:agentNotificationUtility eventCode="{!v.eventCode}" message="{!$Label.c.Common_Notification_Part_Text}" />
+            </aura:if>
+			<aura:if isTrue="{!v.isAgentManged == true}">                
+                <p>The following displays this exhibitor’s profile information for each stand and any completed activity.</p>
+                <br/>
+			</aura:if>                
+            <aura:if isTrue="{!v.noBooth}">
+                <h2 style="color:green;text-align:center;font-size:20px;">Our System could not find a valid booth number
+                    attached to your account. Please reach out to operations team for assistance!</h2>
+
+                <aura:set attribute="else">
+                    <!-- Start change by Mukesh Gupta(16 Oct, 2019, during STL project) -->
+                    <!--<div class="slds-m-bottom_large">
+                        <lightning:layout multipleRows="true">
+                            <lightning:layoutItem size="1">Settings For:</lightning:layoutItem>
+                            <lightning:layoutItem size="4" class="slds-p-left_medium">
+                                <lightning:combobox name="oppBoothID" options="{!v.options}" aura:id="oppBoothID"
+                                                    onchange="{!c.getPicklistValue}" variant="label-hidden">
+                                </lightning:combobox>
+                                <lightning:select name="oppBoothID" label="" aura:id="oppBoothID"
+                                    onchange="{!c.getPicklistValue}">
+                                    <aura:iteration items="{!v.options}" var="option">
+                                        <option text="{!option.label}" value="{!option.id}" />
+                                    </aura:iteration>
+                                </lightning:select>
+                            </lightning:layoutItem>
+                        </lightning:layout>
+                    </div>-->
+                    <div class="slds-grid slds-gutters">
+                        <div class="slds-col slds-size_1-of-8 slds-m-top_medium">
+                            Settings For:
+                        </div>
+                        <div class="slds-col slds-size_2-of-6 slds-m-bottom_large">
+                            <lightning:select name="oppBoothID" label="" aura:id="oppBoothID"
+                                onchange="{!c.getPicklistValue}">
+                                <aura:iteration items="{!v.options}" var="option">
+                                    <option text="{!option.label}" value="{!option.id}" />
+                                </aura:iteration>
+                            </lightning:select>
+                        </div>
+                    </div>
+					<!-- End change by Mukesh Gupta(16 Oct, 2019, during STL project) -->
+
+                    <lightning:tabset variant="scoped">
+                        <lightning:tab label="Company Info">
+                            <c:CustomerProfileCompanyContactInfo eventcode="{!v.eventCode}" eventId="{!v.eventId}"
+                                accountId="{!v.exhAccountID}" boothId="{!v.boothId}" isReadOnly="{!v.isReadOnly}"
+                                showAgentLastModified="{!v.showAgentLastModified}" />
+                        </lightning:tab>
+                        <aura:if isTrue="{!v.profileOptionVisibilty.Product_Categories__c}">
+                            <lightning:tab label="Product Categories">
+                                <c:AddCustomerProductCategoryLtng eventId="{!v.eventId}" eventcode="{!v.eventCode}"
+                                    expoId="{!v.boothId}" AccountId="{!v.exhAccountID}" uId="" ContactId=""
+                                    isReadOnly="{!v.isReadOnly}" showAgentLastModified="{!v.showAgentLastModified}" />
+                            </lightning:tab>
+                        </aura:if>
+                        <!--Added Live Health Connect Tab in Customer Profile[STL-117]-->
+                        <!-- BK-2895 remove condition of isAgentManaged = False-->
+                        <aura:if isTrue="{!and(and(v.profileOptionVisibilty.Show_Hide_MatchMaking__c, v.profilePackageSetting.Show_Hide_MatchMaking__c))}">
+                            <lightning:tab label="Matchmaking">
+                                <c:CC_MatchMaking eventId="{!v.eventId}" eventCode="{!v.eventCode}"
+                                    exhAccountID="{!v.exhAccountID}"/>
+                            </lightning:tab>
+                        </aura:if>
+                        <aura:if isTrue="{!v.profileOptionVisibilty.Product_Listing__c}">
+                            <lightning:tab label="Product Listing">
+
+                            </lightning:tab>
+                        </aura:if>
+                        <aura:if isTrue="{!v.profileOptionVisibilty.Show_Specials__c}">
+                            <lightning:tab label="Show Specials">
+
+                            </lightning:tab>
+                        </aura:if>
+                        <aura:if isTrue="{!v.profileOptionVisibilty.Videos__c}">
+                            <lightning:tab label="Vidoes">
+
+                            </lightning:tab>
+                        </aura:if>
+                        <aura:if isTrue="{!v.profileOptionVisibilty.Documents__c}">
+                            <lightning:tab label="Documents">
+
+                            </lightning:tab>
+                        </aura:if>
+                        <aura:if
+                            isTrue="{!and(v.profileOptionVisibilty.Booth_Schedule__c, v.profilePackageSetting.Booth_Schedule__c)}">
+                            <lightning:tab label="Schedule">
+
+                            </lightning:tab>
+                        </aura:if>
+                        <aura:if
+                            isTrue="{!and(v.profileOptionVisibilty.Press_Release__c, v.profilePackageSetting.Press_Release__c)}">
+                            <lightning:tab label="Press Release">
+
+                            </lightning:tab>
+                        </aura:if>
+                    </lightning:tabset>
+                </aura:set>
+            </aura:if>
+        </div>
+        <div class="clearfix"></div>
+        </div>
+    </div>
+</aura:component>

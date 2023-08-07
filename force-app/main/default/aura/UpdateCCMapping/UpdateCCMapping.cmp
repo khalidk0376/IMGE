@@ -1,0 +1,67 @@
+<aura:component controller="UpdateUserTypeModalHandler">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="objInfoForPicklistValues" type="ContactEventEditionMapping__c" default="{sobjectType : 'ContactEventEditionMapping__c'}" description="object info to get picklist"/>
+    <aura:attribute name="userTypePicklistOpts" type="string[]" description="picklist options"/>
+    <aura:attribute name="showSaveCancelBtnOnCCMappingUpdate" type="boolean"/>
+    <aura:attribute name="showErrorClassInMPNUpdate" type="boolean" default="false"/>
+    <aura:attribute name="index" type="string" />
+    <aura:attribute name="singleCCMappingRecords" type="sobject" default="{'sobjectType' : 'ContactEventEditionMapping__c',                                                                        
+                                                                          'SFContactID__c': '',
+                                                                          'SFEventEditionID__c': '',
+                                                                          'User_Type__c': ''                                                                        
+                                                                          }"/>   
+    <aura:attribute name="userTypeEditMode" type="boolean" default="false" />
+    <aura:attribute name="selectedLookUpRecord" type="sObject" default="{'sobjectType' : 'User_Type__c'}"/>
+    <aura:attribute name="isOpenUserTypeModal" type="Boolean" default="false"/>
+    <tr>
+        <td>
+            <div class="slds-truncate">{!v.index}</div>
+        </td>
+        <td>
+            <span class="slds-truncate" title="Name">{!v.singleCCMappingRecords.SFContactID__r.Account.Name}</span>
+        </td>
+        
+        <td>
+            <span class="slds-truncate" title="Account">{!v.singleCCMappingRecords.SFContactID__r.Name}</span>
+        </td>
+        
+        <td>
+            <span class="slds-truncate" title="Event Edition">{!v.singleCCMappingRecords.SFEventEditionID__r.Name}</span>
+        </td>
+        
+        <td ondblclick="{!c.inlineuserTypeEditMode}" class="slds-cell-edit">
+            <span class="slds-grid slds-grid_align-spread">
+                <aura:if isTrue="{!v.userTypeEditMode == false}">
+                    <span class="slds-truncate" title="Booth Product Type">{!v.singleCCMappingRecords.User_Type__r.Name}</span>
+                    <button onclick="{!c.inlineuserTypeEditMode}" class="slds-button slds-button_icon slds-cell-edit__button slds-m-left_x-small" tabindex="0" title="Edit Booth Product Type">
+                        <lightning:icon iconName="utility:edit" size="xx-small" alternativeText="edit"/>
+                    </button>                    
+                </aura:if>
+            </span>                 
+        </td>    
+        
+    </tr>
+    
+    <aura:if isTrue="{!v.isOpenUserTypeModal}">  
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_small slds-backdrop">
+            
+            <aura:if isTrue="{!v.showSpinner}">
+                <lightning:spinner size="small" variant="brand"/>
+            </aura:if>
+            
+            <div class="slds-modal__container">
+                
+               <header class="slds-modal__header">
+                    <button onclick="{!c.closeModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                        <lightning:icon iconName="utility:close" size="small" variant="warning"/>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h3 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Select User Type </h3>
+                </header>
+                
+                <c:customLookupInedit objectAPIName="User_Type__c" IconName="standard:account"  selectedRecord="{!v.selectedLookUpRecord}" isOpenModal="{!v.isOpenUserTypeModal}" singleCCMappingRecords="{!v.singleCCMappingRecords}" showSaveCancelBtn ="{!v.showSaveCancelBtnOnCCMappingUpdate}"  OperationType="GetUserType"/>
+              
+            </div>
+        </section>
+    </aura:if>      
+</aura:component>

@@ -1,0 +1,35 @@
+.THIS .mainsection{min-height: 500px;}
+.THIS .exhibitor{text-decoration: none !important;font-weight: bold;font-size: 13px;}
+.THIS .required-table tr td {font-size: 13px;color: #006bc3}
+.THIS .required-table tr:last-child > td { border-bottom: 0px solid #ddd;}
+.THIS .primary-btn{color: white;}
+.THIS .bodycomapny{padding:7px 0 0 0; color:#555 !important;}
+.THIS .close{line-height: 0;}   
+.THIS .modal-header h2 {font-weight: 700 !important;font-size: 20px !important;}
+
+.THIS .tooltip-content {
+    background: black;
+    box-shadow: 0 5px 25px 5px shadow;
+    box-sizing: border-box;
+    color: white;
+    font-size: 10px;
+    line-height: 1.4;
+    letter-spacing: 1px;
+    max-width: 405px;
+    min-width: 188px;
+    padding: 1em;
+    position: absolute;
+    opacity: 1;
+    transition: all .3s ease;
+    top: -19px;
+    right: -7px;}
+.THIS .tool span::after {
+    background: black;
+    content: " ";
+    height: 10px;
+    position: absolute;
+    transform: rotate(50deg);
+    width: 10px;
+    right: -5px;
+    top: 15px;
+}

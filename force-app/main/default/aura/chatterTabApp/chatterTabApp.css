@@ -1,0 +1,70 @@
+.THIS .forceChatterRecordFeedContainerDesktop .oneActionsComposer {
+    margin: .75rem;
+}
+.THIS .uiTabset--task .tabs__nav {
+    background-color: rgb(243, 242, 242);
+    border: 1px solid rgb(221, 219, 218);
+    border-radius: .25rem .25rem 0 0;
+    white-space: nowrap;
+}
+.THIS .uiTabset--default .tabs__nav {
+    border-bottom: 1px solid rgb(221, 219, 218);
+    background-color: transparent;
+}
+.THIS .uiTabset--base .tabs__nav {
+    display: flex;
+}
+.THIS .uiTabBar .tabs__nav {
+    padding: 0;
+    margin: 0;
+}
+
+.THIS ol, .THIS ul {
+    list-style: none;
+}
+
+.THIS .oneActionsComposer.uiTabset--task .tabs__item {
+    max-width: 10rem;
+}
+
+.THIS .uiTabset--task .tabs__item {
+    position: relative;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.THIS .uiTabset--task .tabs__item:first-child>a {
+    border-left: none;
+    border-radius: .25rem 0 0 0;
+}
+
+.THIS .uiTabset--task .tabs__item.active>a {
+    background-color: rgb(255, 255, 255);
+    color: rgba(27, 82, 151, 1);
+    border-color: rgb(221, 219, 218);
+}
+.THIS .uiTabset--default .tabs__item.active>a {
+    border-color: rgba(0, 112, 210, 1);
+    color: rgb(8, 7, 7);
+    font-weight: 700;
+}
+.THIS .oneActionsComposer.uiTabset--task .tabs__item a {
+    overflow: hidden;
+    padding: 1rem 1rem;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.THIS .uiTabset--task .tabs__item>a {
+    padding: 1rem;
+    color: rgb(62, 62, 60);
+    background-clip: padding-box;
+    border-left: 1px solid transparent;
+    border-right: 1px solid transparent;
+    border-bottom: none;
+}
+.THIS .uiTabset--default .tabs__item>a, .THIS .uiTabset--default .uiTabOverflowMenuItem a {
+    border-bottom: 2px solid transparent;
+    padding: 1.5rem 1rem .5rem;
+    color: rgb(62, 62, 60);
+}

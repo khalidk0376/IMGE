@@ -1,0 +1,67 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component controller="OppActionButtonController">
+    
+    <aura:attribute name="recordId" type="String" access="public"/>
+    <aura:attribute name="searchKey" type="String" access="public"/>
+    <aura:attribute name="isOpenModal" type="Boolean" access="public"/>
+    <aura:attribute name="booths" type="List" access="private"/>
+    <aura:attribute name="spinner" type="Boolean" access="private"/>
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+
+
+    <lightning:button variant="brand" onclick="{!c.openModal}" label="Select Booth" class="slds-float_right"/>
+
+    <aura:if isTrue="{!v.isOpenModal}">
+    <aura:if isTrue="{!v.spinner}">
+        <lightning:spinner size="small" variant="brand"/>
+    </aura:if>
+    <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+        <div class="slds-modal__container">
+          <header class="slds-modal__header">
+            <button onclick="{!c.closeModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                <lightning:icon iconName="utility:close" size="small" variant="bare"/>
+            </button>
+            <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate modal-header">All Booth</h2>
+          </header>
+            <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                <lightning:layout multipleRows="true">
+                    <lightning:layoutItem size="12" padding="around-small">
+                        <lightning:input type="search" value="{!v.searchKey}" onchange="{!c.searchBooth}" placeholder="Search..." variant="label-hidden"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="12" padding="around-small">
+                        <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                            <thead>
+                                <tr class="slds-line-height_reset">
+                                  <th class="" scope="col">
+                                    <div class="slds-truncate" title="Select">Booth Number</div>
+                                  </th>
+                                  <th class="" scope="col">
+                                    <div class="slds-truncate" title="Booth Type">Booth Type</div>
+                                  </th>                   
+                                </tr>
+                            </thead>
+                            <tbody>                         
+                                <aura:iteration items="{!v.booths}" var="item" indexVar="ind">                  
+                                    <tr class="slds-hint-parent">
+                                      <th data-label="Select" scope="row">
+                                        {!item.Booth_Number__c}
+                                      </th>
+                                      <td data-label="{!item.Booth_Type__c}">
+                                        <div class="slds-truncate" title="{!item.Booth_Type__c}">{!item.Booth_Type__c}</div>
+                                      </td>                                                       
+                                    </tr>
+                                </aura:iteration>
+                            </tbody>
+                        </table>
+                    </lightning:layoutItem>
+                </lightning:layout>
+            </div>
+            <footer class="slds-modal__footer slds-modal__footer_directional">
+                <button onclick="{!c.closeModal}" class="slds-button slds-button_neutral">Cancel</button>
+            </footer>
+        </div>
+    </section>
+    <div class="slds-backdrop slds-backdrop_open"></div>
+</aura:if>
+</aura:component>

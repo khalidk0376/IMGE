@@ -1,0 +1,139 @@
+<!--
+	   ************ Modification Log  ************
+	* Modified by :{Girikon(Prashant[CCEN-743 Apr 9 2019, C2E-16 August 22 2019]}, [Aishwarya BK-15072 9 Apr 2021]
+-->
+
+<aura:component implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes,lightning:isUrlAddressable"
+ access="global" controller="CustomerProfileBoothLogoLtngCtrl">
+	<ltng:require styles="{!$Resource.CustomerCenterWS11+'/CustomerCenterWS11/css/style.css'}" />
+	<ltng:require styles="{!$Resource.CustomerCenterWS11+'/CustomerCenterWS11/css/font-awesome.min.css'}" />
+	<ltng:require scripts="{!$Resource.CustomerCenterWS11 +'/CustomerCenterWS11/js/jquery-1.7.1.min.js?v=149'}" />
+	<aura:handler event="aura:waiting" action="{!c.showSpinner}" />
+	<aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}" />
+	<aura:attribute name="Spinner" type="boolean" default="false" />
+	<aura:attribute name="Event_Setting" type="Event_Settings__c" />
+	<aura:attribute name="eventcode" type="String" default="" />
+	<aura:attribute name="uploadfiletype" type="String" default="" />
+	<aura:attribute name="sfdcBaseurl" type="String" />
+	<aura:attribute name="isReadOnly" type="boolean" default="false" />
+
+	<!--<aura:attribute name="existingAttach" type="Attachment" /> -->
+	<aura:attribute name="existingAttach" type="ContentDocument" />
+	<!-- 1 '/apex/CustomerProfileBoothLogo?boothId=a1W1F0000008MLWUA2' in vf pge======= ================== -->
+	<!-- sample task to delete to attach file uploaded taskid=00T1F000003vEXXUA2 , con = 0031F000006TvIY -->
+	<aura:attribute name="parentId" type="Id" />
+	<aura:attribute name="parentIdDefault" type="Id" />
+	<aura:attribute name="attachmentId" type="Id" />
+	<aura:attribute name="showMessage" type="boolean" default="false" />
+	<aura:attribute name="fileName" type="String" default="" />
+	<aura:attribute name="uploadedFileName" type="String" default="" />
+	<aura:attribute name="showUploadedName" type="boolean" default="false" />
+
+	<aura:handler name="init" value="{!this}" action="{!c.onInit}" />
+	<aura:handler name="change" value="{!v.parentId}" action="{!c.onInit}" />
+	<aura:attribute name="message" type="string" default="File type must be JPG,JPEG,EPS,PDF or AI " />
+
+	<!--upload btn -->
+	<!---->
+	<div class="CustomLogoTitle"><b> {!$Label.c.Logo}</b></div>
+
+	<div class="uploadallbg">
+		<div class="uploadall">
+			<aura:if isTrue="{!v.isReadOnly}">
+				<div data-type="Complex Stand 2" style="cursor: pointer;">
+					<i class="fa fa-upload font-size20" aria-hidden="true" style="color: grey;"></i><b style="color: grey;">
+						{!$Label.c.Click_here_to_upload_your_logo_here}</b>
+				</div>
+				<aura:set attribute="else">
+						
+					<div onclick="{!c.showmodalfiletype}" data-type="Complex Stand 2" style="cursor: pointer;">
+						<i class="fa fa-upload font-size20" aria-hidden="true" style="color: #015ba7;"></i><b style="color: #015ba7;">
+								{!$Label.c.Click_here_to_upload_your_logo_here}</b>
+					</div>
+				</aura:set>
+			</aura:if>
+			
+		</div>
+		<div class="slds-m-around_small">
+			<aura:if isTrue="{!v.showUploadedName}">
+				<div class="" style="max-height: 130px; ">
+					<!--div onclick="{!c.downloadFile}">Download</div-->
+					<p class="font-size16 bold-heading bold-heading2 custmMargnBtm">
+						<!--i class="fa fa-file-pdf-o font-size20" aria-hidden="true"></i-->
+						<lightning:icon class="font-size20" iconName="utility:image" alternativeText="Utility image" />
+						&nbsp;&nbsp;{!v.uploadedFileName}&nbsp;
+						<!--a onclick="{!c.downloadUploadedFile}">(Download)</a-->
+						<!--<a href="{!v.sfdcBaseurl+'/CustomerCenter/servlet/servlet.FileDownload?file='+v.attachmentId+'&amp;operationContext=S1'}"
+						 target="_blank" download="{!v.uploadedFileName}">({!$Label.c.Download})</a> -->
+						 <a href="{!v.sfdcBaseurl+'/CustomerCenter/sfc/servlet.shepherd/document/download/'+v.attachmentId+'?operationContext=S1'}"
+						 target="_blank" download="{!v.uploadedFileName}">({!$Label.c.Download})</a>
+					</p>
+
+				</div>
+			</aura:if>
+
+
+		</div>
+
+
+
+	</div>
+
+	<!--upload btn -->
+
+	<!--modal copy paste -->
+
+	<div id="modalfiletype" class="modal">
+		<div class="modal-content">
+			<div class="modal-header"> <span onclick="{!c.hidemodalfiletype}" class="close">&times;</span>
+				<h2>{!$Label.c.Add_New_Booth_Logo}</h2>
+			</div>
+			<div class="modal-body bodycomapny ">
+				<aura:if isTrue="{!v.showMessage}">
+					<div class="msgbackground">
+						<i class="fa fa-exclamation-triangle fa-padding-5"></i>{!v.message}</div>
+				</aura:if>
+				<div class="">
+					<!-- text below line-->
+
+					<p>{!$Label.c.Verify_The_File}</p>
+
+					<div class="allow-label custFontSize"><b> {!$Label.c.Allowed_file_types}:</b> &nbsp;&nbsp;&nbsp; <span class="type fontSize ">JPG</span>
+						<span class="type fontSize">JPEG</span> <span class="type fontSize">EPS</span><span class="type fontSize">PDF</span><span
+						 class="type fontSize">AI</span>
+
+					</div>
+					<br></br> <br></br>
+					<p><span class="customTitle"><b> {!$Label.c.Resolution_Guidelines} </b> </span>
+						&nbsp;{!$Label.c.Recommend_The_Logo} </p>
+					<br></br>
+					
+					<span class="inputfile"><input type="file" aura:id="inputFile" class="file" /></span>
+
+					<div class="clearfix"></div>
+					<p class="slds-m-top_large">
+
+						<button type="button" onclick="{!c.saveAttcahment}" class="primary-btn" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+							 class="fa fa-upload fa-padding-5"></i>{!$Label.c.Save}</button>
+						<button type="button" onclick="{!c.hidemodalfiletype}" class="primary-btn slds-m-left_medium" style="{!'background: '+v.Event_Setting.Button_colors__c+';color: '+v.Event_Setting.Button_Text_Color__c+''}"><i
+							 class="fa fa-close fa-padding-5"></i>{!$Label.c.Cancel}</button>
+
+
+					</p>
+				</div>
+			</div>
+
+		</div>
+		<!--end-->
+		<!-- Remove contractor -->
+
+		<!-- end -->
+		<!--modal copy paste -->
+		<!--loading spinner start... style=Brand Medium (blue dots)     {!v.Spinner}  -->
+		<aura:if isTrue="{!v.Spinner}">
+			<lightning:spinner alternativeText="Loading" size="large" variant="brand" />
+		</aura:if>
+		<!-- Loading spinner end-->
+	</div>
+
+</aura:component>

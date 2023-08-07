@@ -1,0 +1,176 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId" access="global"  controller="OppActionButtonController" >
+    <aura:attribute name="activeSections" type="List"/>
+    <!-- Google search address attributes -->
+    <aura:attribute name="contactObj" type="Object"/>
+    <aura:attribute name="filteredOptions" type="List" default="[]"/>
+    <aura:attribute name="searchKey" type="String" default=""/>
+    <aura:attribute name="meta" type="Object" access="private"/>
+    <aura:attribute name="isLoading" type="Boolean" default="false"/>
+    <aura:attribute name="depnedentFieldMap" type="map" description="map to store dependent values with controlling value" />
+    
+    <aura:attribute name="isEditForm" type="boolean" />
+    <aura:attribute name="spinner" default="false" type="Boolean"/>
+    <aura:attribute name="isAddReadOnly" default="false" type="Boolean"/>
+    <aura:attribute name="readOnlyForSales" default="false" type="Boolean"/>
+    <aura:attribute name="readOnlyForSSC" default="false" type="Boolean"/>
+    <aura:attribute name="inactiveValue" default="false" type="Boolean"/>
+    <aura:attribute name="disableMailingStreetForSSC" default="false" type="Boolean"/>
+    <!--  BK-2008 - Added by Himanshu  -->
+    <aura:attribute name="isOpenInOtherReasonPopUp" type="boolean" default="false" access="public"/>
+    <aura:attribute name="inactiveReasonvalue" type="String" default=" " access="public"/> 
+    <aura:attribute name="defaultRecordType" type="string" access="public" />
+    <aura:attribute name="googleApiFieldMap" type="map" description="map to store country name with its metadata" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:if isTrue="{!v.spinner}">
+        <lightning:spinner size="small" variant="brand"/>
+    </aura:if>
+    <lightning:recordEditForm aura:id="editFormContact" recordTypeId ="{!v.defaultRecordType}" recordId="{!v.recordId}" objectApiName="Contact" onsubmit="{!c.handleSubmit}" onsuccess="{!c.handleSuccess}" onerror="{!c.handleError}" onload="{!c.handleLoad}"> 
+     <!--  <lightning:messages /> -->
+        <lightning:accordion aura:id="accordionCon" allowMultipleSectionsOpen="true" activeSectionName="{!v.activeSections}"  onsectiontoggle="{!c.handleSectionToggle}" >
+            <lightning:accordionSection class="slds-hide" name="summary" label="Summary" aura:id="summary"> 
+                <lightning:layout multipleRows="true">
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                        <lightning:inputField fieldName="Name" class="slds-m-top_xx-small" disabled = "{!v.readOnlyForSales}"/>
+                        <lightning:layoutItem class="form-element form-element-hidden">
+                            <label class="slds-form-element__label">Job Title</label>
+                            <lightning:inputField fieldName="Title" class="removeLabel" disabled = "{!v.readOnlyForSales}"/>
+                        </lightning:layoutItem>
+                        <lightning:inputField fieldName="Contact_Type__c" class="slds-m-top_xx-small" disabled = "{!v.readOnlyForSales}"/>
+                        <lightning:inputField fieldName="Gender__c" class="slds-m-top_xx-small" disabled = "{!v.readOnlyForSales}"/>
+                        <lightning:inputField fieldName="Job_Level__c" class="slds-m-top_xx-small" disabled = "{!v.readOnlyForSales}"/>
+                        <!--<lightning:inputField fieldName="Job_function__c" class="slds-m-top_xx-small"/>-->
+                        <lightning:inputField fieldName="CPF__c" class="slds-m-top_xx-small" disabled = "{!v.readOnlyForSales}"/>
+                        <!--<lightning:inputField fieldName="Type__c" class="slds-m-top_xx-small"/> -->
+                    </lightning:layoutItem>	
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                        <lightning:inputField fieldName="Email" class="slds-m-top_xx-small" disabled = "{!v.readOnlyForSales}"/>
+                        <lightning:inputField fieldName="Alternate_Email_Address__c" class="slds-m-top_xx-small" disabled = "{!v.readOnlyForSales}"/>
+                        <lightning:inputField fieldName="Main_Language__c" class="slds-m-top_xx-small" disabled = "{!v.readOnlyForSales}"/>
+                        <lightning:inputField fieldName="Secondary_Language__c" class="slds-m-top_xx-small" disabled = "{!v.readOnlyForSales}"/>
+                        <lightning:inputField fieldName="Preferred_Communication__c" class="slds-m-top_xx-small" disabled = "{!v.readOnlyForSales}"/>
+                        <lightning:inputField fieldName="Relationship__c" class="slds-m-top_xx-small" disabled = "{!v.readOnlyForSales}"/>
+                        <lightning:inputField fieldName="LeadSource" class="slds-m-top_xx-small" disabled = "{!v.readOnlyForSales}"/>
+                        <lightning:inputField fieldName="Referred_By__c" class="slds-m-top_xx-small" disabled = "{!v.readOnlyForSales}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                        <lightning:inputField fieldName="Phone" class="slds-m-top_xx-small"  disabled = "{!v.readOnlyForSales}"/>
+                        <lightning:inputField fieldName="MobilePhone" class="slds-m-top_xx-small"  disabled = "{!v.readOnlyForSales}"/>
+                        <lightning:inputField fieldName="OtherPhone" class="slds-m-top_xx-small" disabled = "{!v.readOnlyForSales}"/>
+                        <lightning:inputField fieldName="Fax" class="slds-m-top_xx-small"  disabled = "{!v.readOnlyForSales}"/>
+                        <lightning:inputField fieldName="Contact_Preferred_Time_of_Day__c" class="slds-m-top_xx-small"  disabled = "{!v.readOnlyForSales}"/>
+                        
+                        <!--  BK-2008 - Added by Himanshu  -->
+                        <lightning:inputField aura:id="inactiveId" fieldName="Inactive__c"  class="slds-m-top_xx-small" onchange="{!c.onInactiveCheckboxChange}" disabled = "{!(v.readOnlyForSales &amp;&amp; v.readOnlyForSSC)}"/>                                         
+                        <aura:if isTrue="{!v.isOpenInOtherReasonPopUp}">
+                            <lightning:inputField aura:id="inactivereasonId" fieldName="Inactive_Reason__c" class="slds-m-top_xx-small"  onchange="{!c.onInactiveReasonchange}" />                            
+                            <aura:if isTrue="{!(v.inactiveReasonvalue == 'Other')}">
+                                <lightning:inputField fieldName="Inactive_Additional_Reason__c" class="slds-m-top_xx-small"/>                            
+                            </aura:if>
+                        </aura:if>
+                        <!--  BK-2008 - Added by Himanshu  -->
+                        
+                    </lightning:layoutItem>	  
+                </lightning:layout>
+            </lightning:accordionSection> 
+            <lightning:accordionSection class="slds-hide"  name="address" label="Address Information" aura:id="address">
+                <lightning:layout multipleRows="true"> 
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                        
+                        <aura:if isTrue = "{!v.disableMailingStreetForSSC}">    
+                            <!-- <lightning:inputField fieldName="MailingStreet" class="slds-m-top_xx-small"/>   -->
+                            <lightning:input label="Mailing Street" value="{!v.searchKey}" class="slds-m-top_xx-small" disabled = "true" />
+                            
+                            <aura:set attribute="else">
+                                <!-- google address auto complete-->
+                                <div class="slds-size_12-of-12 slds-dropdown-trigger slds-dropdown-trigger_click slds-combobox-lookup" 
+                                     aria-expanded="false" aria-haspopup="listbox" role="combobox" aura:id="searchLookup">
+                                    <!--  BK-1228 - Rajesh Kr on 11-07-2019  -->
+                                    
+                                    <lightning:input type="search" label="Mailing Street" onchange="{!c.keyPressController}" value="{!v.searchKey}" aura:id="inputFields" required="false"  onblur="{!c.handleBlur}" onfocus="{!c.keyPressController}" messageWhenValueMissing="{!$Label.c.MailingStreetMessage}" /> 
+                                    <div id="listbox-unique-id" role="listbox">
+                                        <ul class="slds-listbox slds-listbox_vertical slds-dropdown slds-dropdown_fluid"
+                                            role="presentation" style="max-width:99.9%">
+                                            <aura:if isTrue="{!v.filteredOptions.length==0}">
+                                                <li role="presentation" class="slds-listbox__item">
+                                                    <span id="listbox-option-unique-id-01"
+                                                          class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta"
+                                                          role="option">
+                                                        <span class="slds-media__body">
+                                                            <span class="slds-listbox__option-text slds-listbox__option-text_entity">
+                                                                Loading...</span>
+                                                        </span>
+                                                    </span>
+                                                </li>
+                                            </aura:if>
+                                            <aura:iteration items="{!v.filteredOptions}" var="option">
+                                                <li role="presentation"
+                                                    class="slds-listbox__item"
+                                                    onclick="{!c.handleSelect}"
+                                                    data-value="{!option.value}"
+                                                    data-record="{!option.label}"
+                                                    data-locaval="{!option.locaval}"
+                                                    data-placeid="{!option.PlaceId}"
+                                                    >
+                                                    <span id="listbox-option-unique-id-01"
+                                                          class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta"
+                                                          role="option">
+                                                        <span class="slds-media__body">
+                                                            <span class="slds-listbox__option-text slds-listbox__option-text_entity">{!option.label}</span>
+                                                        </span>
+                                                    </span>
+                                                </li>
+                                            </aura:iteration>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <!-- Google Auto complete end--> 
+                                
+                            </aura:set>
+                        </aura:if>
+                        
+                        <lightning:input value="{!v.contactObj.MailingCity}" label="Mailing City" class="slds-m-top_xx-small" disabled = "{!v.readOnlyForSales}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                        
+                        <lightning:combobox options="{!v.meta.MailingCountryCode.FieldPicklist}" value="{!v.contactObj.MailingCountryCode}" label="Mailing Country" aura:id="billingCountry" required="false" onchange="{!c.onBillingCountryChange}" disabled = "{!v.readOnlyForSales}"/>                        
+                        
+                        <lightning:combobox spinnerActive="{!v.isLoading}" value="{!v.contactObj.MailingStateCode}" label="Mailing State" aura:id="billingState" readonly = "{!v.readOnlyForSales}"/>
+                        
+                        
+                        <!--<lightning:inputField fieldName="MailingCountry" class="slds-m-top_xx-small"/>
+<lightning:inputField aura:id="name-input" fieldName="MailingState" class="slds-m-top_xx-small"/>-->
+                        
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                        <lightning:input value="{!v.contactObj.MailingPostalCode}" label="Mailing Zip/Postal Code" class="slds-m-top_xx-small" disabled = "{!v.readOnlyForSales}"/>
+                    </lightning:layoutItem>	 
+                </lightning:layout>
+            </lightning:accordionSection> 
+            <lightning:accordionSection class="slds-hide" name="admin" label="Admin View" aura:id="admin"> 
+                <lightning:layout multipleRows="true"> 
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                        <lightning:inputField fieldName="x_Legacy_Id__c" class="slds-m-top_xx-small"/>
+                        <lightning:inputField fieldName="Address_Verified__c" class="slds-m-top_xx-small"/>
+                        <lightning:inputField fieldName="MDM_ID__c" class="slds-m-top_xx-small"/>
+                    </lightning:layoutItem>	 
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4"> 
+                        <lightning:inputField fieldName="Email_Opt_In__c" class="slds-m-top_xx-small"/>
+                        <lightning:inputField fieldName="Contact_Source__c" class="slds-m-top_xx-small" />
+                        <lightning:inputField fieldName="Specific_Source__c" class="slds-m-top_xx-small" />
+                    </lightning:layoutItem>	 
+                    <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4"> 
+                        <lightning:inputField fieldName="CreatedById" class="slds-m-top_xx-small"/>
+                        <lightning:inputField fieldName="LastModifiedById" class="slds-m-top_xx-small"/> 
+                        <lightning:inputField fieldName="Source_Description__c" class="slds-m-top_xx-small"/> 
+                    </lightning:layoutItem>	
+                </lightning:layout>
+            </lightning:accordionSection> 
+        </lightning:accordion> 
+        <div class="slds-m-top_medium slds-align_absolute-center sticky" >
+            <lightning:button variant="neutral" label="Cancel" title="Cancel" type="text" onclick="{!c.handleCancel}"/>
+            <lightning:button variant="brand" label="Save" title="Submit" type="submit" disabled = "{!(v.readOnlyForSales &amp;&amp; v.readOnlyForSSC)}"/>
+        </div>
+    </lightning:recordEditForm> 
+</aura:component>

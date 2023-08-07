@@ -1,0 +1,662 @@
+<!-- Ticket No - EMEA-198 Updating API Version -->
+<!-- Modified By Rajesh Kumar : 24-07-2020 on BK-5673 -->
+<aura:component implements="flexipage:availableForAllPageTypes" access="global" controller="OpportunityDetailsCtrl">
+    <aura:handler event="force:refreshView" action="{!c.isRefreshed}" />
+    <aura:attribute name="activeSections" type="List" />
+    <aura:attribute name="showSpinner" type="Boolean" default="false" />
+    <aura:attribute name="isStatusReadOnly" type="Boolean" default="false" />
+    <aura:attribute name="isReadOnlyforSales" type="Boolean" default="false" />
+    <aura:attribute name="isReadOnlyforSalesBrasil" type="Boolean" default="false" />
+    <aura:attribute name="isReadOnlyEventEditionforSales" type="Boolean" default="false" />
+    <!-- Added by Palla Kishore for the ticket EMEA-72 -->
+    <aura:attribute name="isSalesOpsUser" type="Boolean" default="false" />
+    <aura:attribute name="isReadOnlyforSalesOps" type="Boolean" default="false" />
+    <!-- Added by Palla Kishore for the ticket BK-22267 -->
+    <aura:attribute name="isSalesOpsExPermissions" type="Boolean" default="false" />
+    <aura:attribute name="isReadOnlyforSalesOpsExPermissions" type="Boolean" default="false" />
+    <!-- Added by Palla Kishore for the ticket BK-22308 -->
+    <aura:attribute name="isBrasilSalesOpsUser" type="Boolean" default="false" />
+    <aura:attribute name="isReadOnlyforBrasilSalesOps" type="Boolean" default="false" />
+    <aura:attribute name="isReadOnlyforOprations" type="Boolean" default="false" />
+    <aura:attribute name="isReadOnlyBarter" type="Boolean" default="false" />
+    <!-- Added by Palla Kishore for the ticket BK-24718 -->
+    <aura:attribute name="isBrasilROConUpdateUser" type="Boolean" default="false" />
+    <aura:attribute name="isReadOnlyBrasilConUpdateUser" type="Boolean" default="false" />
+    <aura:attribute name="oppDetails" type="opportunity" />
+    <aura:attribute name="eventCurrecies" type="List" />
+    <aura:attribute name="selectedCurrency" type="String" />
+    <aura:attribute name="isEditForm" type="boolean" />
+    <aura:attribute name="recordId" type="string" />
+    <aura:attribute name="probability" type="string" default="" />
+    <aura:attribute name="isAdminProfile" type="Boolean" default="false" />
+    <aura:attribute name="isNonAdminProfile" type="Boolean" default="false" />
+    <aura:attribute name="isNewPickLIstForSales" type="Boolean" default="false" />
+    <aura:attribute name="revenueEstimateDisabled" type="Boolean" default="false" />
+    <aura:attribute name="IsDoNotActivateBilling" type="String" default="" />
+    <aura:attribute name="picklist_Values" type="Object" />
+    <aura:attribute name="isParentOpportunity" type="Boolean" default="false" /> 
+    <aura:attribute name="picklist_Values_Selected" type="String" />
+    <aura:handler name="init" value="{!this}" action="{!c.loadData}" />
+    <aura:attribute name="isOpen" type="boolean" default="false" />
+    <aura:attribute name="showBarterPopup" type="boolean" default="false" />
+    <aura:attribute name="IsbarterValue" type="boolean" default="false" />
+    <aura:attribute name="ClonedFromOpporunity" type="String" />
+    <aura:attribute name="defaultRecordType" type="string" access="public" />
+    <!-- Added by Palla Kishore for the ticket BK-24173 -->
+    <aura:attribute name="isAddressValidationBRProfiles" type="boolean" default="false" />
+    <!--Added by Faisal Khan for the ticket BK-27444 -->
+    <aura:attribute name="isReadOnlyforSSC" type="boolean" default="false" />
+
+    <div class="container">
+        <aura:if isTrue="{!v.showSpinner}">
+            <lightning:spinner size="small" variant="brand" />
+        </aura:if>
+        <!-- added Method for pass Record Type on BK-4875 on RajesH kumar - 01-06-2020 -->
+        <lightning:recordEditForm aura:id="editForm" recordTypeId ="{!v.defaultRecordType}" onload="{!c.handleLoad}" onsubmit="{!c.handleSubmit}" onsuccess="{!c.handleSuccess}" recordId="{!v.recordId}" objectApiName="Opportunity" onerror="{!c.handleError}" >
+            <!--  <lightning:messages /> -->
+            <lightning:accordion aura:id="oppAccordion" allowMultipleSectionsOpen="true" activeSectionName="{!v.activeSections}" onsectiontoggle="{!c.handleSectionToggle}">
+                <lightning:accordionSection name="summary" label="Summary" aura:id="summary" class="slds-hide">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <aura:if isTrue="{!v.isReadOnlyforBrasilSalesOps}">
+                                
+                                <lightning:inputField fieldName="StageName" onchange="{!c.onStageChange}" class="slds-m-top_xx-small"/>
+                                <aura:set attribute="else">
+                            <lightning:inputField fieldName="StageName" onchange="{!c.onStageChange}" class="slds-m-top_xx-small" disabled="{!(v.isStatusReadOnly || v.isReadOnlyforSalesBrasil || v.isReadOnlyforOprations || v.isReadOnlyBrasilConUpdateUser)}" />
+                                </aura:set>
+                            </aura:if>
+                            <lightning:inputField fieldName="Amount" class="slds-m-top_xx-small" disabled="true" />
+                            <lightning:inputField fieldName="Revenue_Estimate__c" class="slds-m-top_xx-small" disabled="{!(v.revenueEstimateDisabled || v.isReadOnlyforSales || v.isReadOnlyforSalesOps || v.isReadOnlyforOprations || v.isReadOnlyforSalesOpsExPermissions)}" />
+                            
+                            <!--EMEA-56 Modified By:- Palla Kishore -->
+                            <aura:if isTrue="{!(v.oppDetails.StageName=='Closed Won' &amp;&amp; v.oppDetails.Review_by_Sales_Ops_Team__c)}">
+                                <lightning:inputField fieldName="SSC_Closing_Pending__c" class="slds-m-top_xx-small" />
+                            </aura:if>
+                            <!--BK-2262 Modified By:- Shiv Raghav --> 
+                            <lightning:outputField fieldName="Total_Area__c" class="slds-m-top_xx-small" />
+                        </lightning:layoutItem>
+                        
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <lightning:inputField fieldName="Status__c" class="slds-m-top_xx-small" disabled="{!(v.isStatusReadOnly || v.isReadOnlyforSalesBrasil || v.isReadOnlyforOprations || v.isReadOnlyBrasilConUpdateUser)}" />
+                            <lightning:inputField fieldName="Probability" class="slds-m-top_xx-small" disabled="true" value="{!v.probability}" /><!-- Probability field should be always disabled -->
+                            <lightning:inputField fieldName="Contract_Sign_Status__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSalesBrasil || v.isReadOnlyforSales || v.isReadOnlyforSalesOps || v.isReadOnlyforOprations || v.isReadOnlyforSalesOpsExPermissions)}"  />
+                            <!--BK-2262 Modified By:- Shiv Raghav --> 
+                            <aura:if isTrue="{!(v.oppDetails.User_Type__r.Name == 'Agent' || v.oppDetails.User_Type__r.Name == 'Exhibitor')}">
+                                <lightning:outputField fieldName="Total_Area_Rented__c" class="slds-m-top_xx-small"  />                            
+                            </aura:if>
+                            <!-- Added By Palla Kishore for the ticket BK-27444 -->
+                            <lightning:inputField fieldName="Forecast_Category__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSalesBrasil || v.isReadOnlyforSSC || v.isReadOnlyforBrasilSalesOps || v.isReadOnlyforSales || v.isReadOnlyforSalesOps || v.isReadOnlyforOprations || v.isReadOnlyforSalesOpsExPermissions)}"></lightning:inputField><!--disabled="{!v.isReadOnlyforSales}"/>-->
+                        </lightning:layoutItem>
+                        
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <lightning:inputField fieldName="CloseDate" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSalesBrasil || v.isReadOnlyforSales || v.isReadOnlyforOprations || v.isReadOnlyforBrasilSalesOps || v.isReadOnlyBrasilConUpdateUser)}" />
+                            <!-- Moved by Palla Kishore from opportunity information accordion to Summary accordion for the ticket BK-26687 --> 
+                            <lightning:inputField fieldName="Type" class="slds-m-top_xx-small customRequired" disabled="{!v.isReadOnlyforOprations}"/>
+                            <lightning:inputField fieldName="Payment_Status__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSalesBrasil || v.isReadOnlyforSales || v.isReadOnlyforSalesOps || v.isReadOnlyforOprations || v.isReadOnlyforSalesOpsExPermissions)}" />
+                            <lightning:inputField fieldName="SBQQ__PrimaryQuote__c" class="slds-m-top_xx-small" disabled="true" /><!-- Primary Quote always readonly for all profiles -->
+                            <!--BK-2262 Modified By:- Shiv Raghav Rlease- 20.08 --> 
+                            <aura:if isTrue="{!(v.oppDetails.User_Type__r.Name == 'Agent' || v.oppDetails.User_Type__r.Name == 'Exhibitor')}">
+                                <lightning:outputField fieldName="Total_Area_Unrented__c" class="slds-m-top_xx-small"  />                           
+                            </aura:if>
+                            <!-- Added by Palla Kishore for the ticket BK-24173 -->
+                            <aura:if isTrue="{!(v.isAddressValidationBRProfiles)}">
+                            	<lightning:inputField fieldName="Address_Validation_Bypass__c" class="slds-m-top_xx-small" />
+                            </aura:if>
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </lightning:accordionSection>
+                <lightning:accordionSection name="oppCon" label="Opportunity Contacts" aura:id="oppCon" class="slds-hide">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <!--   <lightning:layoutItem class="slds-m-top_xx-small">    -->
+                            <aura:if isTrue="{!(v.isReadOnlyforSalesBrasil || v.isReadOnlyforSales || v.isReadOnlyforBrasilSalesOps)}">
+                                <lightning:outputField fieldName="Opportunity_Contact__c"/>
+                                <aura:set attribute="else">
+                                    <aura:if isTrue="{!!empty(v.oppDetails.Opportunity_Contact__c)}">
+                                        <c:ExtendLookup label="Opportunity Contact" helpText="Individual you are working with on this opportunity" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Opportunity_Contact__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false" />
+                                        <aura:set attribute="else">
+                                            <c:ExtendLookup label="Opportunity Contact" helpText="Individual you are working with on this opportunity" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Opportunity_Contact__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false" />
+                                        </aura:set>
+                                    </aura:if>
+                                </aura:set>
+                            </aura:if>
+                            <!--     </lightning:layoutItem>    -->
+                            
+                            <!-- Modified By: Rajesh Kumar
+                             @Description As per ticket GGCKB-163 ***Start***
+                            -->
+                            <!-- Modified By Palla Kishore for the tickets BK-21469 & BK-21524 & BK-21570-->
+                            <aura:if isTrue="{!v.isReadOnlyforSales}">
+                                <lightning:outputField fieldName="Operation_Contact_2__c"/>
+                                <aura:set attribute="else">
+                                    <aura:if isTrue="{!!empty(v.oppDetails.Operation_Contact_2__c)}">
+                                        <c:ExtendLookup label="Operation Contact 2" helpText="Second Operation contact for the account Opportunity" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Operation_Contact_2__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false" />
+                                        <aura:set attribute="else">
+                                            <c:ExtendLookup label="Operation Contact 2" helpText="Second Operation contact for the account Opportunity" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Operation_Contact_2__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false" />
+                                        </aura:set>
+                                    </aura:if>
+                                </aura:set>
+                            </aura:if>
+                            <!-- Modified By Palla Kishore for the tickets BK-21469 & BK-21524 & BK-21570-->
+                            <aura:if isTrue="{!v.isReadOnlyforSales}">
+                                <lightning:outputField fieldName="Marketing_Contact__c"/>
+                                <aura:set attribute="else">
+                                    <aura:if isTrue="{!!empty(v.oppDetails.Marketing_Contact__c)}">
+                                        <c:ExtendLookup label="Marketing Contact" helpText="Second Operation contact for the account Opportunity" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Marketing_Contact__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false"/>
+                                        <aura:set attribute="else">
+                                            <c:ExtendLookup label="Marketing Contact" helpText="Second Operation contact for the account Opportunity" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Marketing_Contact__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false"/>
+                                        </aura:set>
+                                    </aura:if>
+                                </aura:set>
+                            </aura:if>
+                            <aura:if isTrue="{!(v.isReadOnlyforSales || v.isReadOnlyforSalesOps || v.isReadOnlyforSalesOpsExPermissions)}">
+                                <lightning:outputField fieldName="Legal_Representative_1__c"/>
+                                <aura:set attribute="else">
+                                    <aura:if isTrue="{!!empty(v.oppDetails.Legal_Representative_1__c)}">
+                                        <c:ExtendLookup label="Legal Representative 1" helpText="Second Operation contact for the account Opportunity" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Legal_Representative_1__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false" />
+                                        <aura:set attribute="else">
+                                            <c:ExtendLookup label="Legal Representative 1" helpText="Second Operation contact for the account Opportunity" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Legal_Representative_1__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false" />
+                                        </aura:set>
+                                    </aura:if> 
+                                </aura:set>
+                            </aura:if>
+                            <aura:if isTrue="{!(v.isReadOnlyforSales || v.isReadOnlyforSalesOps  || v.isReadOnlyforSalesOpsExPermissions)}">
+                                <lightning:outputField fieldName="Nota_Fiscal__c"/>
+                                <aura:set attribute="else">
+                                    <aura:if isTrue="{!!empty(v.oppDetails.Nota_Fiscal__c)}">
+                                        <c:ExtendLookup label="Nota Fiscal" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Nota_Fiscal__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false" />                            
+                                        <aura:set attribute="else">
+                                            <c:ExtendLookup label="Nota Fiscal" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Nota_Fiscal__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false"/>                            
+                                        </aura:set>
+                                    </aura:if> 
+                                </aura:set>
+                            </aura:if>
+                            
+                            
+                            <!--     <lightning:inputField fieldName="Operation_Contact_2__c" class="slds-m-top_xx-small" />
+                            <lightning:inputField fieldName="Marketing_Contact__c" class="slds-m-top_xx-small" />
+                            <lightning:inputField fieldName="Legal_Representative_1__c" class="slds-m-top_xx-small" />     -->
+                            
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <!--     <lightning:layoutItem class="slds-m-top_xx-small">    -->
+                            <!-- Modified By Palla Kishore for the tickets BK-21469 & BK-21524 & BK-21570-->
+                            <aura:if isTrue="{!(v.isReadOnlyforSalesBrasil || v.isReadOnlyforSales || v.isReadOnlyforSalesOps || v.isReadOnlyforSalesOpsExPermissions || v.isReadOnlyforBrasilSalesOps)}">
+                                <lightning:outputField fieldName="Billing_Contact__c"/>
+                                <aura:set attribute="else">
+                                    <aura:if isTrue="{!!empty(v.oppDetails.Billing_Contact__c)}">
+                                        <c:ExtendLookup label="Invoice Contact" helpText="Contact for invoicing" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Billing_Contact__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false" isBilling="true" />
+                                        <aura:set attribute="else">
+                                            <c:ExtendLookup label="Invoice Contact" helpText="Contact for invoicing" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Billing_Contact__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false" isBilling="true" />
+                                        </aura:set>
+                                    </aura:if>
+                                </aura:set>
+                            </aura:if>
+                            <!--      </lightning:layoutItem>      -->
+                            <aura:if isTrue="{!(v.isReadOnlyforSales || v.isReadOnlyforSalesOps || v.isReadOnlyforSalesOpsExPermissions)}">
+                                <lightning:outputField fieldName="Agreement_Contact__c"/>
+                                <aura:set attribute="else">
+                                    <aura:if isTrue="{!!empty(v.oppDetails.Agreement_Contact__c)}">
+                                        <c:ExtendLookup label="Agreement Contact" helpText="Main contact for the agreement negotiations" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Agreement_Contact__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false"/>
+                                        <aura:set attribute="else">
+                                            <c:ExtendLookup label="Agreement Contact" helpText="Main contact for the agreement negotiations" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Agreement_Contact__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false" />
+                                        </aura:set>
+                                    </aura:if> 
+                                </aura:set>
+                            </aura:if>
+                            <aura:if isTrue="{!(v.isReadOnlyforSales || v.isReadOnlyforSalesOps || v.isReadOnlyforSalesOpsExPermissions)}">
+                                <lightning:outputField fieldName="Safety_Contact__c"/>
+                                <aura:set attribute="else">
+                                    <aura:if isTrue="{!!empty(v.oppDetails.Safety_Contact__c)}">
+                                        <c:ExtendLookup label="Safety Contact" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Safety_Contact__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false"/>                            
+                                        <aura:set attribute="else">
+                                            <c:ExtendLookup label="Safety Contact" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Safety_Contact__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false"/>                            
+                                        </aura:set>
+                                    </aura:if>                           
+                                </aura:set>
+                            </aura:if>
+                            <aura:if isTrue="{!(v.isReadOnlyforSales || v.isReadOnlyforSalesOps || v.isReadOnlyforSalesOpsExPermissions)}">
+                                <lightning:outputField fieldName="Legal_Representative_2__c"/>
+                                <aura:set attribute="else">
+                                    <aura:if isTrue="{!!empty(v.oppDetails.Legal_Representative_2__c)}">
+                                        <c:ExtendLookup label="Legal Representative 2" helpText="For Brazil" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Legal_Representative_2__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false" />
+                                        <aura:set attribute="else">
+                                            <c:ExtendLookup label="Legal Representative 2" helpText="For Brazil" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Legal_Representative_2__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false" />
+                                        </aura:set>
+                                    </aura:if> 
+                                </aura:set>
+                            </aura:if>
+                            <lightning:inputField fieldName="Nota_Fiscal_Email__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSales || v.isReadOnlyforSalesOps || v.isReadOnlyforSalesOpsExPermissions || v.isReadOnlyforOprations)}"/>
+                            
+                            <!--     <lightning:inputField fieldName="Safety_Contact__c" class="slds-m-top_xx-small" /> 
+                            <lightning:inputField fieldName="Legal_Representative_2__c" class="slds-m-top_xx-small" />     -->
+                            
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <!-- Modified by Palla Kishore for the ticket BK-20833--> 
+                            <aura:if isTrue="{!v.isReadOnlyforSales}">
+                                <lightning:outputField fieldName="Operations_Contact__c"/>
+                                <aura:set attribute="else">
+                                    <aura:if isTrue="{!!empty(v.oppDetails.Operations_Contact__c)}">
+                                        <c:ExtendLookup label="Operations Contact" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Operations_Contact__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}"  isRequired="false" />
+                                        <aura:set attribute="else">
+                                            <c:ExtendLookup label="Operations Contact" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Operations_Contact__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false"/>
+                                        </aura:set>
+                                    </aura:if> 
+                                </aura:set>
+                            </aura:if>
+                            <aura:if isTrue="{!(v.isReadOnlyforSales || v.isReadOnlyforSalesOps || v.isReadOnlyforSalesOpsExPermissions)}">
+                                <lightning:outputField fieldName="MarkitMkr_Contact__c"/>
+                                <aura:set attribute="else">
+                                    <aura:if isTrue="{!!empty(v.oppDetails.MarkitMkr_Contact__c)}">
+                                        <c:ExtendLookup label="MarkitMkr Contact" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.MarkitMkr_Contact__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false" isBilling="true" />                            
+                                        <aura:set attribute="else">
+                                            <c:ExtendLookup label="MarkitMkr Contact" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.MarkitMkr_Contact__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false" />                            
+                                        </aura:set>
+                                    </aura:if> 
+                                </aura:set>
+                            </aura:if>
+                            <aura:if isTrue="{!(v.isReadOnlyforSales || v.isReadOnlyforSalesOps || v.isReadOnlyforSalesOpsExPermissions)}">
+                                <lightning:outputField fieldName="Local_Representative__c"/>
+                                <aura:set attribute="else">
+                                    <aura:if isTrue="{!!empty(v.oppDetails.Local_Representative__c)}">
+                                        <c:ExtendLookup label="Local Representative" helpText="For Brazil" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Local_Representative__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false"  />
+                                        <aura:set attribute="else">
+                                            <c:ExtendLookup label="Local Representative" helpText="For Brazil" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Local_Representative__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false"  />
+                                        </aura:set>
+                                    </aura:if> 
+                                </aura:set>
+                            </aura:if>
+                            <!--Updated by Rajesh Kumar yadav related ticket BK-2374 -->
+                            <aura:if isTrue="{!(v.isReadOnlyforSales || v.isReadOnlyforSalesOps || v.isReadOnlyforSalesOpsExPermissions)}">
+                                <lightning:outputField fieldName="Witness_Contact__c"/>
+                                <aura:set attribute="else">
+                                    <aura:if isTrue="{!!empty(v.oppDetails.Witness_Contact__c)}">
+                                        <c:ExtendLookup label="Witness Contact" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Witness_Contact__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false" />                            
+                                        <aura:set attribute="else">
+                                            <c:ExtendLookup label="Witness Contact" objectName="contact" nameFieldApi="Name" selectedItemId="{!v.oppDetails.Witness_Contact__c}" accountId="{!v.oppDetails.AccountId}" parterAccId="{!v.oppDetails.Partner_Account__c}" isRequired="false"/>                            
+                                        </aura:set>
+                                    </aura:if> 
+                                </aura:set>
+                            </aura:if>
+                            
+                            <!--   <lightning:inputField fieldName="Operations_Contact__c" class="slds-m-top_xx-small" />
+                            <lightning:inputField fieldName="MarkitMkr_Contact__c" class="slds-m-top_xx-small" />
+                            <lightning:inputField fieldName="Local_Representative__c" class="slds-m-top_xx-small" />    
+                            <lightning:inputField fieldName="Nota_Fiscal__c" class="slds-m-top_xx-small" />      -->
+                            
+                            
+                            <!--
+                             Modified By: Rajesh Kumar
+                             @Description As per ticket GGCKB-163 ***End***
+                            -->
+                            
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </lightning:accordionSection>
+                <lightning:accordionSection name="oppInfo" label="Opportunity Information" aura:id="oppInfo" class="slds-hide">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <lightning:inputField fieldName="Name" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSales || v.isReadOnlyforOprations || v.isReadOnlyBrasilConUpdateUser)}" />
+                            <lightning:inputField fieldName="Parent_Opportunity__c" class="slds-m-top_xx-small" disabled="{!or(v.isReadOnlyforSales,v.isReadOnlyforOprations)}"/>
+                            <lightning:inputField fieldName="Online_Opportunity__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSales || v.isReadOnlyforSalesOps  || v.isReadOnlyforSalesOpsExPermissions || v.isReadOnlyforOprations)}"/>
+                            <lightning:inputField fieldName="ReBooking_From_Opportunity__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSales || v.isReadOnlyforSalesOps  || v.isReadOnlyforSalesOpsExPermissions || v.isReadOnlyforOprations)}" />
+                            <lightning:inputField fieldName="Auto_Send_Contract__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSales || v.isReadOnlyforSalesOps  || v.isReadOnlyforSalesOpsExPermissions || v.isReadOnlyforOprations)}" />
+                            <lightning:layoutItem class="form-element">
+                                
+                                <aura:if isTrue="{!or(v.isReadOnlyforSales,v.isReadOnlyBrasilConUpdateUser)}">   
+                                    <label for="OwnerId" style="color: rgb(62, 62, 60)!important;">Owner</label>
+                                    <lightning:outputField fieldName="OwnerId" class="slds-m-top_small" variant="label-hidden" />
+                                    <aura:set attribute="else"> 
+                                        <aura:if isTrue="{!empty(v.oppDetails.OwnerId)}">
+                                            <c:Lookup helpText="Opportunity Owner" objectLabel="User" objectName="user" label="Owner" nameFieldApi="Name" selectedItemId="{!v.oppDetails.OwnerId}" isRequired="true" />
+                                            <aura:set attribute="else">
+                                                <c:Lookup helpText="Opportunity Owner" objectName="user" objectLabel="User" label="Owner" nameFieldApi="Name" selectedItemId="{!v.oppDetails.OwnerId}" isRequired="true" />
+                                            </aura:set>
+                                        </aura:if>
+                                    </aura:set>
+                                </aura:if>
+                            </lightning:layoutItem>
+                            
+                            <!--
+                             Modified By: Rajesh Kumar
+                             @Description As per ticket no. BK-1843 i have comment the below existing code and clone the same but in editable mode.
+                            -->
+                            <aura:if isTrue="{!(v.isNonAdminProfile &amp;&amp; (v.oppDetails.StageName!='Closed Lost' &amp;&amp; v.oppDetails.StageName!='Closed Won' &amp;&amp; v.oppDetails.StageName!='Closed Booked'))}">
+                                <lightning:inputField fieldName="Non_Reseller_Agent__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSales || v.isReadOnlyforSalesOps  || v.isReadOnlyforSalesOpsExPermissions || v.isReadOnlyforOprations)}" />
+                            </aura:if>
+                            <aura:if isTrue="{!(v.isNonAdminProfile &amp;&amp; (v.oppDetails.StageName == 'Closed Lost' || v.oppDetails.StageName == 'Closed Won' || v.oppDetails.StageName == 'Closed Booked'))}">
+                                <lightning:inputField fieldName="Non_Reseller_Agent__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSales || v.isReadOnlyforSalesOps || v.isReadOnlyforOprations)}"/>
+                            </aura:if>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <lightning:inputField fieldName="Agent_s_Opportunity__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSalesBrasil || v.isReadOnlyforSales || v.isReadOnlyforOprations || v.isReadOnlyforBrasilSalesOps)}"/>
+                            <lightning:inputField fieldName="Alternate_Invoice_Email__c" class="slds-m-top_xx-small" disabled="{!v.isReadOnlyforOprations}"/>
+                            <lightning:inputField fieldName="Alternate_Invoice_Account_Name__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSales || v.isReadOnlyforSalesOps  || v.isReadOnlyforSalesOpsExPermissions || v.isReadOnlyforOprations)}"/>
+                            <lightning:inputField fieldName="Partner_Account__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSales || v.isReadOnlyforSalesOps  || v.isReadOnlyforSalesOpsExPermissions || v.isReadOnlyforOprations)}"/>
+                            <!--<lightning:inputField fieldName="MSA_Requested__c" class="slds-m-top_xx-small" disabled="{!v.isReadOnlyforOprations}"/> -->
+                            
+						   <!-- Moved by Palla Kishore from opportunity information accordion to Summary accordion for the ticket BK-26687 -->
+                           <!-- <lightning:inputField fieldName="Type" class="slds-m-top_xx-small" disabled="{!v.isReadOnlyforOprations}" /> -->                            <!--
+                             Modified By: Yash Gupta
+                             @Description As per ticket related to UAE VAT Refund
+                            -->
+                            <aura:if isTrue="{!(v.isAdminProfile &amp;&amp; (v.oppDetails.StageName!='Closed Lost' &amp;&amp; v.oppDetails.StageName!='Closed Won' &amp;&amp; v.oppDetails.StageName!='Closed Booked') &amp;&amp; (v.oppDetails.Exhibitor_Paid_By__c == 'Exhibitor Paid by Agent' || v.oppDetails.Exhibitor_Paid_By__c == 'SubAgent Paid By Subagent' || v.oppDetails.Exhibitor_Paid_By__c == 'SubAgent Paid By Exhibitor' || v.oppDetails.Exhibitor_Paid_By__c == 'Exhibitor Paid by Exhibitor'))}">
+                                <lightning:inputField fieldName="Non_Reseller_Agent__c" class="slds-m-top_xx-small" disabled="{!v.isReadOnlyforOprations}" />
+                            </aura:if>
+                            <!--
+                             Modified By: Rajesh Kumar
+                             @Description As per ticket no. BK-1843 i have comment the below existing code and clone the same but in editable mode.
+                            -->
+                            <!--<aura:if isTrue="{!!v.isAdminProfile}">
+                                <lightning:inputField fieldName="Non_Reseller_Agent__c" class="slds-m-top_xx-small" disabled="true" />
+                            </aura:if>-->
+                            <aura:if isTrue="{!(v.isAdminProfile) &amp;&amp; (v.oppDetails.StageName == 'Closed Lost' || v.oppDetails.StageName == 'Closed Won' || v.oppDetails.StageName == 'Closed Booked')}">
+                                <lightning:inputField fieldName="Non_Reseller_Agent__c" class="slds-m-top_xx-small" disabled="false" />
+                            </aura:if>
+                            
+                            <aura:if isTrue="{!(v.isAdminProfile &amp;&amp; (v.oppDetails.StageName!='Closed Lost' &amp;&amp; v.oppDetails.StageName!='Closed Won' &amp;&amp; v.oppDetails.StageName!='Closed Booked') &amp;&amp; (v.oppDetails.Exhibitor_Paid_By__c!='Exhibitor Paid by Agent' &amp;&amp; v.oppDetails.Exhibitor_Paid_By__c!='SubAgent Paid By Subagent' &amp;&amp; v.oppDetails.Exhibitor_Paid_By__c!='SubAgent Paid By Exhibitor' &amp;&amp; v.oppDetails.Exhibitor_Paid_By__c!='Exhibitor Paid by Exhibitor'))}">
+                                <lightning:inputField fieldName="Non_Reseller_Agent__c" class="slds-m-top_xx-small" disabled="true" />
+                            </aura:if>
+                            
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <!-- Adding picklist value to be rendered when opportunity is closed won and logged in user is sales person -->
+                            <!-- Added By Avinash Shukla for JIRA TICKET : 3355 START-->
+                            <aura:if isTrue="{!v.isNewPickLIstForSales}">
+                                <lightning:combobox options="{!v.picklist_Values}" value="{!v.picklist_Values_Selected}" label="Exhibitor Paid By" aura:id="inputFields" />
+                                <aura:set attribute="else">
+                                    <lightning:inputField fieldName="Exhibitor_Paid_By__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSalesBrasil || v.isReadOnlyforSales || v.isReadOnlyforOprations || v.isReadOnlyforBrasilSalesOps)}" />
+                                </aura:set>
+                            </aura:if>
+                            <!-- Added By Avinash Shukla for JIRA TICKET : 3355 END -->
+                            <!-- Modified By Palla Kishore for the tickets BK-21469 & BK-21524 & BK-21570-->
+                            <lightning:inputField fieldName="User_Type__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSales || v.isReadOnlyforOprations || v.isReadOnlyforSalesOps || v.isReadOnlyforSalesOpsExPermissions || v.isReadOnlyBrasilConUpdateUser)}"/>
+                            <lightning:inputField fieldName="AccountId" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSales || v.isReadOnlyforSalesOps || v.isReadOnlyforSalesOpsExPermissions || v.isReadOnlyBrasilConUpdateUser)}"/>
+                            <!--
+                             Modified By: Rajesh 
+                             @Description  GGCW-2459/BK-3301
+                            -->
+                            
+                            <aura:if isTrue="{!(v.isAdminProfile)}">
+                                <lightning:inputField id = "checkBarter" fieldName="Is_Barter_Opportunity__c" class="slds-m-top_xx-small" disabled="false" onchange = "{!c.isBarterChecked}"/>
+                            </aura:if> 
+                            
+                            <aura:if isTrue="{!(v.isNonAdminProfile &amp;&amp; (v.oppDetails.StageName == 'Closed Lost' || v.oppDetails.StageName == 'Closed Won' || v.oppDetails.StageName == 'Closed Booked'))}">
+                                <lightning:inputField  id = "checkBarter" fieldName="Is_Barter_Opportunity__c" class="slds-m-top_xx-small" disabled="true" onchange = "{!c.isBarterChecked}"/>
+                            </aura:if>
+                            <lightning:inputField fieldName="NextStep" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSales || v.isReadOnlyforSalesOps  || v.isReadOnlyforSalesOpsExPermissions || v.isReadOnlyforOprations)}"/>
+                            <!--<aura:if isTrue="{!(v.isNonAdminProfile &amp;&amp; (v.oppDetails.StageName != 'Closed Lost' || v.oppDetails.StageName != 'Closed Won' || v.oppDetails.StageName != 'Closed Booked'))}">
+                                <lightning:inputField fieldName="Is_Barter_Opportunity__c" class="slds-m-top_xx-small" disabled="false"/>
+                            </aura:if> -->
+                            
+                            <aura:if isTrue="{!(v.isNonAdminProfile &amp;&amp; (v.oppDetails.StageName!='Closed Lost' &amp;&amp; v.oppDetails.StageName!='Closed Won' &amp;&amp; v.oppDetails.StageName!='Closed Booked'))}">
+                                <lightning:inputField   id = "checkBarter" fieldName="Is_Barter_Opportunity__c" class="slds-m-top_xx-small" disabled="false" onchange = "{!c.isBarterChecked}"/>
+                            </aura:if>
+                            
+                            <!--Modal for Barter Opportunity-->
+                            <aura:if isTrue="{!v.showBarterPopup}">
+                                <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                                    <div class="slds-modal__container">
+                                        <header class="slds-modal__header">
+                                            <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Check Barter Opportunity</h2>
+                                        </header>
+                                        <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                                            <p style = "font-size: 1.3em;"><h1>Barter Opportunity will remove Quote lines from Primary Quote. Clicking on "Okay" will update the Opportunity. </h1></p>
+                                            <p style = "font-size: 1.2em;"><b><h2>Press "Cancel" to cancel the Opportunity Update</h2></b></p>
+                                        </div>
+                                        <footer class="slds-modal__footer">
+                                            <button class="slds-button slds-button_neutral" onclick = "{!c.closepopup}">Cancel</button>
+                                            <lightning:button variant="brand" label="Okay" title="Okay" type="submit"/>
+                                        </footer>
+                                    </div>
+                                </section>
+                                <div class="slds-backdrop slds-backdrop_open"></div>
+                                
+                                <div class="slds-backdrop slds-backdrop_open"></div>
+                            </aura:if>
+                            <!--Modal for Barter Opportunity End-->
+                            <!--
+                             Modified By: Yash Gupta
+                             @Description As per ticket related to UAE VAT Refund
+                            -->
+                            <lightning:inputField fieldName="Tax_Rule_SAP__c" class="slds-m-top_xx-small" disabled="{!!(v.isAdminProfile || v.isReadOnlyforSalesOpsExPermissions)}" />
+                            
+                            <!--
+                                Modified By: Vaishnavi Rastogi
+                                @Description As per jira ticket - BSM-345.
+                            -->
+                            <aura:if isTrue = "{!v.isAdminProfile}">
+                                <lightning:inputField fieldName="Potential_ABC__c" class="slds-m-top_xx-small" />
+                            </aura:if>
+                            
+                            <!--
+                             Modified By: Yash Gupta
+                             @Description As per ticket related GGCW-3404
+                            -->
+                            <!--<aura:if isTrue="{!v.IsDoNotActivateBilling.length == 0}">
+                                <lightning:inputField fieldName="Multiple_Stands_Approval__c" class="slds-m-top_xx-small" disabled="true" />
+                            </aura:if> -->
+                            <!-- 
+                                Modified By : Rajesh Kumar
+                                @Description As per ticket releted BK-4528
+                            -->
+                            <lightning:inputField fieldName="Cloned_From_Opportunity__c" class="slds-m-top_xx-small" value='{!v.oppDetails.Cloned_From_Opportunity__c}' disabled="{!(v.isReadOnlyforSales || v.isReadOnlyforSalesOps || v.isReadOnlyforSalesOpsExPermissions)}"/>
+                            <lightning:inputField fieldName="Declaration_Document_Uploaded__c" class="slds-m-top_xx-small" value='{!v.oppDetails.Declaration_Document_Uploaded__c}'/>
+                            <aura:if isTrue="{!(v.isSalesOpsUser || v.isAdminProfile)}">
+                                <lightning:inputField fieldName="Customer_Tier__c" class="slds-m-top_xx-small" value='{!v.oppDetails.Customer_Tier__c}'/>
+                            </aura:if>
+                            <!--<aura:if isTrue="{!v.IsDoNotActivateBilling.length > 0}">
+                                <lightning:inputField fieldName="Multiple_Stands_Approval__c" class="slds-m-top_xx-small" />
+                            </aura:if> -->
+                                              <!--
+                            Modified By: Faisal Khan
+                            @Description As per ticket related BK-22779.
+                        -->
+                        <!--<aura:if isTrue="{!(v.isSalesOpsUser || v.isAdminProfile)}">-->
+                       
+                          <aura:if isTrue="{!(v.oppDetails.Exhibitor_Paid_By__c!= 'Delegate Sales')}">
+                            <lightning:layoutItem class="form-element" >
+                                <lightning:inputField fieldName="Mixed_Supply__c" class="slds-m-top_xx-small" value='{!v.oppDetails.Mixed_Supply__c}'/>
+                           </lightning:layoutItem>
+                            </aura:if>
+
+                          <!--
+                            Modified By: Faisal Khan
+                            @Description As per ticket related BK-22779.
+                        -->
+                            
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </lightning:accordionSection>
+                <lightning:accordionSection name="bill" label="Billing Info" aura:id="bill" class="slds-hide">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <!--EMEA-78 Modified By:- Palla Kishore -->
+                            <lightning:inputField fieldName="Customer_Purchase_Order__c" class="slds-m-top_xx-small" disabled="{!or(v.isReadOnlyforOprations,v.isReadOnlyforSales)}"/>
+                            <lightning:outputfield fieldName="Billing_Account__c" class="slds-m-top_xx-small" />
+                            <!--<lightning:inputField fieldName="Paid_Amount__c" class="slds-m-top_xx-small" disabled="{!or(v.isReadOnlyforSalesBrasil,v.isReadOnlyforOprations)}" /> -->
+                            <!--<lightning:inputField fieldName="Master_Opportunity__c" class="slds-m-top_xx-small" disabled="{!v.isReadOnlyforSalesBrasil}" />-->
+                            <aura:if isTrue="{!v.isAdminProfile}">
+                                <lightning:inputField fieldName="Master_Opportunity__c" class="slds-m-top_xx-small" />
+                            </aura:if>
+                            <aura:if isTrue="{!v.isNonAdminProfile}">
+                                <lightning:inputField fieldName="Master_Opportunity__c" class="slds-m-top_xx-small" disabled="true"/>
+                            </aura:if>
+                            <lightning:inputField fieldName="Reason_Lost__c" class="slds-m-top_xx-small" disabled="true" />
+                            <lightning:inputField fieldName="Cancel_Reason__c" class="slds-m-top_xx-small" disabled="true" />
+                            <lightning:inputField fieldName="Submission_Date__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSalesBrasil || v.isReadOnlyforSales || v.isReadOnlyforSalesOps || v.isReadOnlyforSalesOpsExPermissions)}" />
+                            <!--{!v.isReadOnlyforSalesBrasil} This field should be always readonly-->
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <lightning:outputField fieldName="TaxID__c" class="slds-m-top_xx-small" />
+                            <!--<lightning:inputField fieldName="ContractId" class="slds-m-top_xx-small" disabled="{!or(v.isReadOnlyforSalesBrasil,v.isReadOnlyforOprations)}" /> -->
+                            <lightning:layoutItem class="form-element" aura:id="editRecord">
+                                <lightning:outputField fieldName="CurrencyIsoCode" class="slds-m-top_xx-small" />
+                                <aura:if isTrue="{!!v.isReadOnlyforSalesBrasil}">
+                                    <a class="change" onclick="{!c.showModal}" style="margin-left: 32%;" >Change</a>
+                                </aura:if>
+                            </lightning:layoutItem>
+                            <lightning:inputField fieldName="Rejection_Responses__c" class="slds-m-top_xx-small" disabled="true" />
+                            <!-- ondblclick="{!c.editRecord}" Rejection_Responses__c field should be readonly for all profile-->
+                            <lightning:inputField fieldName="Main_Order__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSalesBrasil || v.isReadOnlyforSales || v.isReadOnlyforSalesOps  || v.isReadOnlyforSalesOpsExPermissions || v.isReadOnlyforOprations)}" />
+                            <!--
+                             Modified By: Yash Gupta
+                             @Description As per ticket related GGCKB-54
+                            -->
+                            <aura:if isTrue="{!v.IsDoNotActivateBilling.length > 0}">
+                                <lightning:inputField fieldName="Do_not_activate_Billing__c" class="slds-m-top_xx-small"  disabled="{!v.isReadOnlyforOprations}"/>
+                            </aura:if>
+                            <aura:if isTrue="{!(v.IsDoNotActivateBilling.length == 0 &amp;&amp; v.oppDetails.Status__c!='Awaiting Payment')}">
+                                <lightning:inputField fieldName="Do_not_activate_Billing__c" class="slds-m-top_xx-small" disabled="{!v.isReadOnlyforOprations}"/>
+                            </aura:if>
+                            <aura:if isTrue="{!(v.IsDoNotActivateBilling.length == 0 &amp;&amp; v.oppDetails.Status__c=='Awaiting Payment')}">
+                                <lightning:inputField fieldName="Do_not_activate_Billing__c" class="slds-m-top_xx-small" disabled="true" />
+                            </aura:if>
+                            <!--<lightning:inputField fieldName="SSC_Brazil_Status__c" class="slds-m-top_xx-small" disabled="{!v.isReadOnlyforSalesBrasil}"/>-->
+                            <!--   Vikrant srivastava-->
+                            <lightning:inputField fieldName="DNB_Reason_Category__c" class="slds-m-top_xx-small"/>
+                            <lightning:inputField fieldName="DNB_Reason_Sub_Category__c" class="slds-m-top_xx-small"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <lightning:inputField fieldName="Main_Contract__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSalesBrasil || v.isReadOnlyforSales || v.isReadOnlyforSalesOps  || v.isReadOnlyforSalesOpsExPermissions || v.isReadOnlyforOprations || v.isReadOnlyforBrasilSalesOps)}" />
+                            <!--<lightning:inputField fieldName="SBQQ__AmendedContract__c" class="slds-m-top_xx-small" disabled="{!or(v.isReadOnlyforSalesBrasil,v.isReadOnlyforOprations)}"/> -->
+                            <lightning:inputField fieldName="Rebooked__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSalesBrasil || v.isReadOnlyforSales || v.isReadOnlyforSalesOps  || v.isReadOnlyforSalesOpsExPermissions || v.isReadOnlyforOprations)}" />
+                            <!-- 
+                                Modified By: Rajesh Kumar
+                                @description As per ticket no BK-1253 i have add "Legal_Entity_Code__c" field on this page.
+                            -->
+                            <lightning:inputField fieldName="Legal_Entity_Code__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSalesBrasil || v.isReadOnlyforSales || v.isReadOnlyforSalesOps  || v.isReadOnlyforSalesOpsExPermissions || v.isReadOnlyforOprations)}" />
+                            <!-- Added By Palla Kishore for the tickets BK-22569-->
+                            <lightning:inputField fieldName="Quote_Exchange_Rate_Used__c" class="slds-m-top_xx-small" />
+                            <!-- Modified By Palla Kishore for the tickets BK-21469 & BK-21524 & BK-21570-->
+                            <lightning:inputField fieldName="Do_not_Send_Invoice_Email__c" class="slds-m-top_xx-small" disabled="{!or(v.isReadOnlyforSales,v.isReadOnlyforOprations)}" />
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </lightning:accordionSection>
+                <lightning:accordionSection name="event" label="Event Edition Info" aura:id="event" class="slds-hide">
+                    
+                    <lightning:layout multipleRows="true">
+                        
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <lightning:inputField fieldName="Event_Series__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforOprations || v.isReadOnlyEventEditionforSales || v.isReadOnlyBrasilConUpdateUser)}" />
+                            <lightning:inputField fieldName="EventEdition__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforOprations || v.isReadOnlyEventEditionforSales || v.isReadOnlyBrasilConUpdateUser)}" />
+                            <lightning:inputField fieldName="Event_Edition_Status__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforOprations || v.isReadOnlyforSales || v.isReadOnlyEventEditionforSales)}" />
+                        </lightning:layoutItem>
+                        
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <lightning:inputField fieldName="Event_Edition_Start_Date__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSalesBrasil || v.isReadOnlyforSales || v.isReadOnlyforSalesOps || v.isReadOnlyforSalesOpsExPermissions)}" />
+                            <lightning:outputField fieldName="FloorPlanURL__c" class="slds-m-top_xx-small" />
+                        </lightning:layoutItem>
+                        
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <lightning:inputField fieldName="Event_Edition_End_Date__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSalesBrasil || v.isReadOnlyforSales || v.isReadOnlyforSalesOps || v.isReadOnlyforSalesOpsExPermissions)}" />
+                            <lightning:inputField fieldName="No_Billing__c" class="slds-m-top_xx-small" disabled="{!(v.isReadOnlyforSalesBrasil || v.isReadOnlyforSales || v.isReadOnlyforSalesOps  || v.isReadOnlyforSalesOpsExPermissions || v.isReadOnlyforOprations)}" />
+                        </lightning:layoutItem>
+                        
+                        
+                    </lightning:layout>
+                </lightning:accordionSection>
+                <lightning:accordionSection name="ssc" label="SSC Section" aura:id="ssc" class="slds-hide">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <lightning:inputField fieldName="Credit_Status_Eval__c" class="slds-m-top_xx-small" />
+                            <lightning:outputField fieldName="Approved_Rejected_By__c" class="slds-m-top_xx-small" />
+                            <lightning:inputField fieldName="Approved_Rejected_At__c" class="slds-m-top_xx-small" />
+                            <lightning:inputField fieldName="Invoice_to_be_issued_before_in_Days__c" class="slds-m-top_xx-small" />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <lightning:inputField fieldName="SSC_Email_Distribution_ID__c" class="slds-m-top_xx-small" />
+                            <lightning:inputField fieldName="SSC_Brazil_Status__c" class="slds-m-top_xx-small" />
+                            <lightning:inputField fieldName="SSC_Sales_Order_Number__c" class="slds-m-top_xx-small" />
+                            <lightning:inputField fieldName="SSC_Notes__c" class="slds-m-top_xx-small" disabled="true" />
+                            <!-- not allow to edit from opp detail page layout updated on 04/09/2019(Mukesh)-->
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <lightning:inputField fieldName="Do_not_activate_order_for_FOC_quote__c" class="slds-m-top_xx-small" />
+                            <lightning:inputField fieldName="SSC_Contract_Number__c" class="slds-m-top_xx-small" />
+                             <lightning:inputField fieldName="Pending_Accounting_Approval_Since_Date__c" />
+                            <lightning:inputField fieldName="SBQQ__Ordered__c" class="slds-m-top_xx-small" />
+                            <!--<lightning:inputField fieldName="Do_not_activate_Billing__c" class="slds-m-top_xx-small"/>-->
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </lightning:accordionSection>
+                <lightning:accordionSection name="admin" label="Admin View" aura:id="admin" class="slds-hide">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <lightning:inputField fieldName="Contract_Number__c" class="slds-m-top_xx-small" />
+                            <lightning:inputField fieldName="Active_Contract_Number__c" class="slds-m-top_xx-small" />
+                            <lightning:inputField fieldName="conga_contract_template_id__c" class="slds-m-top_xx-small" />
+                            <!--<lightning:inputField fieldName="Booth_Product_Count__c" class="slds-m-top_xx-small" /> -->
+                            <lightning:inputField fieldName="Booth_Count__c" class="slds-m-top_xx-small" />
+                            <!-- <lightning:inputField fieldName="CASL__c" class="slds-m-top_xx-small" /> -->
+                            <!--<lightning:inputField fieldName="Booth_ID__c" class="slds-m-top_xx-small" /> -->
+                            <lightning:inputField fieldName="SBQQ__Contracted__c" class="slds-m-top_xx-small" />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <!--<lightning:inputField fieldName="AutorabitExtId__c" class="slds-m-top_xx-small" />
+                            <lightning:inputField fieldName="x_Core_Legacy_Id__c" class="slds-m-top_xx-small" />
+                            <lightning:inputField fieldName="x_Legacy_Id__c" class="slds-m-top_xx-small" /> -->
+                            <lightning:inputField fieldName="Contract_Attached__c" class="slds-m-top_xx-small" />
+                            <!--<lightning:inputField fieldName="MSA_Requested__c" class="slds-m-top_xx-small" /> -->
+                            <lightning:inputField fieldName="isThroughDcousign__c" class="slds-m-top_xx-small" />
+                            <!--
+                             Modified By: Yash Gupta
+                             @Description Add field i.e Pricebook2Id on layout as per the ticket no. GGCW-3124
+                           -->
+                            <lightning:inputField fieldName="Pricebook2Id" class="slds-m-top_xx-small" />
+                            <lightning:inputField fieldName="Manual_Contract__c" class="slds-m-top_xx-small" />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-horizontal_small slds-m-vertical_xx-small" size="4">
+                            <!--<lightning:inputField fieldName="isThroughCompleteAmendProcess__c" class="slds-m-top_xx-small" /> -->
+                            <lightning:inputField fieldName="Rebooked__c" class="slds-m-top_xx-small" />
+                            <!-- I am commented this line beacuse this field in not used any where except skuid pages -->
+                            <!--<lightning:inputField fieldName="Is_Check_Barter_Opportunity__c" class="slds-m-top_xx-small" disabled="{!v.isReadOnlyBarter}"/> --> 
+                            <!--<lightning:inputField fieldName="CheckPrimary__c" class="slds-m-top_xx-small" /> -->
+                            <lightning:inputField fieldName="All_Contract_Need_Accounting_Approval__c" class="slds-m-top_xx-small" />
+                            <lightning:inputField fieldName="Complete_Amend__c" class="slds-m-top_xx-small" />
+                            <lightning:inputField fieldName="Allow_Unrenting_Rented_booths__c" class="slds-m-top_xx-small" />
+                            <lightning:inputField fieldName="Manual_Contract_Approved__c" class="slds-m-top_xx-small" />
+                            <lightning:inputField fieldName="Complete_Amend_Comment__c" class="slds-m-top_xx-small" />
+                            
+                            <!--<lightning:inputField fieldName="Is_Bundled_Billing__c" class="slds-m-top_xx-small" /> -->
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </lightning:accordionSection>
+            </lightning:accordion>
+            <div class="slds-m-top_medium slds-align_absolute-center sticky ">
+                <lightning:button variant="neutral" label="Cancel" title="Cancel" type="text" onclick="{!c.handleCancel}" />
+                <lightning:button variant="brand" label="Save" title="Submit" type="submit" />
+            </div>
+        </lightning:recordEditForm>
+        
+        
+        <!--Modal Currency -->
+        <aura:if isTrue="{!v.isOpen}">
+            <!--###### MODAL BOX Start######-->
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button onclick="{!c.closeModal}" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                            <lightning:icon iconName="utility:close" size="small" variant="bare" />
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate modal-header">Alternate Currency</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <lightning:layout multipleRows="true">
+                            <lightning:layoutItem size="12" padding="around-small">
+                                <lightning:radioGroup name="radioGroup" label="" options="{!v.eventCurrecies}" value="{!v.selectedCurrency}" type="radio" />
+                            </lightning:layoutItem>
+                        </lightning:layout>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button onclick="{!c.closeModal}" variant="neutral" class="slds-button slds-button_destructive">Cancel</button>
+                        <button onclick="{!c.saveCurrency}" variant="brand" class="slds-button slds-button_brand">Select</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+            <!--###### MODAL BOX Part END header ######-->
+        </aura:if>
+    </div>
+</aura:component>
